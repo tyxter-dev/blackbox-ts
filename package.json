@@ -1,0 +1,99 @@
+{
+  "name": "blackbox-ts",
+  "version": "0.1.0-alpha.0",
+  "description": "Fetch-first TypeScript provider runtime adapter layer for agent and LLM applications.",
+  "license": "MIT",
+  "type": "module",
+  "author": "Tyxter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyxter-dev/blackbox-ts.git"
+  },
+  "homepage": "https://github.com/tyxter-dev/blackbox-ts#readme",
+  "bugs": {
+    "url": "https://github.com/tyxter-dev/blackbox-ts/issues"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./providers/openai": {
+      "types": "./dist/providers/openai/index.d.ts",
+      "default": "./dist/providers/openai/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "default": "./dist/providers/index.js"
+    },
+    "./providers/anthropic": {
+      "types": "./dist/providers/anthropic/index.d.ts",
+      "default": "./dist/providers/anthropic/index.js"
+    },
+    "./providers/gemini": {
+      "types": "./dist/providers/gemini/index.d.ts",
+      "default": "./dist/providers/gemini/index.js"
+    },
+    "./providers/xai": {
+      "types": "./dist/providers/xai/index.d.ts",
+      "default": "./dist/providers/xai/index.js"
+    },
+    "./providers/openrouter": {
+      "types": "./dist/providers/openrouter/index.d.ts",
+      "default": "./dist/providers/openrouter/index.js"
+    },
+    "./providers/openai-compatible": {
+      "types": "./dist/providers/openai-compatible/index.d.ts",
+      "default": "./dist/providers/openai-compatible/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "FEATURES.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:smoke": "vitest run tests/smoke",
+    "lint": "eslint src tests vitest.config.ts --max-warnings=0",
+    "format": "prettier --write \"**/*.{ts,js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md,yml,yaml}\"",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "prepare": "pnpm build",
+    "clean": "rm -rf dist coverage *.tsbuildinfo"
+  },
+  "keywords": [
+    "llm",
+    "agents",
+    "provider",
+    "openai",
+    "anthropic",
+    "gemini",
+    "xai",
+    "openrouter"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
+    "eslint": "^10.0.1",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^4.1.5"
+  }
+}
