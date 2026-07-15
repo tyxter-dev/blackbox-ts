@@ -394,6 +394,74 @@
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": ["Prompt planning, composition, parity checks, and cache sections"]
+    },
+    {
+      "domain": "Workspace Providers and Security",
+      "owner_phase": 6,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": [
+        "Workspace provider registry and managed runtime facade",
+        "Git ref checkout provider",
+        "Injected sandbox and Docker providers",
+        "Injected and opaque cloud workspace refs",
+        "Read-only artifact-bundle workspaces",
+        "Lexical and filesystem-link path containment",
+        "Workspace command timeout, cancellation, and output limits"
+      ]
+    },
+    {
+      "domain": "Persistence Contracts",
+      "owner_phase": 5,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": [
+        "Concurrent JSONL append ordering and corruption detection",
+        "JSONL session snapshot restoration",
+        "Injected SQLite event, run, session, and cache contracts",
+        "Observability failure isolation"
+      ]
+    },
+    {
+      "domain": "MCP Lifecycle Security",
+      "owner_phase": 6,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": [
+        "MCP cancellation propagation",
+        "MCP listChanged cache invalidation",
+        "Secret-safe MCP cache identity",
+        "HTTP JSON-RPC and SSE response mapping"
+      ]
+    },
+    {
+      "domain": "Runtime Lifecycle Hardening",
+      "owner_phase": 4,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": [
+        "Run and active-tool cancellation propagation",
+        "Structured-output strategy and provider-rejection fallback",
+        "Managed realtime local tool execution and approvals"
+      ]
+    },
+    {
+      "domain": "Package and Worker Hardening",
+      "owner_phase": 11,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": [
+        "Deterministic real ZIP package encoding and decoding",
+        "Archive CRC, size, duplicate-name, version, and traversal validation",
+        "Automatic worker lease heartbeat and control-plane stop polling",
+        "Graceful and forced worker stop semantics",
+        "Lost-lease cancellation without terminal overwrite"
+      ]
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { UnsupportedCapabilityError } from './errors.js';
 import type { TurnRequest } from '../providers/base.js';
+import type { OutputFallback, OutputStrategy } from './results.js';
 
 export type CapabilityStatus = 'supported' | 'unsupported' | 'conditional' | 'passthrough';
 
@@ -200,6 +201,24 @@ export function assertTurnRequestCapabilities(
   }
 }
 
+export function resolveOutputStrategy(
+  profile: CapabilityProfile,
+  requested: OutputStrategy,
+  fallback: OutputFallback,
+): OutputStrategy {
+  if (profile.output[requested]?.status === 'supported') return requested;
+  if (fallback === 'error') {
+    throw new UnsupportedCapabilityError(profile.provider, `output.${requested}`, {
+      reason: profile.output[requested]?.reason ?? 'No output fallback was allowed.',
+    });
+  }
+  const fallbackDetail = profile.output[fallback];
+  if (fallbackDetail?.status === 'supported') return fallback;
+  throw new UnsupportedCapabilityError(profile.provider, `output.${requested}`, {
+    reason: `Requested output strategy '${requested}' is unsupported and fallback '${fallback}' is unavailable.`,
+  });
+}
+
 export function deriveCapabilityProfile(
   provider: string,
   capabilities: ModelCapabilities,
@@ -234,6 +253,16 @@ export function deriveCapabilityProfile(
     output: {
       text: capability('supported'),
       structured_output: support(capabilities.structured_output, 'Not advertised by the provider.'),
+      provider_native: support(
+        capabilities.structured_output,
+        'Provider-native structured output is not advertised by the provider.',
+      ),
+      finalizer_tool: support(
+        capabilities.function_tools,
+        'Finalizer output requires function-tool support.',
+      ),
+      posthoc_parse: capability('supported'),
+      posthoc_parse_with_retry: capability('supported'),
     },
     controls: {},
     state: {
@@ -285,7 +314,7 @@ export function textCompletionCapabilityProfile(
       provider_native: capability('unsupported'),
       finalizer_tool: capability('unsupported'),
       posthoc_parse: capability('supported'),
-      posthoc_parse_with_retry: capability('unsupported'),
+      posthoc_parse_with_retry: capability('supported'),
     },
     controls: {
       instructions: capability('supported'),

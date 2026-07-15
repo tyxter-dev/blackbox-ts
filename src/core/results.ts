@@ -35,7 +35,7 @@ export function structuredOutput<TSchema>(
 ): OutputSpec<TSchema> {
   return {
     schema,
-    strategy: options.strategy ?? 'provider_native',
+    strategy: options.strategy ?? 'posthoc_parse',
     max_validation_retries: options.max_validation_retries ?? 1,
     allow_partial: options.allow_partial ?? false,
     name: options.name,

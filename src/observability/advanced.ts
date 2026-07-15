@@ -229,6 +229,8 @@ function spanFromEvents(
 function spanName(type: string): string | undefined {
   if (type.startsWith('model.')) return 'model';
   if (type.startsWith('tool.')) return 'tool';
+  if (type.startsWith('mcp.tools.cache.') || type.startsWith('prompt.cache_section.'))
+    return 'cache';
   if (type.startsWith('mcp.')) return 'mcp';
   if (type.startsWith('workspace.')) return 'workspace';
   if (type.startsWith('approval.')) return 'approval';

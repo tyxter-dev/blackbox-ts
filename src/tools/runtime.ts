@@ -15,6 +15,7 @@ export interface ToolRuntimeOptions {
   readonly max_concurrency?: number;
   readonly context?: Readonly<Record<string, unknown>>;
   readonly blocking_executor?: BlockingToolExecutor;
+  readonly signal?: AbortSignal;
 }
 
 export interface BlockingToolExecutor {
@@ -30,6 +31,7 @@ export class ToolRuntime {
   private readonly context: Readonly<Record<string, unknown>>;
   private readonly semaphore: Semaphore;
   private readonly blockingExecutor?: BlockingToolExecutor;
+  private readonly signal?: AbortSignal;
 
   constructor(
     readonly registry: ToolRegistry,
@@ -39,6 +41,7 @@ export class ToolRuntime {
     this.context = options.context ?? {};
     this.semaphore = new Semaphore(options.max_concurrency ?? 8);
     this.blockingExecutor = options.blocking_executor;
+    this.signal = options.signal;
   }
 
   async call(
@@ -46,7 +49,7 @@ export class ToolRuntime {
     arguments_: Readonly<Record<string, unknown>>,
     options: ToolCallOptions = {},
   ): Promise<ToolResult> {
-    const release = await this.semaphore.acquire();
+    const release = await this.semaphore.acquire(this.signal, name);
     try {
       const definition = this.registry.get(name);
       if (options.mock === true) {
@@ -63,7 +66,18 @@ export class ToolRuntime {
 
       const controller = new AbortController();
       const timeoutMs = options.timeout_ms ?? this.timeoutMs;
-      const timeout = setTimeout(() => controller.abort('tool timeout'), timeoutMs);
+      const cancel = () => controller.abort(this.signal?.reason ?? new Error('Tool cancelled.'));
+      if (this.signal?.aborted === true) cancel();
+      else this.signal?.addEventListener('abort', cancel, { once: true });
+      const timeout = setTimeout(
+        () =>
+          controller.abort(
+            new ToolExecutionError(`Tool '${name}' timed out after ${timeoutMs}ms.`, {
+              code: 'tool_timeout',
+            }),
+          ),
+        timeoutMs,
+      );
       try {
         const context = { ...this.context, ...options.context };
         const injected = injectContext(arguments_, definition.context_parameters ?? [], context);
@@ -82,6 +96,7 @@ export class ToolRuntime {
         });
       } finally {
         clearTimeout(timeout);
+        this.signal?.removeEventListener('abort', cancel);
       }
     } finally {
       release();
@@ -147,18 +162,28 @@ async function raceAbort<T>(
   name: string,
   timeoutMs: number,
 ): Promise<T> {
-  if (signal.aborted) throw toolTimeout(name, timeoutMs);
-  return Promise.race([
-    pending,
-    new Promise<never>((_resolve, reject) => {
-      signal.addEventListener('abort', () => reject(toolTimeout(name, timeoutMs)), { once: true });
-    }),
-  ]);
+  if (signal.aborted) throw toolAbort(signal.reason, name, timeoutMs);
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(toolAbort(signal.reason, name, timeoutMs));
+    signal.addEventListener('abort', abort, { once: true });
+    void pending.then(
+      (value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      },
+      (cause: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(cause instanceof Error ? cause : new Error(String(cause)));
+      },
+    );
+  });
 }
 
-function toolTimeout(name: string, timeoutMs: number): ToolExecutionError {
-  return new ToolExecutionError(`Tool '${name}' timed out after ${timeoutMs}ms.`, {
-    code: 'tool_timeout',
+function toolAbort(reason: unknown, name: string, timeoutMs: number): Error {
+  if (reason instanceof ToolExecutionError) return reason;
+  return new ToolExecutionError(`Tool '${name}' was cancelled.`, {
+    code: 'tool_cancelled',
+    cause: reason ?? { timeout_ms: timeoutMs },
   });
 }
 
@@ -172,9 +197,22 @@ class Semaphore {
     }
   }
 
-  async acquire(): Promise<() => void> {
+  async acquire(signal?: AbortSignal, toolName = 'unknown'): Promise<() => void> {
+    if (signal?.aborted === true) throw toolAbort(signal.reason, toolName, 0);
     if (this.active >= this.capacity) {
-      await new Promise<void>((resolve) => this.waiters.push(resolve));
+      await new Promise<void>((resolve, reject) => {
+        const waiter = () => {
+          signal?.removeEventListener('abort', abort);
+          resolve();
+        };
+        const abort = () => {
+          const index = this.waiters.indexOf(waiter);
+          if (index >= 0) this.waiters.splice(index, 1);
+          reject(toolAbort(signal?.reason, toolName, 0));
+        };
+        this.waiters.push(waiter);
+        signal?.addEventListener('abort', abort, { once: true });
+      });
     }
     this.active += 1;
     let released = false;

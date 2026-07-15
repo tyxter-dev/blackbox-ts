@@ -13,11 +13,17 @@ import {
   InMemoryRunStore,
   InMemorySessionStore,
   JSONLEventStore,
+  JSONLSessionStore,
   MemoryEventSink,
   ProviderRegistry,
   RedactingEventSink,
   ScriptedModelProvider,
   SessionCursorError,
+  SQLiteEventStore,
+  SQLiteProviderCacheStore,
+  SQLiteRunStore,
+  SQLiteSessionStore,
+  type SQLiteDatabase,
   createAgentEvent,
   createAgentSession,
   createRunState,
@@ -93,6 +99,98 @@ describe('persistence stores', () => {
     await writeFile(path, 'not-json\n', 'utf8');
     await expect(store.list()).rejects.toMatchObject({ code: 'corrupt_jsonl_record' });
   });
+
+  it('serializes concurrent JSONL appends and restores the latest session snapshot', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'blackbox-ts-'));
+    temporaryDirectories.push(directory);
+    const events = new JSONLEventStore(join(directory, 'events.jsonl'));
+    const records = Array.from({ length: 12 }, (_, index) =>
+      createAgentEvent({ id: `event_${index}`, type: 'model.text.delta', data: { index } }),
+    );
+    await Promise.all(records.map((event) => events.append(event)));
+    expect((await events.list()).map((event) => event.id)).toEqual(
+      records.map((event) => event.id),
+    );
+
+    const sessions = new JSONLSessionStore(join(directory, 'sessions.jsonl'));
+    const session = createAgentSession({ id: 'sess_jsonl', provider: 'local', task: 'persist' });
+    await sessions.save(createSessionSnapshot(session, { metadata: { revision: 1 } }));
+    await sessions.save(createSessionSnapshot(session, { metadata: { revision: 2 } }));
+    await sessions.appendEvent('sess_jsonl', records[0]!);
+
+    const restored = await new JSONLSessionStore(sessions.path).load('sess_jsonl');
+    expect(restored).toMatchObject({ metadata: { revision: 2 } });
+    expect(restored?.events).toEqual([records[0]]);
+  });
+
+  it('runs store contracts against a real SQLite database when Node provides one', async () => {
+    let DatabaseSync: (new (path: string) => SQLiteDatabase & { close(): void }) | undefined;
+    try {
+      ({ DatabaseSync } = (await import('node:sqlite')) as unknown as {
+        DatabaseSync: new (path: string) => SQLiteDatabase & { close(): void };
+      });
+    } catch {
+      return;
+    }
+    const database = new DatabaseSync(':memory:');
+    try {
+      const events = new SQLiteEventStore(database);
+      const first = createAgentEvent({ id: 'sqlite_1', type: 'run.started', run_id: 'run_sqlite' });
+      const second = createAgentEvent({
+        id: 'sqlite_2',
+        type: 'run.completed',
+        run_id: 'run_sqlite',
+      });
+      events.append(first);
+      events.append(second);
+      expect(events.list({ after_event_id: first.id })).toEqual([second]);
+      expect(() => events.list({ after_event_id: 'unknown' })).toThrow(SessionCursorError);
+
+      const runs = new SQLiteRunStore(database);
+      const firstRun = createRunState({ session_id: 'sess_sqlite', metadata: { revision: 1 } });
+      const updatedRun = createRunState({ session_id: 'sess_sqlite', metadata: { revision: 2 } });
+      runs.save(firstRun);
+      runs.save(updatedRun);
+      expect(runs.load('sess_sqlite')).toEqual(updatedRun);
+      expect(runs.all()).toEqual([updatedRun]);
+
+      const sessions = new SQLiteSessionStore(database);
+      const session = createAgentSession({
+        id: 'sess_sqlite',
+        provider: 'local',
+        task: 'persist',
+      });
+      sessions.save(createSessionSnapshot(session));
+      sessions.appendEvent(session.id, first);
+      expect(sessions.load(session.id)?.events).toEqual([first]);
+      expect(() => sessions.appendEvent('missing', first)).toThrowError(
+        expect.objectContaining({ code: 'session_error', name: 'SessionNotFoundError' }),
+      );
+
+      let now = new Date('2026-01-01T00:00:00.000Z');
+      const cache = new SQLiteProviderCacheStore(database, () => now);
+      cache.set(
+        createProviderCacheEntry(
+          'models',
+          'openai',
+          { count: 2 },
+          {
+            ttl_ms: 1_000,
+            created_at: now,
+          },
+        ),
+      );
+      expect(cache.get('models')?.value).toEqual({ count: 2 });
+      now = new Date('2026-01-01T00:00:02.000Z');
+      expect(cache.get('models')).toBeUndefined();
+      cache.set(createProviderCacheEntry('one', 'openai', 1, { created_at: now }));
+      cache.set(createProviderCacheEntry('two', 'anthropic', 2, { created_at: now }));
+      expect(cache.clear('openai')).toBe(1);
+      expect(cache.get('two')?.value).toBe(2);
+    } finally {
+      database.close();
+    }
+  });
 });
 
 describe('event sinks and runtime wiring', () => {
@@ -114,6 +212,22 @@ describe('event sinks and runtime wiring', () => {
       payload: '<redacted>',
       redaction_status: 'redacted',
     });
+  });
+
+  it('does not let a directly configured observability sink change runtime outcomes', async () => {
+    const registry = new ProviderRegistry();
+    registry.registerModelProvider(new FakeModelProvider({ id: 'echo', outputText: 'done' }));
+    const runtime = new AgentRuntime({
+      registry,
+      event_sink: new CallbackEventSink(() => {
+        throw new Error('collector unavailable');
+      }),
+    });
+
+    const result = await runtime.run({ model: 'echo:model', input: 'continue' });
+
+    expect(result.text).toBe('done');
+    expect(runtime.observability_failures.length).toBeGreaterThan(0);
   });
 
   it('makes AgentRuntime.run a collector over the persisted and observed stream', async () => {

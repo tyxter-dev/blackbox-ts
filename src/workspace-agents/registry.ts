@@ -1,6 +1,7 @@
 import { AgentRuntimeError } from '../core/errors.js';
 import type { SQLiteDatabase } from '../persistence/sqlite.js';
 import type { WorkspaceAgentSpec } from './types.js';
+import { assertValidWorkspaceAgent } from './validation.js';
 
 export interface PublishedWorkspaceAgent {
   readonly spec: WorkspaceAgentSpec;
@@ -25,6 +26,7 @@ export class InMemoryWorkspaceAgentRegistry implements WorkspaceAgentRegistry {
   private readonly records = new Map<string, PublishedWorkspaceAgent>();
   constructor(private readonly now = () => new Date()) {}
   publish(spec: WorkspaceAgentSpec): void {
+    assertValidWorkspaceAgent(spec);
     const key = versionKey(spec.id, spec.version);
     if (this.records.has(key))
       throw new AgentRuntimeError(`Workspace agent '${key}' is already published.`, {
@@ -76,6 +78,12 @@ export class SQLiteWorkspaceAgentRegistry implements WorkspaceAgentRegistry {
     );
   }
   publish(spec: WorkspaceAgentSpec): void {
+    assertValidWorkspaceAgent(spec);
+    if (this.get(spec.id, spec.version) !== undefined)
+      throw new AgentRuntimeError(
+        `Workspace agent '${versionKey(spec.id, spec.version)}' is already published.`,
+        { code: 'agent_version_exists' },
+      );
     const record = { spec, published_at: this.now().toISOString() };
     this.database
       .prepare(

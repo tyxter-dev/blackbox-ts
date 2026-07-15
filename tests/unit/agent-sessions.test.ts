@@ -158,6 +158,12 @@ describe('agent sessions runtime', () => {
     expect(session.provider).toBe('openai-agent');
     expect(events.every((event) => event.provider === 'openai-agent')).toBe(true);
     expect(invocation).toMatchObject({ provider: 'openai-agent', session_id: session.id });
+    expect(openai.capabilities().supports_resume).toBe(true);
+    const noResumeClient = Object.create(client) as FakeAgentProvider;
+    Object.defineProperty(noResumeClient, 'resume', { value: undefined });
+    const noResume = new OpenAICloudAgentProvider(noResumeClient);
+    expect(noResume.capabilities().supports_resume).toBe(false);
+    await expect(noResume.resume(session)).rejects.toMatchObject({ code: 'unsupported_feature' });
     expect(
       resolveClaudeCodeAuth({ auth: 'auto', env: { CLAUDE_CODE_OAUTH_TOKEN: 'secret' } }),
     ).toBe('subscription');

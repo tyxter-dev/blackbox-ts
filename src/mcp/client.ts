@@ -52,6 +52,8 @@ export class MCPClient {
   private toolsCache?: { readonly expires: number; readonly tools: readonly MCPTool[] };
   private readonly trust: MCPTrustPolicy;
   private readonly now: () => number;
+  private readonly unsubscribeNotifications?: () => void;
+  readonly cache_key: string;
 
   constructor(
     readonly server: MCPServerSpec,
@@ -60,17 +62,30 @@ export class MCPClient {
   ) {
     this.trust = options.trust ?? MCPTrustPresets.explicit();
     this.now = options.now ?? Date.now;
+    this.cache_key = mcpToolCacheKey(server, options.token_provider?.cache_key);
+    this.unsubscribeNotifications = transport.onNotification?.((notification) => {
+      if (
+        notification.method === 'notifications/tools/list_changed' ||
+        notification.method === 'tools/list_changed'
+      ) {
+        this.invalidateTools(notification.method);
+      }
+    });
   }
 
-  async initialize(): Promise<MCPProtocolVersion> {
+  async initialize(options: { readonly signal?: AbortSignal } = {}): Promise<MCPProtocolVersion> {
     await this.assertTrusted();
     const requested = latestCommonVersion(this.server.protocol_versions);
     const response = asRecord(
-      await this.request('initialize', {
-        protocolVersion: requested,
-        capabilities: {},
-        clientInfo: { name: 'blackbox-ts', version: '0.1.0' },
-      }),
+      await this.request(
+        'initialize',
+        {
+          protocolVersion: requested,
+          capabilities: {},
+          clientInfo: { name: 'blackbox-ts', version: '0.1.0' },
+        },
+        options.signal,
+      ),
     );
     const negotiated = response.protocolVersion;
     if (
@@ -100,14 +115,16 @@ export class MCPClient {
     return this.initializedVersion;
   }
 
-  async listTools(options: { readonly refresh?: boolean } = {}): Promise<readonly MCPTool[]> {
-    if (this.initializedVersion === undefined) await this.initialize();
+  async listTools(
+    options: { readonly refresh?: boolean; readonly signal?: AbortSignal } = {},
+  ): Promise<readonly MCPTool[]> {
+    if (this.initializedVersion === undefined) await this.initialize({ signal: options.signal });
     if (!options.refresh && this.toolsCache !== undefined && this.toolsCache.expires > this.now()) {
       await this.emit(AgentEventTypes.MCP_TOOLS_CACHE_HIT, {});
       return this.toolsCache.tools;
     }
     await this.emit(AgentEventTypes.MCP_LIST_TOOLS_STARTED, {});
-    const response = asRecord(await this.request('tools/list', {}));
+    const response = asRecord(await this.request('tools/list', {}, options.signal));
     const discovered = Array.isArray(response.tools) ? response.tools.map(readTool) : [];
     const tools: MCPTool[] = [];
     for (const tool of discovered) {
@@ -134,8 +151,11 @@ export class MCPClient {
   async callTool(
     name: string,
     arguments_: Readonly<Record<string, unknown>>,
+    options: { readonly signal?: AbortSignal } = {},
   ): Promise<MCPToolResult> {
-    const tool = (await this.listTools()).find((candidate) => candidate.name === name);
+    const tool = (await this.listTools({ signal: options.signal })).find(
+      (candidate) => candidate.name === name,
+    );
     if (tool === undefined) {
       throw new MCPError(`MCP tool '${name}' is not visible on '${this.server.name}'.`, {
         code: 'mcp_tool_not_found',
@@ -144,7 +164,7 @@ export class MCPClient {
     await this.assertTrusted(tool);
     await this.emit(AgentEventTypes.MCP_CALL_STARTED, { tool: name });
     const result = normalizeResult(
-      await this.request('tools/call', { name, arguments: arguments_ }),
+      await this.request('tools/call', { name, arguments: arguments_ }, options.signal),
     );
     const limit = this.server.max_output_bytes ?? 1024 * 1024;
     const size = Buffer.byteLength(JSON.stringify(result), 'utf8');
@@ -159,28 +179,55 @@ export class MCPClient {
   }
 
   async close(): Promise<void> {
+    this.unsubscribeNotifications?.();
     await this.transport.close?.();
   }
 
-  private async request(method: string, params: unknown): Promise<unknown> {
+  toJSON(): Readonly<Record<string, unknown>> {
+    return {
+      server: {
+        name: this.server.name,
+        transport: this.server.transport,
+        remote: this.server.remote ?? false,
+      },
+      protocol_version: this.initializedVersion,
+      cache_key: this.cache_key,
+    };
+  }
+
+  toString(): string {
+    return `MCPClient(server=${JSON.stringify(this.server.name)}, transport=${JSON.stringify(this.server.transport)})`;
+  }
+
+  [inspect.custom](): string {
+    return this.toString();
+  }
+
+  private async request(method: string, params: unknown, signal?: AbortSignal): Promise<unknown> {
     try {
-      return await this.requestWithToken(method, params, false);
+      return await this.requestWithToken(method, params, false, signal);
     } catch (cause) {
       if (!(cause instanceof MCPAuthenticationError) || this.options.token_provider === undefined) {
         throw cause;
       }
       await this.emit(AgentEventTypes.MCP_AUTH_CHALLENGE, { method });
-      return this.requestWithToken(method, params, true);
+      return this.requestWithToken(method, params, true, signal);
     }
   }
 
-  private async requestWithToken(method: string, params: unknown, forceRefresh: boolean) {
+  private async requestWithToken(
+    method: string,
+    params: unknown,
+    forceRefresh: boolean,
+    signal?: AbortSignal,
+  ) {
     const token = await this.options.token_provider?.token({
       force_refresh: forceRefresh,
       scopes: this.server.scopes,
     });
     return this.transport.request(method, params, {
       headers: token === undefined ? {} : { Authorization: `Bearer ${token}` },
+      signal,
       timeout_ms: this.server.timeout_ms,
     });
   }
@@ -211,6 +258,25 @@ export class MCPClient {
   }
 }
 
+export function mcpToolCacheKey(server: MCPServerSpec, authCacheIdentity?: string): string {
+  const identity = {
+    server: server.name,
+    transport: server.transport,
+    endpoint:
+      server.transport === 'stdio'
+        ? { command: server.command, arguments: server.arguments ?? [] }
+        : { url_hash: hashValue(server.url ?? '') },
+    protocol_versions: [...(server.protocol_versions ?? MCP_PROTOCOL_VERSIONS)].sort(),
+    allowed_tools: [...(server.allowed_tools ?? [])].sort(),
+    denied_tools: [...(server.denied_tools ?? [])].sort(),
+    scopes: [...(server.scopes ?? [])].sort(),
+    trusted: server.trusted === true,
+    remote: server.remote === true,
+    auth_identity_hash: authCacheIdentity === undefined ? undefined : hashValue(authCacheIdentity),
+  };
+  return hashValue(identity);
+}
+
 export function mcpToolDefinitions(client: MCPClient): Promise<readonly ToolDefinition[]> {
   return client.listTools().then((tools) =>
     tools.map((tool) => ({
@@ -219,8 +285,8 @@ export function mcpToolDefinitions(client: MCPClient): Promise<readonly ToolDefi
       input_schema: tool.inputSchema,
       risk: tool.risk,
       scopes: tool.scopes,
-      handler: async (arguments_) => {
-        const result = await client.callTool(tool.name, arguments_);
+      handler: async (arguments_, context) => {
+        const result = await client.callTool(tool.name, arguments_, { signal: context.signal });
         const content = result.content.map(contentText).join('\n');
         return toolResult(content, {
           is_error: result.isError,
@@ -312,3 +378,21 @@ function asOptionalRecord(value: unknown): Readonly<Record<string, unknown>> | u
     ? (value as Readonly<Record<string, unknown>>)
     : undefined;
 }
+
+function hashValue(value: unknown): string {
+  return createHash('sha256').update(stableJson(value)).digest('hex');
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (typeof value === 'object' && value !== null) {
+    return `{${Object.entries(value)
+      .filter(([, child]) => child !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+import { createHash } from 'node:crypto';
+import { inspect } from 'node:util';

@@ -1,7 +1,8 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { createInterface } from 'node:readline';
+import { inspect } from 'node:util';
 import { MCPAuthenticationError, MCPError } from '../core/errors.js';
-import type { MCPRequestContext, MCPTransport } from './types.js';
+import type { MCPNotification, MCPRequestContext, MCPTransport } from './types.js';
 
 interface JsonRpcResponse {
   readonly jsonrpc: '2.0';
@@ -62,6 +63,14 @@ export class FetchMCPTransport implements MCPTransport {
       context.signal?.removeEventListener('abort', abort);
     }
   }
+
+  toJSON(): Readonly<Record<string, unknown>> {
+    return { transport: 'http', endpoint: safeEndpoint(this.url) };
+  }
+
+  [inspect.custom](): string {
+    return `FetchMCPTransport(endpoint=${JSON.stringify(safeEndpoint(this.url))})`;
+  }
 }
 
 export class StdioMCPTransport implements MCPTransport {
@@ -71,6 +80,7 @@ export class StdioMCPTransport implements MCPTransport {
     { readonly resolve: (value: unknown) => void; readonly reject: (error: Error) => void }
   >();
   private requestId = 0;
+  private readonly notificationListeners = new Set<(notification: MCPNotification) => void>();
 
   constructor(command: string, arguments_: readonly string[] = []) {
     this.child = spawn(command, arguments_, { shell: false, windowsHide: true });
@@ -133,6 +143,19 @@ export class StdioMCPTransport implements MCPTransport {
     this.child.kill();
   }
 
+  onNotification(listener: (notification: MCPNotification) => void): () => void {
+    this.notificationListeners.add(listener);
+    return () => this.notificationListeners.delete(listener);
+  }
+
+  toJSON(): Readonly<Record<string, unknown>> {
+    return { transport: 'stdio' };
+  }
+
+  [inspect.custom](): string {
+    return 'StdioMCPTransport()';
+  }
+
   private handleLine(line: string): void {
     let response: JsonRpcResponse;
     try {
@@ -140,7 +163,15 @@ export class StdioMCPTransport implements MCPTransport {
     } catch {
       return;
     }
-    if (typeof response.id !== 'number') return;
+    if (typeof response.id !== 'number') {
+      const notification = response as unknown as Partial<MCPNotification>;
+      if (typeof notification.method === 'string') {
+        for (const listener of this.notificationListeners) {
+          listener({ method: notification.method, params: notification.params });
+        }
+      }
+      return;
+    }
     const pending = this.pending.get(response.id);
     if (pending === undefined) return;
     this.pending.delete(response.id);
@@ -184,4 +215,13 @@ function jsonRpcError(error: NonNullable<JsonRpcResponse['error']>): MCPError {
     code: error.code === -32601 ? 'mcp_method_not_found' : 'mcp_remote_error',
     cause: error.data,
   });
+}
+
+function safeEndpoint(value: string): string {
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.host}${url.pathname}`;
+  } catch {
+    return '<invalid-url>';
+  }
 }

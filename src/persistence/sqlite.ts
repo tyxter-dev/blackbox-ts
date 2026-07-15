@@ -1,4 +1,5 @@
 import type { AgentEvent } from '../core/events.js';
+import { SessionNotFoundError } from '../core/errors.js';
 import type { RunState } from '../core/state.js';
 import { deserializeDurable, serializeDurable } from '../core/serialization.js';
 import type {
@@ -107,7 +108,11 @@ export class SQLiteSessionStore implements SessionStore {
 
   appendEvent(sessionId: string, event: AgentEvent): void {
     const snapshot = this.load(sessionId);
-    if (snapshot === undefined) throw new Error(`Session '${sessionId}' was not found.`);
+    if (snapshot === undefined)
+      throw new SessionNotFoundError(`Session '${sessionId}' was not found.`, {
+        session_id: sessionId,
+        operation: 'session_store.append_event',
+      });
     this.save({ ...snapshot, events: [...snapshot.events, event] });
   }
 }
@@ -143,7 +148,7 @@ export class SQLiteProviderCacheStore implements ProviderCacheStore {
       .run(
         entry.key,
         entry.provider,
-        entry.expires_at,
+        entry.expires_at ?? null,
         serializeDurable('provider_cache_entry', entry),
       );
   }

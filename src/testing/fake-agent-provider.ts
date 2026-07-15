@@ -83,6 +83,13 @@ export class FakeAgentProvider implements AgentProvider {
     return createInvocationRef(this.id, session.id, { metadata: { message } });
   }
 
+  async resume(session: SessionRef | AgentSession): Promise<void> {
+    const stored = this.sessions.get(session.id);
+    if (stored !== undefined && stored.status !== 'running') {
+      this.sessions.set(stored.id, transitionAgentSession(stored, 'running'));
+    }
+  }
+
   async approve(approvalId: string, decision: ApprovalDecision): Promise<void> {
     this.approvalDecisions.set(approvalId, decision);
   }

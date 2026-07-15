@@ -6,7 +6,7 @@ import type { HostedToolSpec, ToolDefinition } from './base.js';
 import type { RuntimeConfig } from '../config/index.js';
 
 export type RealtimeTransportKind = 'websocket' | 'webtransport' | 'webrtc';
-export type RealtimeToolMode = 'manual' | 'provider_managed';
+export type RealtimeToolMode = 'manual' | 'auto' | 'disabled' | 'provider_managed';
 
 export interface RealtimeCapabilities {
   readonly input_modalities: readonly string[];

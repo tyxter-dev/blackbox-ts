@@ -4,6 +4,7 @@ import { MCP_PROTOCOL_VERSIONS, type MCPProtocolVersion, type MCPToolResult } fr
 
 export class MCPServer {
   private readonly tools = new Map<string, ToolDefinition>();
+  private readonly toolChangeListeners = new Set<() => void>();
 
   constructor(
     readonly name: string,
@@ -20,6 +21,18 @@ export class MCPServer {
       });
     }
     this.tools.set(tool.name, tool);
+    for (const listener of this.toolChangeListeners) listener();
+  }
+
+  unregisterTool(name: string): boolean {
+    const removed = this.tools.delete(name);
+    if (removed) for (const listener of this.toolChangeListeners) listener();
+    return removed;
+  }
+
+  onToolsChanged(listener: () => void): () => void {
+    this.toolChangeListeners.add(listener);
+    return () => this.toolChangeListeners.delete(listener);
   }
 
   async handle(method: string, params: unknown): Promise<unknown> {
@@ -72,7 +85,11 @@ export class MCPServer {
 }
 
 export function inProcessMCPTransport(server: MCPServer) {
-  return { request: (method: string, params: unknown) => server.handle(method, params) };
+  return {
+    request: (method: string, params: unknown) => server.handle(method, params),
+    onNotification: (listener: (notification: { readonly method: string }) => void) =>
+      server.onToolsChanged(() => listener({ method: 'notifications/tools/list_changed' })),
+  };
 }
 
 function normalizeHandlerResult(value: unknown): MCPToolResult {

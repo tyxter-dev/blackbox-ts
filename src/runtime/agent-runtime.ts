@@ -1,6 +1,6 @@
 import type { AgentEvent } from '../core/events.js';
 import { AllowAllPolicy, type Policy } from '../core/policy.js';
-import type { EventSink } from '../observability/sinks.js';
+import { FanoutEventSink, type EventSink } from '../observability/sinks.js';
 import type { EventStore } from '../persistence/stores.js';
 import { createRunState, type RunState } from '../core/state.js';
 import { ConfigurationError, SessionNotFoundError } from '../core/errors.js';
@@ -15,6 +15,9 @@ import { PromptRuntime } from '../planning/index.js';
 import { ProviderCacheRuntime } from '../cache/index.js';
 import type { ProviderCacheStore } from '../persistence/stores.js';
 import { RealtimeRuntime } from './realtime-runtime.js';
+import { WorkspaceRuntime } from '../workspaces/runtime.js';
+import type { WorkspaceRegistry } from '../workspaces/registry.js';
+import type { ApprovalManager } from '../core/approvals.js';
 
 export type AgentRuntimeRequest<T = string> = Omit<AgentRunRequest<T>, 'model' | 'trace_id'> & {
   readonly model?: string;
@@ -30,6 +33,8 @@ export interface AgentRuntimeOptions {
   readonly run_store?: RunStore;
   readonly session_store?: SessionStore;
   readonly provider_cache_store?: ProviderCacheStore;
+  readonly workspace_registry?: WorkspaceRegistry;
+  readonly workspace_approvals?: ApprovalManager;
 }
 
 export class AgentRuntime {
@@ -41,21 +46,37 @@ export class AgentRuntime {
   readonly prompts: PromptRuntime;
   readonly cache: ProviderCacheRuntime;
   readonly realtime: RealtimeRuntime;
+  readonly workspaces: WorkspaceRuntime;
   private readonly eventStore?: EventStore;
-  private readonly eventSink?: EventSink;
+  private readonly eventSink?: FanoutEventSink;
   private readonly runStore?: RunStore;
+  readonly policy: Policy;
 
   constructor(options: AgentRuntimeOptions = {}) {
     this.registry = options.registry ?? new ProviderRegistry();
     this.tools = options.tools ?? new ToolRegistry();
+    this.policy = options.policy ?? new AllowAllPolicy();
+    this.eventSink =
+      options.event_sink === undefined ? undefined : new FanoutEventSink([options.event_sink]);
     this.models = new ModelRuntime(this.registry);
-    this.loop = new AgentLoop(this.models, this.tools, options.policy ?? new AllowAllPolicy());
+    this.loop = new AgentLoop(this.models, this.tools, this.policy);
     this.agents = new AgentSessionsRuntime(this.registry, options.session_store);
     this.prompts = new PromptRuntime();
     this.cache = new ProviderCacheRuntime(options.provider_cache_store);
-    this.realtime = new RealtimeRuntime(this.registry);
+    this.realtime = new RealtimeRuntime(
+      this.registry,
+      this.tools,
+      this.policy,
+      options.event_store,
+      this.eventSink,
+    );
+    this.workspaces = new WorkspaceRuntime(options.workspace_registry, {
+      policy: this.policy,
+      approvals: options.workspace_approvals,
+      event_store: options.event_store,
+      event_sink: this.eventSink,
+    });
     this.eventStore = options.event_store;
-    this.eventSink = options.event_sink;
     this.runStore = options.run_store;
   }
 
@@ -109,8 +130,12 @@ export class AgentRuntime {
     return this.runStore?.load(sessionId);
   }
 
+  get observability_failures(): readonly unknown[] {
+    return this.eventSink?.failures ?? [];
+  }
+
   close(): Promise<void> {
-    return this.registry.close();
+    return Promise.all([this.registry.close(), this.workspaces.close()]).then(() => undefined);
   }
 
   private resolveRequest<T>(request: AgentRuntimeRequest<T>): AgentRunRequest<T> {

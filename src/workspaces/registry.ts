@@ -18,6 +18,10 @@ export class WorkspaceRegistry {
     return provider;
   }
 
+  has(id: string): boolean {
+    return this.providers.has(id);
+  }
+
   open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
     return this.get(spec.kind).open(spec);
   }

@@ -48,8 +48,14 @@ export interface MCPRequestContext {
   readonly timeout_ms?: number;
 }
 
+export interface MCPNotification {
+  readonly method: string;
+  readonly params?: unknown;
+}
+
 export interface MCPTransport {
   request(method: string, params: unknown, context: MCPRequestContext): Promise<unknown>;
+  onNotification?(listener: (notification: MCPNotification) => void): () => void;
   close?(): void | Promise<void>;
 }
 

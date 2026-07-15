@@ -13,6 +13,7 @@ import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../core/even
 import { createRuntimeId } from '../core/ids.js';
 import { createRunItem, type RunItem } from '../core/items.js';
 import { allow, AllowAllPolicy, type Policy, type PolicyCheckpoint } from '../core/policy.js';
+import { resolveOutputStrategy } from '../core/capabilities.js';
 import type { AgentResult, OutputSpec, ToolPayload } from '../core/results.js';
 import type { ProviderState } from '../core/state.js';
 import { addUsage, type ModelUsage } from '../core/usage.js';
@@ -150,16 +151,31 @@ export class AgentLoop {
         session.register(metaTool);
       }
     }
-    const output = request.output;
+    let output = request.output;
+    let providerNativeFallback: string | undefined;
+    if (output !== undefined) {
+      const strategy = resolveOutputStrategy(
+        this.models.capabilities(request.model, request.provider),
+        output.strategy,
+        output.fallback,
+      );
+      if (strategy !== output.strategy) {
+        providerNativeFallback = strategy;
+        output = { ...output, strategy };
+      }
+    }
     const finalizerName = 'submit_final_output';
-    if (output?.strategy === 'finalizer_tool') {
+    const ensureFinalizerTool = () => {
+      if (output === undefined || session.has(finalizerName)) return;
       session.register({
         name: finalizerName,
         description: 'Submit the final structured output.',
         input_schema: schemaForProvider(output.schema),
+        metadata: { blackbox_hidden: true, purpose: 'final_output', schema_name: output.name },
       });
       directNames.push(finalizerName);
-    }
+    };
+    if (output?.strategy === 'finalizer_tool') ensureFinalizerTool();
     refreshSelectedNames(selectedNames, directNames, toolsetRuntime);
     if (toolsetRuntime !== undefined) {
       yield stamp(
@@ -175,6 +191,7 @@ export class AgentLoop {
       timeout_ms: request.tool_timeout_ms,
       max_concurrency: request.tool_max_concurrent,
       context: request.tool_execution_context,
+      signal: request.signal,
     });
     const messages: AgentMessage[] =
       typeof request.input === 'string' ? [textMessage('user', request.input)] : [...request.input];
@@ -202,6 +219,7 @@ export class AgentLoop {
     );
 
     for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+      assertNotCancelled(request.signal);
       const modelApproval = await prepareApproval(
         request.policy ?? this.policy,
         request.approval_manager,
@@ -222,16 +240,48 @@ export class AgentLoop {
         assertApproved(decision, 'model.run');
       }
 
-      const result = await this.runWithFallback(
-        modelRequestForAgent(
-          { ...request, instructions: promptPlan.instructions || undefined },
-          messages,
-          session.toProviderTools(selectedNames),
-          providerState,
-        ),
-        request.fallback_providers ?? [],
-        fallbackAttempts,
-      );
+      let result;
+      try {
+        result = await this.runWithFallback(
+          modelRequestForAgent(
+            { ...request, output, instructions: promptPlan.instructions || undefined },
+            messages,
+            session.toProviderTools(selectedNames),
+            providerState,
+          ),
+          request.fallback_providers ?? [],
+          fallbackAttempts,
+        );
+      } catch (cause) {
+        if (
+          !(cause instanceof ProviderExecutionError) ||
+          output?.strategy !== 'provider_native' ||
+          output.fallback === 'error'
+        ) {
+          throw cause;
+        }
+        const strategy = resolveOutputStrategy(
+          this.models.capabilities(request.model, request.provider),
+          output.fallback,
+          'error',
+        );
+        if (strategy === 'provider_native') throw cause;
+        providerNativeFallback = strategy;
+        output = { ...output, strategy };
+        if (strategy === 'finalizer_tool') ensureFinalizerTool();
+        refreshSelectedNames(selectedNames, directNames, toolsetRuntime);
+        result = await this.runWithFallback(
+          modelRequestForAgent(
+            { ...request, output, instructions: promptPlan.instructions || undefined },
+            messages,
+            session.toProviderTools(selectedNames),
+            providerState,
+          ),
+          request.fallback_providers ?? [],
+          fallbackAttempts,
+        );
+      }
+      assertNotCancelled(request.signal);
       for (const event of result.events ?? []) yield stamp(event);
       allItems.push(...(result.items ?? []));
       artifacts.push(...(result.artifacts ?? []));
@@ -283,6 +333,7 @@ export class AgentLoop {
             validation_attempts: validationAttempts,
             fallback: fallbackMetadata(fallbackAttempts, result.provider),
             tool_choice: toolsetRuntime?.metadata(),
+            provider_native_fallback: providerNativeFallback,
           },
         );
         return;
@@ -329,6 +380,7 @@ export class AgentLoop {
               validation_attempts: validationAttempts,
               fallback: fallbackMetadata(fallbackAttempts, result.provider),
               tool_choice: toolsetRuntime?.metadata(),
+              provider_native_fallback: providerNativeFallback,
             },
           );
           return;
@@ -439,6 +491,7 @@ export class AgentLoop {
               mock: request.mock_tools,
             });
           } catch (cause) {
+            if (request.signal?.aborted === true) throw runCancelled(request.signal.reason);
             return toolResult(cause instanceof Error ? cause.message : 'Tool failed.', {
               is_error: true,
               metadata: { error: errorData(cause) },
@@ -625,12 +678,19 @@ function assertApproved(decision: ApprovalDecision, action: string): void {
 }
 
 function abortError(reason: unknown): Error {
-  return reason instanceof Error
-    ? reason
-    : new AgentRuntimeError('Agent run was cancelled while waiting for approval.', {
-        code: 'run_cancelled',
-        cause: reason,
-      });
+  return runCancelled(reason);
+}
+
+function assertNotCancelled(signal: AbortSignal | undefined): void {
+  if (signal?.aborted === true) throw runCancelled(signal.reason);
+}
+
+function runCancelled(reason: unknown): AgentRuntimeError {
+  if (reason instanceof AgentRuntimeError && reason.code === 'run_cancelled') return reason;
+  return new AgentRuntimeError('Agent run was cancelled.', {
+    code: 'run_cancelled',
+    cause: reason,
+  });
 }
 
 function refreshSelectedNames(

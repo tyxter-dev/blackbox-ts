@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import type { ArtifactRef } from '../core/artifacts.js';
 import type { ApprovalManager } from '../core/approvals.js';
@@ -18,6 +18,7 @@ import type {
   WorkspaceProvider,
   WorkspaceSnapshot,
   WorkspaceOpenSpec,
+  WorkspaceKind,
 } from './types.js';
 
 export interface LocalWorkspaceOptions {
@@ -39,9 +40,10 @@ export class LocalWorkspaceProvider implements WorkspaceProvider {
         code: 'workspace_kind_mismatch',
       });
     }
-    const root = resolve(spec.ref);
-    await mkdir(root, { recursive: true });
-    const workspace = new LocalWorkspace(root, spec.readonly ?? false, this.options);
+    const requestedRoot = resolve(spec.ref);
+    await mkdir(requestedRoot, { recursive: true });
+    const root = await realpath(requestedRoot);
+    const workspace = new LocalWorkspace(root, spec.readonly ?? false, this.options, spec.kind);
     await workspace.emit(AgentEventTypes.WORKSPACE_OPENED, { root });
     return workspace;
   }
@@ -49,7 +51,7 @@ export class LocalWorkspaceProvider implements WorkspaceProvider {
 
 export class LocalWorkspace implements Workspace {
   readonly id = createRuntimeId('ws');
-  readonly kind = 'local' as const;
+  readonly kind: WorkspaceKind;
   readonly readonly: boolean;
   private readonly snapshots = new Map<string, WorkspaceSnapshot>();
   private readonly policy: Policy;
@@ -59,14 +61,16 @@ export class LocalWorkspace implements Workspace {
     readonly root: string,
     readonlyMode = false,
     private readonly options: LocalWorkspaceOptions = {},
+    kind: WorkspaceKind = 'local',
   ) {
     this.readonly = readonlyMode;
+    this.kind = kind;
     this.policy = options.policy ?? new AllowAllPolicy();
     this.maxOutputBytes = options.max_output_bytes ?? 1024 * 1024;
   }
 
   async read(path: string): Promise<Uint8Array> {
-    const target = this.resolvePath(path);
+    const target = await this.resolvePath(path);
     await this.authorize('before_workspace_read', 'workspace.read', { path });
     const content = await readFile(target);
     await this.emit(AgentEventTypes.WORKSPACE_FILE_READ, { path, size: content.byteLength });
@@ -75,7 +79,7 @@ export class LocalWorkspace implements Workspace {
 
   async write(path: string, content: Uint8Array | string): Promise<void> {
     this.assertWritable();
-    const target = this.resolvePath(path);
+    const target = await this.resolvePath(path);
     await this.authorize('before_workspace_write', 'workspace.write', { path });
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, content);
@@ -84,14 +88,14 @@ export class LocalWorkspace implements Workspace {
 
   async delete(path: string): Promise<void> {
     this.assertWritable();
-    const target = this.resolvePath(path);
+    const target = await this.resolvePath(path);
     await this.authorize('before_workspace_write', 'workspace.delete', { path });
     await rm(target, { recursive: true, force: true });
     await this.emit(AgentEventTypes.WORKSPACE_FILE_CHANGED, { path, operation: 'delete' });
   }
 
   async list(path = '.'): Promise<readonly WorkspaceFile[]> {
-    const start = this.resolvePath(path);
+    const start = await this.resolvePath(path);
     const files: WorkspaceFile[] = [];
     await walk(start, async (absolute, directory) => {
       const details = await stat(absolute);
@@ -111,7 +115,7 @@ export class LocalWorkspace implements Workspace {
       arguments: command.arguments ?? [],
       cwd: command.cwd,
     });
-    const cwd = this.resolvePath(command.cwd ?? '.');
+    const cwd = await this.resolvePath(command.cwd ?? '.');
     await this.emit(AgentEventTypes.WORKSPACE_COMMAND_STARTED, {
       program: command.program,
       arguments: command.arguments ?? [],
@@ -127,7 +131,7 @@ export class LocalWorkspace implements Workspace {
 
   async applyPatch(operations: readonly WorkspacePatchOperation[]): Promise<void> {
     this.assertWritable();
-    for (const operation of operations) this.resolvePath(operation.path);
+    await Promise.all(operations.map(async (operation) => this.resolvePath(operation.path)));
     for (const operation of operations) {
       if (operation.operation === 'write') await this.write(operation.path, operation.content);
       else await this.delete(operation.path);
@@ -175,12 +179,23 @@ export class LocalWorkspace implements Workspace {
     await this.options.emit?.(createAgentEvent({ type, data: { workspace_id: this.id, ...data } }));
   }
 
-  private resolvePath(path: string): string {
+  private async resolvePath(path: string): Promise<string> {
     if (isAbsolute(path)) throw traversalError(path);
     const target = resolve(this.root, path);
-    const relation = relative(this.root, target);
-    if (relation === '..' || relation.startsWith(`..${sep}`) || isAbsolute(relation)) {
-      throw traversalError(path);
+    if (!isContained(this.root, target)) throw traversalError(path);
+
+    let existing = target;
+    while (true) {
+      try {
+        const actual = await realpath(existing);
+        if (!isContained(this.root, actual)) throw traversalError(path);
+        break;
+      } catch (cause) {
+        if (!isNotFound(cause)) throw cause;
+        const parent = dirname(existing);
+        if (parent === existing || !isContained(this.root, parent)) throw traversalError(path);
+        existing = parent;
+      }
     }
     return target;
   }
@@ -272,7 +287,17 @@ function runCommand(
           }, command.timeout_ms);
     child.once('error', (cause) => {
       if (timer !== undefined) clearTimeout(timer);
-      reject(cause);
+      reject(
+        command.signal?.aborted === true
+          ? new WorkspaceError('Workspace command was cancelled.', {
+              code: 'workspace_command_cancelled',
+              cause,
+            })
+          : new WorkspaceError(`Workspace command '${command.program}' failed to start.`, {
+              code: 'workspace_command_failed',
+              cause,
+            }),
+      );
     });
     child.once('close', (code) => {
       if (timer !== undefined) clearTimeout(timer);
@@ -294,4 +319,13 @@ function traversalError(path: string): WorkspaceError {
 
 function normalizeRelative(path: string): string {
   return path.split(sep).join('/');
+}
+
+function isContained(root: string, target: string): boolean {
+  const relation = relative(root, target);
+  return relation !== '..' && !relation.startsWith(`..${sep}`) && !isAbsolute(relation);
+}
+
+function isNotFound(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'code' in value && value.code === 'ENOENT';
 }

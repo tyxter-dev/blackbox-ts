@@ -90,6 +90,6 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
   transports are injected.
 
-The pinned baseline, all 146 tracked requirements, and evidence links are in
+The pinned baseline, all 169 tracked requirements, and scoped evidence links are in
 [the parity matrix](docs/PARITY_MATRIX.md). See [features](FEATURES.md),
 [capabilities](docs/CAPABILITIES.md), [migration](docs/MIGRATION.md), and [examples](examples/).

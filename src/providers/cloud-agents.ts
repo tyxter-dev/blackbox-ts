@@ -14,7 +14,11 @@ abstract class InjectedCloudAgentProvider implements AgentProvider {
   ) {}
 
   capabilities(): AgentCapabilities {
-    return this.configuredCapabilities;
+    return {
+      ...this.configuredCapabilities,
+      supports_resume:
+        this.configuredCapabilities.supports_resume && this.client.resume !== undefined,
+    };
   }
 
   async createAgent(spec: Parameters<AgentProvider['createAgent']>[0]) {
@@ -49,7 +53,10 @@ abstract class InjectedCloudAgentProvider implements AgentProvider {
   cancel: AgentProvider['cancel'] = (session) => this.client.cancel(session);
   listArtifacts: AgentProvider['listArtifacts'] = (session, options) =>
     this.client.listArtifacts(session, options);
-  resume: NonNullable<AgentProvider['resume']> = async (session) => this.client.resume?.(session);
+  resume: NonNullable<AgentProvider['resume']> = async (session) => {
+    if (this.client.resume === undefined) throw new UnsupportedFeatureError('agent_resume');
+    await this.client.resume(session);
+  };
   close(): void | Promise<void> {
     return this.client.close?.();
   }

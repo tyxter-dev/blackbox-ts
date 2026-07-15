@@ -9,6 +9,23 @@ const supplements = inventory.groups
   .filter((group) => group.source === 'implementation supplement')
   .flatMap((group) => group.features);
 const uniqueCatalog = new Set(catalog);
+const catalogStatuses = Object.fromEntries(
+  Object.entries(
+    inventory.groups
+      .filter((group) => group.source === 'FEATURES.md')
+      .reduce((counts, group) => {
+        counts[group.parent_status] = (counts[group.parent_status] ?? 0) + group.features.length;
+        return counts;
+      }, {}),
+  ).sort(([left], [right]) => left.localeCompare(right)),
+);
+const expectedCatalogStatuses = {
+  'Contract only': 2,
+  'Not supported yet': 1,
+  Partial: 3,
+  Supported: 136,
+  'Supported where advertised': 1,
+};
 
 if (catalog.length !== uniqueCatalog.size) {
   const duplicates = catalog.filter((feature, index) => catalog.indexOf(feature) !== index);
@@ -17,6 +34,14 @@ if (catalog.length !== uniqueCatalog.size) {
 if (uniqueCatalog.size !== inventory.catalog_unique_feature_count) {
   throw new Error(
     `Parity inventory expected ${inventory.catalog_unique_feature_count} unique catalog features, found ${uniqueCatalog.size}.`,
+  );
+}
+if (!/^[0-9a-f]{40}$/.test(inventory.parent_commit)) {
+  throw new Error('Parity inventory must pin a full 40-character parent commit.');
+}
+if (JSON.stringify(catalogStatuses) !== JSON.stringify(expectedCatalogStatuses)) {
+  throw new Error(
+    `Parent status inventory drifted: expected ${JSON.stringify(expectedCatalogStatuses)}, found ${JSON.stringify(catalogStatuses)}.`,
   );
 }
 if (supplements.length < 3) {
@@ -28,6 +53,11 @@ for (const group of inventory.groups) {
   }
   if (!group.parent_status || !group.target_status || group.features.length === 0) {
     throw new Error(`Incomplete parity group '${group.domain}'.`);
+  }
+  if (group.target_status !== group.parent_status) {
+    throw new Error(
+      `Target status for '${group.domain}' must match the pinned parent status unless a reviewed conservative-status rule is added.`,
+    );
   }
 }
 

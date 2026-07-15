@@ -25,13 +25,35 @@ export class GitWorkspaceProvider implements WorkspaceProvider {
   ) {}
 
   async open(spec: WorkspaceOpenSpec): Promise<Workspace> {
+    assertKind(spec, 'git', this.id);
     const name = safeCheckoutName(spec.metadata?.name, spec.ref);
     const target = resolve(this.checkoutRoot, name);
     await mkdir(this.checkoutRoot, { recursive: true });
-    await execFileAsync('git', ['clone', '--', spec.ref, target], {
-      windowsHide: true,
-      timeout: readNumber(spec.metadata?.timeout_ms) ?? 120_000,
-    });
+    try {
+      await execFileAsync('git', ['clone', '--', spec.ref, target], {
+        windowsHide: true,
+        timeout: readNumber(spec.metadata?.timeout_ms) ?? 120_000,
+      });
+    } catch (cause) {
+      throw new WorkspaceError('Git workspace clone failed.', {
+        code: 'workspace_git_clone_failed',
+        cause,
+      });
+    }
+    const checkoutRef = readString(spec.metadata?.branch) ?? readString(spec.metadata?.ref);
+    if (checkoutRef !== undefined) {
+      try {
+        await execFileAsync('git', ['-C', target, 'checkout', checkoutRef], {
+          windowsHide: true,
+          timeout: readNumber(spec.metadata?.timeout_ms) ?? 120_000,
+        });
+      } catch (cause) {
+        throw new WorkspaceError(`Git workspace ref '${checkoutRef}' could not be checked out.`, {
+          code: 'workspace_git_checkout_failed',
+          cause,
+        });
+      }
+    }
     return new LocalWorkspaceProvider(this.options).open({
       kind: 'git',
       ref: target,
@@ -46,6 +68,7 @@ export class SandboxWorkspaceProvider implements WorkspaceProvider {
   readonly kind = 'sandbox' as const;
   constructor(private readonly client: SandboxWorkspaceClient) {}
   open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    assertKind(spec, 'sandbox', this.id);
     return this.client.open(spec);
   }
 }
@@ -55,6 +78,7 @@ export class DockerWorkspaceProvider implements WorkspaceProvider {
   readonly kind = 'docker' as const;
   constructor(private readonly client: DockerWorkspaceClient) {}
   open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    assertKind(spec, 'docker', this.id);
     return this.client.open(spec);
   }
 }
@@ -69,6 +93,7 @@ export class CloudWorkspaceProvider implements WorkspaceProvider {
     this.id = id;
   }
   open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    assertKind(spec, 'cloud', this.id);
     if (this.client !== undefined) return this.client.open(spec);
     return new OpaqueRemoteWorkspace(spec, this.id);
   }
@@ -79,6 +104,7 @@ export class ArtifactBundleWorkspaceProvider implements WorkspaceProvider {
   readonly kind = 'artifact_bundle' as const;
   constructor(private readonly options: LocalWorkspaceOptions = {}) {}
   open(spec: WorkspaceOpenSpec): Promise<Workspace> {
+    assertKind(spec, 'artifact_bundle', this.id);
     return new LocalWorkspaceProvider(this.options).open({
       ...spec,
       kind: 'artifact_bundle',
@@ -89,7 +115,7 @@ export class ArtifactBundleWorkspaceProvider implements WorkspaceProvider {
 
 class OpaqueRemoteWorkspace implements Workspace {
   readonly id: string;
-  readonly kind: WorkspaceKind = 'remote';
+  readonly kind: WorkspaceKind = 'cloud';
   readonly readonly = true;
   constructor(spec: WorkspaceOpenSpec, provider: string) {
     this.id = `${provider}:${spec.ref}`;
@@ -142,4 +168,17 @@ function safeCheckoutName(value: unknown, ref: string): string {
 
 function readNumber(value: unknown): number | undefined {
   return typeof value === 'number' ? value : undefined;
+}
+
+function readString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function assertKind(spec: WorkspaceOpenSpec, expected: WorkspaceKind, provider: string): void {
+  if (spec.kind !== expected) {
+    throw new WorkspaceError(
+      `Workspace provider '${provider}' cannot open workspace kind '${spec.kind}'.`,
+      { code: 'workspace_kind_mismatch' },
+    );
+  }
 }

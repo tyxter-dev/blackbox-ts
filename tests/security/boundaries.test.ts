@@ -42,16 +42,10 @@ describe('security boundaries', () => {
     );
     await expect(toolset.resolve()).rejects.toMatchObject({ code: 'mcp_untrusted' });
 
-    expect(() =>
-      unpackWorkspaceAgent(
-        Buffer.from(
-          JSON.stringify({
-            format_version: 1,
-            agent: {},
-            files: { '..\\escape.txt': 'payload' },
-          }),
-        ),
-      ),
-    ).toThrowError(expect.objectContaining({ code: 'archive_path_traversal' }));
+    const invalidArchive = Buffer.alloc(30);
+    invalidArchive.writeUInt32LE(0x04034b50, 0);
+    expect(() => unpackWorkspaceAgent(invalidArchive)).toThrowError(
+      expect.objectContaining({ code: 'malformed_agent_package' }),
+    );
   });
 });

@@ -27,6 +27,20 @@ function toolProfile(model?: string): CapabilityProfile {
     ...base,
     summary: { ...base.summary, supports_function_tools: true },
     tools: { ...base.tools, function_tools: capability('supported') },
+    output: { ...base.output, finalizer_tool: capability('supported') },
+  };
+}
+
+function structuredProfile(model?: string): CapabilityProfile {
+  const base = toolProfile(model);
+  return {
+    ...base,
+    summary: { ...base.summary, supports_structured_output: true },
+    output: {
+      ...base.output,
+      structured_output: capability('supported'),
+      provider_native: capability('supported'),
+    },
   };
 }
 
@@ -106,6 +120,114 @@ describe('agent loop', () => {
     expect(result.output).toEqual({ answer: 'yes' });
     expect(provider.turns).toHaveLength(2);
     expect(result.metadata.validation_attempts).toBe(2);
+  });
+
+  it('supports provider-native, finalizer, post-hoc, and configured output fallbacks', async () => {
+    const schema = {
+      type: 'object',
+      properties: { answer: { type: 'string' } },
+      required: ['answer'],
+      additionalProperties: false,
+    } as const;
+
+    const nativeProvider = new ScriptedModelProvider([{ output_text: '{"answer":"native"}' }], {
+      id: 'native',
+      capabilities: structuredProfile,
+    });
+    const nativeRegistry = new ProviderRegistry();
+    nativeRegistry.registerModelProvider(nativeProvider);
+    const nativeResult = await new AgentRuntime({ registry: nativeRegistry }).run({
+      model: 'native:model',
+      input: 'answer',
+      trace_id: 'trace_native_output',
+      output: structuredOutput(schema, { strategy: 'provider_native', fallback: 'error' }),
+    });
+    expect(nativeResult.output).toEqual({ answer: 'native' });
+    expect(nativeProvider.turns[0]?.output?.strategy).toBe('provider_native');
+
+    const finalizerCall = createRunItem({
+      type: 'function_call',
+      provider: 'finalizer',
+      data: {
+        name: 'submit_final_output',
+        call_id: 'final_1',
+        arguments: { answer: 'finalized' },
+      },
+    });
+    const finalizerProvider = new ScriptedModelProvider(
+      [{ output_text: '', items: [finalizerCall] }],
+      { id: 'finalizer', capabilities: toolProfile },
+    );
+    const finalizerRegistry = new ProviderRegistry();
+    finalizerRegistry.registerModelProvider(finalizerProvider);
+    const finalizerResult = await new AgentRuntime({ registry: finalizerRegistry }).run({
+      model: 'finalizer:model',
+      input: 'answer',
+      trace_id: 'trace_finalizer_output',
+      output: structuredOutput(schema, { strategy: 'finalizer_tool', fallback: 'error' }),
+    });
+    expect(finalizerResult.output).toEqual({ answer: 'finalized' });
+    expect(finalizerProvider.turns[0]?.tools?.map((tool) => tool.name)).toContain(
+      'submit_final_output',
+    );
+
+    const posthocProvider = new ScriptedModelProvider([{ output_text: '{"answer":"parsed"}' }], {
+      id: 'posthoc',
+    });
+    const posthocRegistry = new ProviderRegistry();
+    posthocRegistry.registerModelProvider(posthocProvider);
+    const posthocResult = await new AgentRuntime({ registry: posthocRegistry }).run({
+      model: 'posthoc:model',
+      input: 'answer',
+      trace_id: 'trace_posthoc_output',
+      output: structuredOutput(schema, {
+        strategy: 'provider_native',
+        fallback: 'posthoc_parse',
+      }),
+    });
+    expect(posthocResult.output).toEqual({ answer: 'parsed' });
+    expect(posthocProvider.turns[0]?.output).toBeUndefined();
+    expect(posthocResult.metadata.provider_native_fallback).toBe('posthoc_parse');
+  });
+
+  it('falls back after a provider-native schema execution failure', async () => {
+    class RejectingNativeProvider extends FakeModelProvider {
+      private rejected = false;
+      override async turn(request: Parameters<FakeModelProvider['turn']>[0]) {
+        if (!this.rejected) {
+          this.rejected = true;
+          this.turns.push(request);
+          throw new ProviderExecutionError(this.id, 400, { error: 'schema rejected' });
+        }
+        return super.turn(request);
+      }
+    }
+    const provider = new RejectingNativeProvider({
+      id: 'native-reject',
+      outputText: '{"answer":"recovered"}',
+      capabilities: structuredProfile,
+    });
+    const registry = new ProviderRegistry();
+    registry.registerModelProvider(provider);
+    const result = await new AgentRuntime({ registry }).run({
+      model: 'native-reject:model',
+      input: 'answer',
+      trace_id: 'trace_native_rejection',
+      output: structuredOutput(
+        {
+          type: 'object',
+          properties: { answer: { type: 'string' } },
+          required: ['answer'],
+        },
+        { strategy: 'provider_native', fallback: 'posthoc_parse' },
+      ),
+    });
+
+    expect(result.output).toEqual({ answer: 'recovered' });
+    expect(provider.turns).toHaveLength(2);
+    expect(provider.turns[0]?.output?.strategy).toBe('provider_native');
+    expect(provider.turns[1]?.output).toBeUndefined();
+    expect(result.metadata.provider_native_fallback).toBe('posthoc_parse');
   });
 
   it('falls back only on eligible provider/configuration failures', async () => {
@@ -365,5 +487,58 @@ describe('agent loop', () => {
         trace_id: 'trace_policy',
       }),
     ).rejects.toMatchObject({ code: 'policy_denied' });
+  });
+
+  it('cancels active tool handlers instead of continuing with an error result', async () => {
+    const call = createRunItem({
+      type: 'function_call',
+      provider: 'script',
+      data: { name: 'wait', call_id: 'wait_1', arguments: {} },
+    });
+    const provider = new ScriptedModelProvider([{ output_text: '', items: [call] }], {
+      id: 'script',
+      capabilities: toolProfile,
+    });
+    const registry = new ProviderRegistry();
+    registry.registerModelProvider(provider);
+    let started!: () => void;
+    const handlerStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const runtime = new AgentRuntime({
+      registry,
+      tools: new ToolRegistry([
+        {
+          name: 'wait',
+          handler: (_arguments, context) =>
+            new Promise((_resolve, reject) => {
+              started();
+              context.signal.addEventListener(
+                'abort',
+                () =>
+                  reject(
+                    context.signal.reason instanceof Error
+                      ? context.signal.reason
+                      : new Error('Tool call cancelled.'),
+                  ),
+                { once: true },
+              );
+            }),
+        },
+      ]),
+    });
+    const controller = new AbortController();
+    const run = runtime.run({
+      model: 'script:model',
+      input: 'wait',
+      tools: ['wait'],
+      signal: controller.signal,
+      trace_id: 'trace_cancel',
+    });
+    await handlerStarted;
+    controller.abort(new Error('caller cancelled'));
+
+    await expect(run).rejects.toMatchObject({ code: 'run_cancelled' });
+    expect(provider.turns).toHaveLength(1);
   });
 });

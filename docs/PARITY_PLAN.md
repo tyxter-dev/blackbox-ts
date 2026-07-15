@@ -1,9 +1,17 @@
 # Blackbox TypeScript Feature-Parity Plan
 
-**Status:** Proposed implementation plan
+**Status:** Implemented and locally verified; repository/npm publication remains an external delivery gate
 **Analysis date:** 2026-07-14
 **TypeScript baseline:** `blackbox-ts` commit `fbe3ebf1add1d7686f4d07dcd8092119d5a02b7b`
 **Parent baseline:** `tyxter-dev/blackbox` commit `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
+
+Implementation verification is recorded in the generated parity matrix. It currently maps
+169 parent-catalog and implementation-supplement requirements to scoped code and offline test
+evidence. The local release gates cover formatting, inventory/matrix freshness, TypeScript
+contracts and examples, public API snapshots, lint, 121 passing offline tests (plus five
+credential-gated smoke tests), build, catalog/package snapshots, tarball inspection, and clean
+consumer installation. Creating/publishing the configured GitHub and npm repositories requires
+external account authorization and is intentionally not treated as a library behavior gap.
 
 ## 1. Goal and parity definition
 
@@ -43,11 +51,12 @@ contract-only, and 1 explicitly unsupported. Realtime, workflow configuration, p
 planning, and some integration surfaces must also be tracked because they shipped after
 the original feature table was created.
 
-## 2. Current coverage assessment
+## 2. Baseline coverage assessment (before implementation)
 
-Strict parent parity is not yet achieved in any complete subsystem. The current package
-contains useful foundations, but most are narrower contracts or text-only compatibility
-implementations.
+At the TypeScript baseline above, strict parent parity was not yet achieved in any complete
+subsystem. The package contained useful foundations, but most were narrower contracts or
+text-only compatibility implementations. This table is retained as the historical input to
+the roadmap; current evidence is generated in `docs/PARITY_MATRIX.md`.
 
 | Domain                            | Current TS status      | Main gap                                                                                                                            |
 | --------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |

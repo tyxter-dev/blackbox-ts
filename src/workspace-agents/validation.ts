@@ -11,6 +11,11 @@ export function validateWorkspaceAgent(
   context: WorkspaceAgentValidationContext = {},
 ): readonly WorkspaceAgentValidationIssue[] {
   const issues: WorkspaceAgentValidationIssue[] = [];
+  if (!spec.id.trim()) issues.push(issue('id', 'Agent id is empty.', 'missing_id'));
+  if (!spec.name.trim()) issues.push(issue('name', 'Agent name is empty.', 'missing_name'));
+  if (!spec.version.trim())
+    issues.push(issue('version', 'Agent version is empty.', 'missing_version'));
+  if (!spec.model.trim()) issues.push(issue('model', 'Agent model is empty.', 'missing_model'));
   duplicates(spec.tools).forEach((name) =>
     issues.push(issue('tools', `Duplicate tool '${name}'.`, 'duplicate_tool')),
   );
@@ -24,6 +29,9 @@ export function validateWorkspaceAgent(
     issues.push(
       issue('skills', `Duplicate skill '${name}' (case-insensitive).`, 'duplicate_skill'),
     ),
+  );
+  duplicates(spec.schedules.map((schedule) => schedule.id)).forEach((id) =>
+    issues.push(issue('schedules', `Duplicate schedule '${id}'.`, 'duplicate_schedule')),
   );
   checkKnown(spec.tools, context.tools, 'tools', 'unknown_tool', issues);
   checkKnown(
@@ -45,6 +53,56 @@ export function validateWorkspaceAgent(
           'permission_mismatch',
         ),
       );
+  for (const name of spec.permissions.connectors ?? [])
+    if (!spec.connectors.some((connector) => connector.name === name))
+      issues.push(
+        issue(
+          'permissions.connectors',
+          `Permission references unavailable connector '${name}'.`,
+          'permission_mismatch',
+        ),
+      );
+  for (const name of spec.permissions.mcp_servers ?? [])
+    if (!spec.mcp_servers.includes(name))
+      issues.push(
+        issue(
+          'permissions.mcp_servers',
+          `Permission references unavailable MCP server '${name}'.`,
+          'permission_mismatch',
+        ),
+      );
+  for (const skill of spec.skills) {
+    if (!isPortableName(skill.name))
+      issues.push(
+        issue(
+          `skills.${skill.name || '<empty>'}`,
+          `Skill name '${skill.name}' is not portable.`,
+          'invalid_skill_name',
+        ),
+      );
+    if (!skill.body.trim())
+      issues.push(
+        issue(`skills.${skill.name || '<empty>'}`, 'Skill body is empty.', 'missing_skill_body'),
+      );
+    for (const tool of skill.tools)
+      if (!spec.tools.includes(tool))
+        issues.push(
+          issue(
+            `skills.${skill.name}.tools`,
+            `Skill references unavailable tool '${tool}'.`,
+            'unknown_skill_tool',
+          ),
+        );
+    for (const connection of skill.mcp_connections)
+      if (!spec.mcp_servers.includes(connection.id))
+        issues.push(
+          issue(
+            `skills.${skill.name}.mcp_connections`,
+            `Skill references unavailable MCP server '${connection.id}'.`,
+            'unknown_skill_mcp',
+          ),
+        );
+  }
   for (const schedule of spec.schedules) {
     try {
       parseSchedule(schedule.expression, schedule.timezone);
@@ -93,4 +151,8 @@ function checkKnown(
 
 function issue(path: string, message: string, code: string): WorkspaceAgentValidationIssue {
   return { path, message, code };
+}
+
+function isPortableName(value: string): boolean {
+  return /^[a-z0-9][a-z0-9_-]*$/i.test(value) && !value.includes('..');
 }
