@@ -1,4 +1,7 @@
-import { assertTurnRequestCapabilities, textCompletionCapabilityProfile } from '../../core/capabilities.js';
+import {
+  assertTurnRequestCapabilities,
+  textCompletionCapabilityProfile,
+} from '../../core/capabilities.js';
 import type { CapabilityProfile } from '../../core/capabilities.js';
 import { usageFromOpenAI } from '../../core/usage.js';
 import type { TokenUsage } from '../../core/usage.js';
@@ -6,6 +9,8 @@ import {
   complete as completeTurn,
   turnCompletedEvent,
   turnStartedEvent,
+  streamTurnFromResult,
+  normalizeTurnRequest,
   type AgentModelProvider,
   type LLMCompletionInput,
   type LLMCompletionResult,
@@ -57,7 +62,8 @@ export class OpenAICompatibleChatProvider implements AgentModelProvider {
     this.defaultHeaders = config.defaultHeaders ?? {};
     this.fetchImpl = config.fetchImpl ?? fetch;
     this.timeoutMs = config.timeoutMs;
-    this.capabilityFactory = config.capabilities ?? ((model) => textCompletionCapabilityProfile(this.id, model));
+    this.capabilityFactory =
+      config.capabilities ?? ((model) => textCompletionCapabilityProfile(this.id, model));
     this.configuredModels = config.models ?? [];
   }
 
@@ -95,6 +101,7 @@ export class OpenAICompatibleChatProvider implements AgentModelProvider {
   }
 
   async turn(request: TurnRequest): Promise<TurnResult> {
+    request = normalizeTurnRequest(request);
     const profile = this.capabilities(request.model);
     assertTurnRequestCapabilities(this.id, request, profile);
 
@@ -115,6 +122,10 @@ export class OpenAICompatibleChatProvider implements AgentModelProvider {
     } finally {
       timeout.cancel();
     }
+  }
+
+  async *streamTurn(request: TurnRequest) {
+    yield* streamTurnFromResult(this.id, request, () => this.turn(request));
   }
 
   protected parseChatCompletionsResponse(request: TurnRequest, json: unknown): TurnResult {

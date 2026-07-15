@@ -1,0 +1,145 @@
+import { execFile } from 'node:child_process';
+import { mkdir } from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { basename, resolve } from 'node:path';
+import { WorkspaceError } from '../core/errors.js';
+import { LocalWorkspaceProvider, type LocalWorkspaceOptions } from './local.js';
+import type {
+  DockerWorkspaceClient,
+  SandboxWorkspaceClient,
+  Workspace,
+  WorkspaceKind,
+  WorkspaceOpenSpec,
+  WorkspaceProvider,
+} from './types.js';
+
+const execFileAsync = promisify(execFile);
+
+export class GitWorkspaceProvider implements WorkspaceProvider {
+  readonly id = 'git';
+  readonly kind = 'git' as const;
+
+  constructor(
+    private readonly checkoutRoot: string,
+    private readonly options: LocalWorkspaceOptions = {},
+  ) {}
+
+  async open(spec: WorkspaceOpenSpec): Promise<Workspace> {
+    const name = safeCheckoutName(spec.metadata?.name, spec.ref);
+    const target = resolve(this.checkoutRoot, name);
+    await mkdir(this.checkoutRoot, { recursive: true });
+    await execFileAsync('git', ['clone', '--', spec.ref, target], {
+      windowsHide: true,
+      timeout: readNumber(spec.metadata?.timeout_ms) ?? 120_000,
+    });
+    return new LocalWorkspaceProvider(this.options).open({
+      kind: 'git',
+      ref: target,
+      readonly: spec.readonly,
+      metadata: spec.metadata,
+    });
+  }
+}
+
+export class SandboxWorkspaceProvider implements WorkspaceProvider {
+  readonly id = 'sandbox';
+  readonly kind = 'sandbox' as const;
+  constructor(private readonly client: SandboxWorkspaceClient) {}
+  open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    return this.client.open(spec);
+  }
+}
+
+export class DockerWorkspaceProvider implements WorkspaceProvider {
+  readonly id = 'docker';
+  readonly kind = 'docker' as const;
+  constructor(private readonly client: DockerWorkspaceClient) {}
+  open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    return this.client.open(spec);
+  }
+}
+
+export class CloudWorkspaceProvider implements WorkspaceProvider {
+  readonly id: string;
+  readonly kind = 'cloud' as const;
+  constructor(
+    id: string,
+    private readonly client?: SandboxWorkspaceClient,
+  ) {
+    this.id = id;
+  }
+  open(spec: WorkspaceOpenSpec): Workspace | Promise<Workspace> {
+    if (this.client !== undefined) return this.client.open(spec);
+    return new OpaqueRemoteWorkspace(spec, this.id);
+  }
+}
+
+export class ArtifactBundleWorkspaceProvider implements WorkspaceProvider {
+  readonly id = 'artifact_bundle';
+  readonly kind = 'artifact_bundle' as const;
+  constructor(private readonly options: LocalWorkspaceOptions = {}) {}
+  open(spec: WorkspaceOpenSpec): Promise<Workspace> {
+    return new LocalWorkspaceProvider(this.options).open({
+      ...spec,
+      kind: 'artifact_bundle',
+      readonly: true,
+    });
+  }
+}
+
+class OpaqueRemoteWorkspace implements Workspace {
+  readonly id: string;
+  readonly kind: WorkspaceKind = 'remote';
+  readonly readonly = true;
+  constructor(spec: WorkspaceOpenSpec, provider: string) {
+    this.id = `${provider}:${spec.ref}`;
+  }
+  read(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  write(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  delete(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  list(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  command(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  applyPatch(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  snapshot(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  restore(): Promise<never> {
+    return Promise.reject(unsupported());
+  }
+  artifacts(): Promise<readonly never[]> {
+    return Promise.resolve([]);
+  }
+  close(): void {}
+}
+
+function unsupported(): WorkspaceError {
+  return new WorkspaceError('Opaque cloud workspaces require an injected provider client.', {
+    code: 'workspace_operation_unsupported',
+  });
+}
+
+function safeCheckoutName(value: unknown, ref: string): string {
+  const candidate = typeof value === 'string' ? value : basename(ref).replace(/\.git$/i, '');
+  if (!/^[a-z0-9._-]+$/i.test(candidate) || candidate.includes('..')) {
+    throw new WorkspaceError(`Unsafe git checkout name '${candidate}'.`, {
+      code: 'workspace_path_traversal',
+    });
+  }
+  return candidate;
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}

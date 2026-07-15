@@ -1,0 +1,81 @@
+{
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "event": {
+    "type": "model.completed",
+    "run_id": "run_fixture",
+    "sequence": 2,
+    "trace_id": "trace_fixture",
+    "span_id": "span_fixture",
+    "parent_span_id": null,
+    "span_kind": null,
+    "session_id": null,
+    "provider": "openai",
+    "item_id": null,
+    "provider_trace_id": null,
+    "provider_span_id": null,
+    "provider_request_id": "req_fixture",
+    "data": { "output_text": "hello" },
+    "raw": { "id": "resp_fixture" },
+    "id": "evt_fixture",
+    "timestamp": "2026-01-02T03:04:05Z"
+  },
+  "item": {
+    "type": "message",
+    "provider": "openai",
+    "data": { "text": "hello" },
+    "status": "completed",
+    "id": "item_fixture",
+    "parent_id": null,
+    "raw": { "type": "message" }
+  },
+  "provider_state": {
+    "provider": "openai",
+    "conversation_id": null,
+    "previous_response_id": "resp_fixture",
+    "native_history": [{ "role": "assistant" }],
+    "reasoning_state": { "signature": "sig" },
+    "tool_state": { "call": "call_1" },
+    "continuation": { "cursor": "cursor_1" }
+  },
+  "session": {
+    "provider": "local",
+    "task": "fixture",
+    "agent_id": "agent_fixture",
+    "model": "gpt-5",
+    "status": "running",
+    "metadata": { "tenant": "dev" },
+    "id": "sess_fixture"
+  },
+  "artifact_page": {
+    "items": [
+      {
+        "type": "report",
+        "name": "result.json",
+        "data": { "ok": true },
+        "uri": null,
+        "metadata": { "source": "test" },
+        "id": "art_fixture"
+      }
+    ],
+    "next_cursor": null,
+    "has_more": false
+  },
+  "approval_request": {
+    "action": "workspace.write",
+    "reason": "sensitive",
+    "data": { "path": "a.txt" },
+    "id": "approval_fixture"
+  },
+  "approval_decision": { "approved": true, "reason": "reviewed", "metadata": {} },
+  "usage": {
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "total_tokens": 15,
+    "cached_input_tokens": 3,
+    "cache_read_input_tokens": 3,
+    "cache_creation_input_tokens": 0,
+    "reasoning_tokens": 2,
+    "tool_calls": 1,
+    "provider_details": { "request_id": "req_fixture" }
+  }
+}

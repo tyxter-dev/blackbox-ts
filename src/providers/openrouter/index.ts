@@ -1,8 +1,13 @@
 import { textCompletionCapabilityProfile } from '../../core/capabilities.js';
-import { OpenAICompatibleChatProvider, type OpenAICompatibleProviderConfig } from '../openai-compatible/index.js';
+import {
+  OpenAICompatibleChatProvider,
+  type OpenAICompatibleProviderConfig,
+} from '../openai-compatible/index.js';
 
-export interface OpenRouterProviderConfig
-  extends Omit<OpenAICompatibleProviderConfig, 'providerId' | 'apiBase' | 'defaultHeaders'> {
+export interface OpenRouterProviderConfig extends Omit<
+  OpenAICompatibleProviderConfig,
+  'providerId' | 'apiBase' | 'defaultHeaders'
+> {
   readonly apiBase?: string;
   readonly appUrl?: string;
   readonly appTitle?: string;
@@ -20,7 +25,8 @@ export class OpenRouterProvider extends OpenAICompatibleChatProvider {
         ...(config.appTitle ? { 'X-Title': config.appTitle } : {}),
         ...(config.defaultHeaders ?? {}),
       },
-      capabilities: config.capabilities ?? ((model) => textCompletionCapabilityProfile('openrouter', model)),
+      capabilities:
+        config.capabilities ?? ((model) => textCompletionCapabilityProfile('openrouter', model)),
     });
   }
 }

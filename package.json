@@ -4,6 +4,7 @@
   "description": "Fetch-first TypeScript provider runtime adapter layer for agent and LLM applications.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.29.3",
   "author": "Tyxter",
   "repository": {
     "type": "git",
@@ -48,6 +49,74 @@
       "types": "./dist/providers/openai-compatible/index.d.ts",
       "default": "./dist/providers/openai-compatible/index.js"
     },
+    "./providers/echo": {
+      "types": "./dist/providers/echo/index.d.ts",
+      "default": "./dist/providers/echo/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "default": "./dist/tools/index.js"
+    },
+    "./output": {
+      "types": "./dist/output/index.d.ts",
+      "default": "./dist/output/index.js"
+    },
+    "./persistence": {
+      "types": "./dist/persistence/index.d.ts",
+      "default": "./dist/persistence/index.js"
+    },
+    "./observability": {
+      "types": "./dist/observability/index.d.ts",
+      "default": "./dist/observability/index.js"
+    },
+    "./workspaces": {
+      "types": "./dist/workspaces/index.d.ts",
+      "default": "./dist/workspaces/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "default": "./dist/mcp/index.js"
+    },
+    "./realtime": {
+      "types": "./dist/realtime/index.d.ts",
+      "default": "./dist/realtime/index.js"
+    },
+    "./workers": {
+      "types": "./dist/workers/index.d.ts",
+      "default": "./dist/workers/index.js"
+    },
+    "./workspace-agents": {
+      "types": "./dist/workspace-agents/index.d.ts",
+      "default": "./dist/workspace-agents/index.js"
+    },
+    "./skills": {
+      "types": "./dist/skills/index.d.ts",
+      "default": "./dist/skills/index.js"
+    },
+    "./schedules": {
+      "types": "./dist/schedules/index.d.ts",
+      "default": "./dist/schedules/index.js"
+    },
+    "./pricing": {
+      "types": "./dist/pricing/index.d.ts",
+      "default": "./dist/pricing/index.js"
+    },
+    "./cache": {
+      "types": "./dist/cache/index.d.ts",
+      "default": "./dist/cache/index.js"
+    },
+    "./planning": {
+      "types": "./dist/planning/index.d.ts",
+      "default": "./dist/planning/index.js"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "default": "./dist/config/index.js"
+    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "default": "./dist/testing/index.js"
@@ -56,6 +125,7 @@
   "files": [
     "dist",
     "docs",
+    "examples",
     "README.md",
     "CHANGELOG.md",
     "FEATURES.md",
@@ -67,12 +137,19 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:examples": "tsc --noEmit -p tsconfig.examples.json",
     "test": "vitest run",
     "test:smoke": "vitest run tests/smoke",
     "lint": "eslint src tests vitest.config.ts --max-warnings=0",
     "format": "prettier --write \"**/*.{ts,js,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,js,json,md,yml,yaml}\"",
-    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "test:package": "pnpm build && node scripts/catalog-snapshot.mjs --check && node scripts/package-smoke.mjs",
+    "generate:parity": "node scripts/generate-parity-matrix.mjs",
+    "check:parity": "node scripts/check-parity-inventory.mjs && node scripts/generate-parity-matrix.mjs --check",
+    "generate:api": "node scripts/public-api-snapshot.mjs",
+    "check:api": "node scripts/public-api-snapshot.mjs --check",
+    "generate:catalog": "pnpm build && node scripts/catalog-snapshot.mjs",
+    "check": "pnpm format:check && pnpm check:parity && pnpm typecheck && pnpm typecheck:examples && pnpm check:api && pnpm lint && pnpm test && pnpm test:package",
     "prepare": "pnpm build",
     "clean": "rm -rf dist coverage *.tsbuildinfo"
   },

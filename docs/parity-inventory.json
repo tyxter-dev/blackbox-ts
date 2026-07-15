@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "parent_repository": "tyxter-dev/blackbox",
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "catalog_unique_feature_count": 143,
+  "groups": [
+    {
+      "domain": "High-Level Runtime",
+      "owner_phase": 4,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Complete blackbox agent loop",
+        "Streaming blackbox loop",
+        "Typed agent result",
+        "Text-only runs",
+        "Max-iteration guard",
+        "Provider fallback routing",
+        "Mock tool execution"
+      ]
+    },
+    {
+      "domain": "Skills and Workspace Agents",
+      "owner_phase": 8,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Portable skill packs",
+        "Workspace agent package contracts",
+        "Workspace agent validation",
+        "SQLite workspace agent registry",
+        "Workspace agent package on disk",
+        "Schedule execution (reference executor)"
+      ]
+    },
+    {
+      "domain": "Structured Output",
+      "owner_phase": 4,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Pydantic structured output",
+        "Dataclass structured output",
+        "String output",
+        "Fail-fast validation errors",
+        "Provider-native structured output",
+        "Finalizer tool structured output",
+        "Raw JSON Schema post-hoc output",
+        "Structured output retry/repair"
+      ]
+    },
+    {
+      "domain": "Local Tools",
+      "owner_phase": 4,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Local tool registration",
+        "Dynamic tool sessions",
+        "Tool lookup/listing",
+        "Provider-neutral tool schema export",
+        "Manual JSON schema override",
+        "Tool metadata",
+        "Blocking tool offload",
+        "Async tool execution",
+        "Tool timeouts",
+        "Tool concurrency cap",
+        "High-level tool controls",
+        "Multiple tool calls in one turn",
+        "Tool result coercion",
+        "Tool payload separation",
+        "Context injection",
+        "Context schema privacy",
+        "Tool catalog search",
+        "Runtime toolsets and dynamic loading",
+        "Dynamic tool surface persistence",
+        "Workspace tool backend"
+      ]
+    },
+    {
+      "domain": "Local Tools",
+      "owner_phase": 4,
+      "parent_status": "Not supported yet",
+      "target_status": "Not supported yet",
+      "source": "FEATURES.md",
+      "features": ["Namespaced `ToolRef` IDs"]
+    },
+    {
+      "domain": "Hosted Tools",
+      "owner_phase": 4,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Typed hosted tool specs",
+        "OpenAI hosted tool mapping",
+        "OpenAI hosted tool events",
+        "Hosted tool result metadata",
+        "Provider-native remote MCP",
+        "MCP result metadata",
+        "Gemini hosted web search",
+        "Raw hosted tool passthrough"
+      ]
+    },
+    {
+      "domain": "Policy, Approvals, and Safety",
+      "owner_phase": 5,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Allow-all default policy",
+        "Policy allow/deny gate",
+        "Approval-required gate",
+        "Approval resume",
+        "Approval denial",
+        "Typed approval errors"
+      ]
+    },
+    {
+      "domain": "Core Events and State",
+      "owner_phase": 1,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Canonical event taxonomy",
+        "Run IDs",
+        "Monotonic event sequence",
+        "Provider-native continuation state",
+        "Raw provider payload preservation"
+      ]
+    },
+    {
+      "domain": "Provider State Mapping",
+      "owner_phase": 3,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "OpenAI previous response continuation",
+        "Provider tool/source state preservation"
+      ]
+    },
+    {
+      "domain": "Persistence",
+      "owner_phase": 5,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Event store protocol",
+        "In-memory event store",
+        "Run store protocol",
+        "In-memory run store",
+        "Session store protocol",
+        "In-memory session store",
+        "Resume run from persisted state",
+        "JSONL/SQLite stores"
+      ]
+    },
+    {
+      "domain": "Provider Controls and Catalog",
+      "owner_phase": 2,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": ["Provider-native request controls", "Provider model catalog"]
+    },
+    {
+      "domain": "Accounting and Cache",
+      "owner_phase": 9,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Model usage and cost accounting",
+        "Native provider cache controls",
+        "Provider cache registry"
+      ]
+    },
+    {
+      "domain": "Accounting and Cache",
+      "owner_phase": 9,
+      "parent_status": "Partial",
+      "target_status": "Partial",
+      "source": "FEATURES.md",
+      "features": ["Provider-side cache lifecycle"]
+    },
+    {
+      "domain": "Granular Model Capabilities",
+      "owner_phase": 2,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Model capability profile",
+        "Hosted-tool capability validation",
+        "Output strategy fallback resolution",
+        "Control capability validation",
+        "State mode validation",
+        "Compatibility profile derivation",
+        "OpenAI tool-search control",
+        "Provider-native compaction control",
+        "Multimodal model input (content parts)"
+      ]
+    },
+    {
+      "domain": "Granular Model Capabilities",
+      "owner_phase": 2,
+      "parent_status": "Contract only",
+      "target_status": "Contract only",
+      "source": "FEATURES.md",
+      "features": ["Modalities control"]
+    },
+    {
+      "domain": "Provider Runtime",
+      "owner_phase": 2,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Provider registry",
+        "Provider reference parsing",
+        "Model provider protocol",
+        "Agent provider protocol",
+        "Chat compatibility facade",
+        "Capability flags",
+        "Granular model capability profile",
+        "Direct model run",
+        "Direct model stream",
+        "Echo model provider"
+      ]
+    },
+    {
+      "domain": "Native Model Providers",
+      "owner_phase": 3,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "OpenAI Responses model provider",
+        "xAI Responses model provider",
+        "Anthropic Messages model provider",
+        "Gemini GenerateContent model provider"
+      ]
+    },
+    {
+      "domain": "Agent Sessions",
+      "owner_phase": 7,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Local agent provider",
+        "Create agent",
+        "Create/start session",
+        "Stream session events",
+        "Durable session persistence",
+        "Durable session replay",
+        "Send message to session",
+        "Cancel session",
+        "List session artifacts",
+        "Session approval pause/resume/deny",
+        "OpenAI Agents SDK provider",
+        "Claude Code Agent SDK provider",
+        "Claude Code subscription auth"
+      ]
+    },
+    {
+      "domain": "Agent Sessions",
+      "owner_phase": 7,
+      "parent_status": "Supported where advertised",
+      "target_status": "Supported where advertised",
+      "source": "FEATURES.md",
+      "features": ["Provider-native live resume"]
+    },
+    {
+      "domain": "Agent Sessions",
+      "owner_phase": 7,
+      "parent_status": "Partial",
+      "target_status": "Partial",
+      "source": "FEATURES.md",
+      "features": ["Cloud agent providers"]
+    },
+    {
+      "domain": "Agent Sessions",
+      "owner_phase": 7,
+      "parent_status": "Contract only",
+      "target_status": "Contract only",
+      "source": "FEATURES.md",
+      "features": ["Cloud agent webhook ingress"]
+    },
+    {
+      "domain": "Environment Workers",
+      "owner_phase": 11,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Lab-neutral work-queue contract",
+        "In-memory reference work source",
+        "Environment worker daemon",
+        "Inbound work policy gate",
+        "Scoped worker credentials"
+      ]
+    },
+    {
+      "domain": "Environment Workers",
+      "owner_phase": 11,
+      "parent_status": "Partial",
+      "target_status": "Partial",
+      "source": "FEATURES.md",
+      "features": ["Anthropic Managed Agents work source"]
+    },
+    {
+      "domain": "Artifacts",
+      "owner_phase": 1,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": ["Artifact data contracts"]
+    },
+    {
+      "domain": "Workspaces",
+      "owner_phase": 6,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Workspace runtime facade",
+        "Local workspace runtime",
+        "Workspace data contracts"
+      ]
+    },
+    {
+      "domain": "MCP",
+      "owner_phase": 6,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "MCP server spec",
+        "MCP server authoring",
+        "MCP protocol compatibility matrix",
+        "Remote MCP auth refresh",
+        "MCP trust policy presets",
+        "Local MCP dispatch connector",
+        "MCP runtime tool bridge",
+        "MCP toolset routing"
+      ]
+    },
+    {
+      "domain": "Observability",
+      "owner_phase": 11,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "FEATURES.md",
+      "features": [
+        "Observability sink protocol",
+        "Production observability presets",
+        "Event trace context",
+        "Workflow trace spans",
+        "OpenTelemetry trace export",
+        "Standard production metrics",
+        "Replay and run diffing",
+        "Evaluator hooks"
+      ]
+    },
+    {
+      "domain": "Realtime",
+      "owner_phase": 10,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": ["Realtime protocol, runtime, and provider adapters"]
+    },
+    {
+      "domain": "Runtime Configuration",
+      "owner_phase": 9,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": ["Workflow profiles and layered runtime configuration"]
+    },
+    {
+      "domain": "Prompt Planning",
+      "owner_phase": 9,
+      "parent_status": "Supported",
+      "target_status": "Supported",
+      "source": "implementation supplement",
+      "features": ["Prompt planning, composition, parity checks, and cache sections"]
+    }
+  ]
+}

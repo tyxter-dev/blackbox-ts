@@ -24,7 +24,10 @@ describe('completion compatibility', () => {
   });
 
   it('supports scripted provider fixture behavior', async () => {
-    const provider = new ScriptedModelProvider([{ output_text: 'first' }, { output_text: 'second' }]);
+    const provider = new ScriptedModelProvider([
+      { output_text: 'first' },
+      { output_text: 'second' },
+    ]);
 
     await expect(
       complete(provider, {

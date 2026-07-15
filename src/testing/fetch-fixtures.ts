@@ -10,13 +10,18 @@ export interface JsonFetchFixture {
   readonly calls: CapturedFetchCall[];
 }
 
+export interface SSEFetchFixture extends JsonFetchFixture {
+  readonly cancelled: { value: boolean };
+}
+
 export function createJsonFetchFixture(
   responseBody: unknown,
   options: { readonly status?: number; readonly headers?: Readonly<Record<string, string>> } = {},
 ): JsonFetchFixture {
   const calls: CapturedFetchCall[] = [];
   const fetchImpl: typeof fetch = async (input: URL | RequestInfo, init?: RequestInit) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const url =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     calls.push({
       url,
       init,
@@ -32,6 +37,40 @@ export function createJsonFetchFixture(
     });
   };
   return { fetchImpl, calls };
+}
+
+export function createSSEFetchFixture(
+  chunks: readonly string[],
+  options: { readonly status?: number; readonly headers?: Readonly<Record<string, string>> } = {},
+): SSEFetchFixture {
+  const calls: CapturedFetchCall[] = [];
+  const cancelled = { value: false };
+  const fetchImpl: typeof fetch = async (input: URL | RequestInfo, init?: RequestInit) => {
+    const url =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    calls.push({
+      url,
+      init,
+      body: typeof init?.body === 'string' ? safeJsonParse(init.body) : init?.body,
+      headers: normalizeHeaders(init?.headers),
+    });
+    let index = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        const chunk = chunks[index++];
+        if (chunk === undefined) controller.close();
+        else controller.enqueue(new TextEncoder().encode(chunk));
+      },
+      cancel() {
+        cancelled.value = true;
+      },
+    });
+    return new Response(body, {
+      status: options.status ?? 200,
+      headers: { 'content-type': 'text/event-stream', ...(options.headers ?? {}) },
+    });
+  };
+  return { fetchImpl, calls, cancelled };
 }
 
 function safeJsonParse(value: string): unknown {

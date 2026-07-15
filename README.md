@@ -1,13 +1,11 @@
 # blackbox-ts
 
-`blackbox-ts` is a fetch-first TypeScript port of Blackbox's provider/runtime adapter layer.
-It gives products one small API for model providers without importing every vendor SDK into
-the product codebase.
+`blackbox-ts` is the zero-runtime-dependency TypeScript port of the Python
+[`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) provider and agent runtime.
+It keeps model, agent-session, realtime, workspace, MCP, worker, and package protocols separate
+while exposing one provider-neutral runtime.
 
-The package is intentionally narrow in `0.1.0-alpha.0`: provider registry, `provider:model`
-references, capability profiles, normalized turn events, provider state shapes, a completion
-compatibility helper, and first-party adapters for OpenAI, Anthropic, Gemini, xAI, and
-OpenRouter.
+Node 20.11 or newer is required. The package is ESM-only and all default tests are offline.
 
 ## Install
 
@@ -15,53 +13,83 @@ OpenRouter.
 pnpm add blackbox-ts
 ```
 
-Before the npm package is published, consumers can install from a pinned GitHub
-commit:
+Until the repository and npm package are published, build a local tarball from this checkout:
 
 ```sh
-pnpm add github:tyxter-dev/blackbox-ts#<commit-sha>
+pnpm pack
+pnpm add ./blackbox-ts-0.1.0-alpha.0.tgz
 ```
 
-Node 20.11 or newer is required. The package is ESM-only and has zero runtime dependencies.
-
-## Basic Usage
+## Run a model or full agent loop
 
 ```ts
-import { ProviderRegistry, complete } from 'blackbox-ts';
-import { createOpenAIProvider } from 'blackbox-ts/providers/openai';
+import { AgentRuntime, EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
 
 const registry = new ProviderRegistry();
-registry.registerModelProvider(
-  createOpenAIProvider({
-    apiKey: process.env.OPENAI_API_KEY!,
-    model: 'gpt-4.1-mini',
-  }),
-);
+registry.registerModelProvider(new EchoModelProvider());
+const runtime = new AgentRuntime({ registry });
 
-const { provider, model } = registry.resolveModelProvider('openai:gpt-4.1-mini');
-const result = await complete(provider, {
-  system: 'Answer tersely.',
-  messages: [{ role: 'user', content: 'What is blackbox-ts?' }],
-  model,
+const turn = await runtime.models.run({
+  model: 'echo:echo',
+  input: 'hello',
   trace_id: crypto.randomUUID(),
 });
 
-console.log(result.content);
+const result = await runtime.run({
+  model: 'echo:echo',
+  input: 'complete this run',
+  trace_id: crypto.randomUUID(),
+});
+
+console.log(turn.output_text, result.output);
 ```
 
-## Provider Policy
+First-party fetch adapters are available at `blackbox-ts/providers/openai`, `/anthropic`,
+`/gemini`, `/xai`, and `/openrouter`. Provider SDKs are never runtime dependencies.
 
-- Built-in `fetch` only; no official provider SDK dependency in v0.1.
-- Capability profiles must be honest. Unsupported tools, MCP connections, workspaces,
-  provider state, and structured output throw typed errors before provider dispatch.
-- Raw provider payloads are preserved on normalized turn results and events.
-- OpenRouter is modeled as an aggregator provider, not as an OpenAI alias.
-- Product-specific behavior such as BYOK encryption, tenant scoping, billing, cost caps,
-  compliance logs, channel guardrails, and webhooks belongs in the host product.
+The parent-compatible workflow profiles can supply the provider/model and controls while
+explicit call arguments retain highest precedence:
 
-## Scope
+```ts
+import { RuntimeConfig } from 'blackbox-ts/config';
 
-This is not the full Blackbox agent loop. The first release is the provider runtime foundation
-needed to keep product API contracts stable while deeper agent automation is built later.
+const config = RuntimeConfig.profile('fast_text').withOverrides({
+  provider: 'openai:gpt-5.4-mini',
+});
+const result = await runtime.run({ input: 'Summarize this.', config, max_output_tokens: 256 });
+```
 
-See [docs/SPEC.md](docs/SPEC.md) and [FEATURES.md](FEATURES.md).
+## Runtime families
+
+- `runtime.models`: normalized model turns and canonical streaming.
+- `runtime.run/stream`: model → tools → model loop, structured output, fallback, approvals,
+  dynamic toolsets, policy, persistence, and prompt planning.
+- `runtime.agents`: local or injected cloud-agent sessions, replay, follow-ups, approvals,
+  cancellation, and artifacts.
+- `runtime.realtime`: managed low-latency sessions with text/audio/image input, interruption,
+  and injected OpenAI Realtime or Gemini Live duplex transports.
+- `blackbox-ts/workspaces`: local/git/sandbox/Docker/cloud workspace protocols and tools.
+- `blackbox-ts/mcp`: MCP client/server, stdio/HTTP/SSE transports, trust, auth refresh,
+  discovery cache, runtime tools, and provider-native routing.
+- `blackbox-ts/workspace-agents` and `/skills`: portable governed agent packages, registries,
+  validation, schedules, and Claude Code staging.
+- `blackbox-ts/workers`: lease-based inbound environment workers.
+- `blackbox-ts/observability`: redacted sinks, traces, metrics, replay/diff, OpenTelemetry, and
+  evaluators.
+
+## Contract policy
+
+- Capability honesty is mandatory. Unsupported tools, hosted tools, MCP, workspaces, state,
+  controls, and output modes fail before network dispatch.
+- Raw provider payloads remain attached to normalized results/events and storage or telemetry
+  redaction is explicit.
+- OpenRouter is an aggregator, not an OpenAI alias.
+- Product-owned identity, tenant isolation, BYOK encryption, billing enforcement, compliance
+  logs, cost caps, and channel rules stay in the host product.
+- Parent-partial features remain conservative: Vertex Agent Engine is a stub, Anthropic
+  Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
+  transports are injected.
+
+The pinned baseline, all 146 tracked requirements, and evidence links are in
+[the parity matrix](docs/PARITY_MATRIX.md). See [features](FEATURES.md),
+[capabilities](docs/CAPABILITIES.md), [migration](docs/MIGRATION.md), and [examples](examples/).

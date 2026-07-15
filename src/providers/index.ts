@@ -1,4 +1,6 @@
 export * from './base.js';
+export * from './agent.js';
+export * from './realtime.js';
 export * from './registry.js';
 export * from './catalog.js';
 export * from './openai-compatible/index.js';

@@ -18,7 +18,11 @@ describe('capability assertions', () => {
     const profile = textCompletionCapabilityProfile('openai', 'gpt-4.1-mini');
 
     expect(() =>
-      assertTurnRequestCapabilities('openai', { ...baseRequest, tools: [{ name: 'lookup' }] }, profile),
+      assertTurnRequestCapabilities(
+        'openai',
+        { ...baseRequest, tools: [{ name: 'lookup' }] },
+        profile,
+      ),
     ).toThrow(UnsupportedCapabilityError);
     expect(() =>
       assertTurnRequestCapabilities(
@@ -28,7 +32,11 @@ describe('capability assertions', () => {
       ),
     ).toThrow(UnsupportedCapabilityError);
     expect(() =>
-      assertTurnRequestCapabilities('openai', { ...baseRequest, workspace: { kind: 'local' } }, profile),
+      assertTurnRequestCapabilities(
+        'openai',
+        { ...baseRequest, workspace: { kind: 'local' } },
+        profile,
+      ),
     ).toThrow(UnsupportedCapabilityError);
     expect(() =>
       assertTurnRequestCapabilities(
@@ -42,16 +50,32 @@ describe('capability assertions', () => {
     ).toThrow(UnsupportedCapabilityError);
   });
 
-  it('allows passthrough capabilities when explicitly declared', () => {
+  it('allows passthrough only for an explicitly raw provider-native surface', () => {
     const profile = {
       ...textCompletionCapabilityProfile('provider', 'model'),
-      tools: {
-        function_tools: capability('passthrough'),
+      hosted_tools: {
+        ...textCompletionCapabilityProfile('provider', 'model').hosted_tools,
+        raw: capability('passthrough'),
       },
     };
 
     expect(() =>
-      assertTurnRequestCapabilities('provider', { ...baseRequest, tools: [{ name: 'lookup' }] }, profile),
+      assertTurnRequestCapabilities(
+        'provider',
+        { ...baseRequest, hosted_tools: [{ type: 'raw', config: { provider_payload: true } }] },
+        profile,
+      ),
     ).not.toThrow();
+
+    expect(() =>
+      assertTurnRequestCapabilities(
+        'provider',
+        { ...baseRequest, tools: [{ name: 'lookup' }] },
+        {
+          ...profile,
+          tools: { function_tools: capability('passthrough') },
+        },
+      ),
+    ).toThrow(UnsupportedCapabilityError);
   });
 });

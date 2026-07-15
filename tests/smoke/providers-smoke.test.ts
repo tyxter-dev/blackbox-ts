@@ -16,23 +16,29 @@ const smokeCases: readonly SmokeCase[] = [
   {
     name: 'OpenAI',
     env: 'OPENAI_API_KEY',
-    provider: () => createOpenAIProvider({ apiKey: process.env.OPENAI_API_KEY ?? '', model: 'gpt-4.1-mini' }),
+    provider: () =>
+      createOpenAIProvider({ apiKey: process.env.OPENAI_API_KEY ?? '', model: 'gpt-4.1-mini' }),
   },
   {
     name: 'Anthropic',
     env: 'ANTHROPIC_API_KEY',
     provider: () =>
-      createAnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY ?? '', model: 'claude-sonnet-4-5' }),
+      createAnthropicProvider({
+        apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+        model: 'claude-sonnet-4-5',
+      }),
   },
   {
     name: 'Gemini',
     env: 'GOOGLE_API_KEY',
-    provider: () => createGeminiProvider({ apiKey: process.env.GOOGLE_API_KEY ?? '', model: 'gemini-2.5-flash' }),
+    provider: () =>
+      createGeminiProvider({ apiKey: process.env.GOOGLE_API_KEY ?? '', model: 'gemini-2.5-flash' }),
   },
   {
     name: 'xAI',
     env: 'XAI_API_KEY',
-    provider: () => createXAIProvider({ apiKey: process.env.XAI_API_KEY ?? '', model: 'grok-4-fast' }),
+    provider: () =>
+      createXAIProvider({ apiKey: process.env.XAI_API_KEY ?? '', model: 'grok-4-fast' }),
   },
   {
     name: 'OpenRouter',

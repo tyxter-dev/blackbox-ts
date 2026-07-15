@@ -30,19 +30,31 @@ export function parseProviderRef(ref: string, fallbackProvider?: string): Provid
     return { provider, resource, raw: trimmed };
   }
 
+  if (fallbackProvider) {
+    const provider = fallbackProvider.trim();
+    if (!provider) {
+      throw new InvalidProviderRefError(ref, 'Fallback provider cannot be empty.');
+    }
+    return { provider, resource: trimmed, raw: trimmed };
+  }
+
+  const legacySeparator = trimmed.indexOf('/');
+  if (legacySeparator > 0 && legacySeparator < trimmed.length - 1) {
+    return {
+      provider: trimmed.slice(0, legacySeparator).trim(),
+      resource: trimmed.slice(legacySeparator + 1).trim(),
+      raw: trimmed,
+    };
+  }
+
   if (!fallbackProvider) {
     throw new InvalidProviderRefError(
       ref,
-      `Provider reference '${ref}' is missing a provider. Use provider:model or pass a fallback provider.`,
+      `Provider reference '${ref}' is missing a provider. Use provider:model (or legacy provider/model) or pass a fallback provider.`,
     );
   }
 
-  const provider = fallbackProvider.trim();
-  if (!provider) {
-    throw new InvalidProviderRefError(ref, 'Fallback provider cannot be empty.');
-  }
-
-  return { provider, resource: trimmed, raw: trimmed };
+  throw new InvalidProviderRefError(ref);
 }
 
 export function parseProviderModelRef(ref: string, fallbackProvider?: string): ProviderModelRef {

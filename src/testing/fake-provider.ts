@@ -7,8 +7,13 @@ import {
   type ProviderModel,
   type TurnRequest,
   type TurnResult,
+  streamTurnFromResult,
+  normalizeTurnRequest,
 } from '../providers/base.js';
-import { tokenUsage } from '../core/usage.js';
+import { modelUsage, tokenUsage, type ModelUsageInput } from '../core/usage.js';
+import type { RunItem } from '../core/items.js';
+import type { ProviderState } from '../core/state.js';
+import type { Artifact } from '../core/artifacts.js';
 
 export interface FakeModelProviderOptions {
   readonly id?: string;
@@ -32,7 +37,8 @@ export class FakeModelProvider implements AgentModelProvider {
     this.id = options.id ?? 'fake';
     this.defaultModel = options.model ?? 'fake-model';
     this.outputText = options.outputText ?? 'fake response';
-    this.capabilityFactory = options.capabilities ?? ((model) => textCompletionCapabilityProfile(this.id, model));
+    this.capabilityFactory =
+      options.capabilities ?? ((model) => textCompletionCapabilityProfile(this.id, model));
     this.configuredModels = options.models ?? [];
   }
 
@@ -45,6 +51,7 @@ export class FakeModelProvider implements AgentModelProvider {
   }
 
   async turn(request: TurnRequest): Promise<TurnResult> {
+    request = normalizeTurnRequest(request);
     this.turns.push(request);
     return {
       output_text: this.outputText,
@@ -55,6 +62,10 @@ export class FakeModelProvider implements AgentModelProvider {
     };
   }
 
+  async *streamTurn(request: TurnRequest) {
+    yield* streamTurnFromResult(this.id, request, () => this.turn(request));
+  }
+
   async complete(input: LLMCompletionInput): Promise<LLMCompletionResult> {
     this.completions.push(input);
     return completeTurn(this, input);
@@ -63,7 +74,11 @@ export class FakeModelProvider implements AgentModelProvider {
 
 export interface ScriptedTurn {
   readonly output_text: string;
-  readonly usage?: { readonly input_tokens: number; readonly output_tokens: number; readonly total_tokens: number };
+  readonly usage?: ModelUsageInput;
+  readonly items?: readonly RunItem[];
+  readonly provider_state?: ProviderState;
+  readonly artifacts?: readonly Artifact[];
+  readonly metadata?: Readonly<Record<string, unknown>>;
   readonly raw_response?: unknown;
 }
 
@@ -76,6 +91,7 @@ export class ScriptedModelProvider extends FakeModelProvider {
   }
 
   override async turn(request: TurnRequest): Promise<TurnResult> {
+    request = normalizeTurnRequest(request);
     this.turns.push(request);
     const next = this.script.shift();
     if (!next) {
@@ -83,7 +99,11 @@ export class ScriptedModelProvider extends FakeModelProvider {
     }
     return {
       output_text: next.output_text,
-      usage: next.usage,
+      usage: next.usage === undefined ? undefined : modelUsage(next.usage),
+      items: next.items,
+      provider_state: next.provider_state,
+      artifacts: next.artifacts,
+      metadata: next.metadata,
       tokens_in: next.usage?.input_tokens,
       tokens_out: next.usage?.output_tokens,
       model: request.model,
