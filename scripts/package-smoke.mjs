@@ -32,7 +32,9 @@ try {
     ],
     { cwd: root, windowsHide: true, maxBuffer: 10 * 1024 * 1024 },
   );
-  const report = JSON.parse(packed.stdout);
+  const stdout = packed.stdout.trim();
+  const reportStart = stdout.lastIndexOf('\n[');
+  const report = JSON.parse(reportStart === -1 ? stdout : stdout.slice(reportStart + 1));
   const packageReport = report[0];
   if (packageReport === undefined) throw new Error('npm pack produced no report');
   const files = new Set(packageReport.files.map((entry) => entry.path));

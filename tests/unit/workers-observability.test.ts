@@ -85,6 +85,7 @@ describe('environment workers', () => {
   });
 
   it('automatically keeps a short lease alive while a handler runs', async () => {
+    vi.useFakeTimers();
     const source = new InMemoryWorkSource([{ id: 'slow', payload: 'slow' }]);
     const worker = new EnvironmentWorker(
       source,
@@ -95,9 +96,16 @@ describe('environment workers', () => {
       { lease_ms: 20, heartbeat_ms: 5 },
     );
 
-    expect(await worker.handleOne()).toMatchObject({ status: 'completed', output: 'done' });
-    expect(source.get('slow')).toMatchObject({ status: 'completed' });
-    expect(worker.status()).toMatchObject({ completed: 1, lost_leases: 0 });
+    try {
+      const handling = worker.handleOne();
+      await vi.advanceTimersByTimeAsync(45);
+
+      expect(await handling).toMatchObject({ status: 'completed', output: 'done' });
+      expect(source.get('slow')).toMatchObject({ status: 'completed' });
+      expect(worker.status()).toMatchObject({ completed: 1, lost_leases: 0 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('accepts parent-style terminal WorkResult values from handlers', async () => {
