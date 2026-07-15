@@ -29,3 +29,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm pack --dry-run
+
+  python-parity:
+    name: Pinned Python parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: tyxter-dev/blackbox
+          ref: f27decbc9aeaae972c5bbeb256c70450b7fe393a
+          path: .parent-blackbox
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm parity:python -- --parent .parent-blackbox

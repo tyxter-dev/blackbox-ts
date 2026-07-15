@@ -24,6 +24,15 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - uses: actions/checkout@v4
+        with:
+          repository: tyxter-dev/blackbox
+          ref: f27decbc9aeaae972c5bbeb256c70450b7fe393a
+          path: .parent-blackbox
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pnpm parity:python -- --parent .parent-blackbox
       - run: pnpm publish --provenance --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

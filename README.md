@@ -90,6 +90,9 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
   transports are injected.
 
-The pinned baseline, all 169 tracked requirements, and scoped evidence links are in
-[the parity matrix](docs/PARITY_MATRIX.md). See [features](FEATURES.md),
-[capabilities](docs/CAPABILITIES.md), [migration](docs/MIGRATION.md), and [examples](examples/).
+The pinned score covers 143 Python catalog features, with 26 verification supplements and
+TypeScript extensions reported separately. Scoped evidence is in
+[the parity matrix](docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
+update workflow is in [parity maintenance](docs/PARITY_MAINTENANCE.md). See
+[features](FEATURES.md), [capabilities](docs/CAPABILITIES.md),
+[migration](docs/MIGRATION.md), and [examples](examples/).

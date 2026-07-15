@@ -1,81 +1,298 @@
 {
-  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
-  "event": {
-    "type": "model.completed",
-    "run_id": "run_fixture",
-    "sequence": 2,
-    "trace_id": "trace_fixture",
-    "span_id": "span_fixture",
-    "parent_span_id": null,
-    "span_kind": null,
-    "session_id": null,
-    "provider": "openai",
-    "item_id": null,
-    "provider_trace_id": null,
-    "provider_span_id": null,
-    "provider_request_id": "req_fixture",
-    "data": { "output_text": "hello" },
-    "raw": { "id": "resp_fixture" },
-    "id": "evt_fixture",
-    "timestamp": "2026-01-02T03:04:05Z"
+  "agent_ref": {
+    "_kind": "AgentRef",
+    "id": "agent_fixture",
+    "metadata": {
+      "version": 1
+    },
+    "provider": "local"
   },
-  "item": {
-    "type": "message",
-    "provider": "openai",
-    "data": { "text": "hello" },
-    "status": "completed",
-    "id": "item_fixture",
-    "parent_id": null,
-    "raw": { "type": "message" }
-  },
-  "provider_state": {
-    "provider": "openai",
-    "conversation_id": null,
-    "previous_response_id": "resp_fixture",
-    "native_history": [{ "role": "assistant" }],
-    "reasoning_state": { "signature": "sig" },
-    "tool_state": { "call": "call_1" },
-    "continuation": { "cursor": "cursor_1" }
-  },
-  "session": {
-    "provider": "local",
-    "task": "fixture",
-    "agent_id": "agent_fixture",
-    "model": "gpt-5",
-    "status": "running",
-    "metadata": { "tenant": "dev" },
-    "id": "sess_fixture"
-  },
-  "artifact_page": {
-    "items": [
-      {
-        "type": "report",
-        "name": "result.json",
-        "data": { "ok": true },
-        "uri": null,
-        "metadata": { "source": "test" },
-        "id": "art_fixture"
-      }
-    ],
-    "next_cursor": null,
-    "has_more": false
+  "approval_decision": {
+    "approved": true,
+    "metadata": {},
+    "reason": "reviewed"
   },
   "approval_request": {
     "action": "workspace.write",
-    "reason": "sensitive",
-    "data": { "path": "a.txt" },
-    "id": "approval_fixture"
+    "data": {
+      "path": "a.txt"
+    },
+    "id": "approval_fixture",
+    "reason": "sensitive"
   },
-  "approval_decision": { "approved": true, "reason": "reviewed", "metadata": {} },
+  "artifact": {
+    "_kind": "Artifact",
+    "data": {
+      "ok": true
+    },
+    "id": "art_fixture",
+    "metadata": {
+      "source": "test"
+    },
+    "name": "result.json",
+    "type": "report",
+    "uri": null
+  },
+  "artifact_page": {
+    "has_more": false,
+    "items": [
+      {
+        "data": {
+          "ok": true
+        },
+        "id": "art_fixture",
+        "metadata": {
+          "source": "test"
+        },
+        "name": "result.json",
+        "type": "report",
+        "uri": null
+      }
+    ],
+    "next_cursor": null
+  },
+  "artifact_ref": {
+    "_kind": "ArtifactRef",
+    "id": "art_fixture",
+    "provider": "local",
+    "uri": "artifact://art_fixture"
+  },
+  "error_semantics": [
+    {
+      "is_agent_runtime_error": true,
+      "is_capability_error": false,
+      "is_configuration_error": false,
+      "message": "runtime",
+      "name": "AgentRuntimeError"
+    },
+    {
+      "is_agent_runtime_error": true,
+      "is_capability_error": false,
+      "is_configuration_error": true,
+      "message": "config",
+      "name": "ConfigurationError"
+    },
+    {
+      "is_agent_runtime_error": true,
+      "is_capability_error": true,
+      "is_configuration_error": false,
+      "message": "capability",
+      "name": "CapabilityError"
+    },
+    {
+      "is_agent_runtime_error": true,
+      "is_capability_error": true,
+      "is_configuration_error": false,
+      "message": "unsupported",
+      "name": "UnsupportedFeatureError"
+    },
+    {
+      "is_agent_runtime_error": true,
+      "is_capability_error": false,
+      "is_configuration_error": false,
+      "message": "provider",
+      "name": "ProviderExecutionError"
+    }
+  ],
+  "event": {
+    "_kind": "AgentEvent",
+    "data": {
+      "output_text": "hello"
+    },
+    "id": "evt_fixture",
+    "item_id": null,
+    "parent_span_id": null,
+    "provider": "openai",
+    "provider_request_id": "req_fixture",
+    "provider_span_id": null,
+    "provider_trace_id": null,
+    "raw": {
+      "id": "resp_fixture"
+    },
+    "run_id": "run_fixture",
+    "sequence": 2,
+    "session_id": null,
+    "span_id": "span_fixture",
+    "span_kind": null,
+    "timestamp": "2026-01-02T03:04:05+00:00",
+    "trace_id": "trace_fixture",
+    "type": "model.completed"
+  },
+  "generated_by": "python-parent",
+  "invocation_ref": {
+    "_kind": "InvocationRef",
+    "id": "invoke_fixture",
+    "metadata": {
+      "turn": 1
+    },
+    "provider": "local",
+    "session_id": "sess_fixture"
+  },
+  "output_spec": {
+    "allow_partial": false,
+    "description": null,
+    "fallback": "posthoc_parse",
+    "max_validation_retries": 1,
+    "name": "fixture_output",
+    "schema": {
+      "properties": {
+        "answer": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "strategy": "provider_native",
+    "strict": true
+  },
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "result": {
+    "artifact_ids": ["art_fixture"],
+    "event_ids": ["evt_fixture"],
+    "item_ids": ["item_fixture"],
+    "metadata": {
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 3,
+        "cached_input_tokens": 3,
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "provider_details": {
+          "request_id": "req_fixture"
+        },
+        "reasoning_tokens": 2,
+        "tool_calls": 1,
+        "total_tokens": 15
+      }
+    },
+    "output": {
+      "answer": "hello"
+    },
+    "payloads": [
+      {
+        "call_id": "call_1",
+        "payload": {
+          "ok": true
+        },
+        "tool_name": "lookup"
+      }
+    ],
+    "provider_state": {
+      "continuation": {
+        "cursor": "cursor_1"
+      },
+      "conversation_id": null,
+      "native_history": [
+        {
+          "role": "assistant"
+        }
+      ],
+      "previous_response_id": "resp_fixture",
+      "provider": "openai",
+      "reasoning_state": {
+        "signature": "sig"
+      },
+      "tool_state": {
+        "call": "call_1"
+      }
+    },
+    "text": "hello"
+  },
+  "run_state": {
+    "_kind": "RunState",
+    "items": [
+      {
+        "_kind": "RunItem",
+        "data": {
+          "text": "hello"
+        },
+        "id": "item_fixture",
+        "parent_id": null,
+        "provider": "openai",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "metadata": {
+      "fixture": true
+    },
+    "model": "gpt-5.4",
+    "provider": "openai",
+    "provider_state": {
+      "_kind": "ProviderState",
+      "continuation": {
+        "cursor": "cursor_1"
+      },
+      "conversation_id": null,
+      "native_history": [
+        {
+          "role": "assistant"
+        }
+      ],
+      "previous_response_id": "resp_fixture",
+      "provider": "openai",
+      "reasoning_state": {
+        "signature": "sig"
+      },
+      "tool_state": {
+        "call": "call_1"
+      }
+    },
+    "session_id": "sess_fixture"
+  },
+  "runtime_config": {
+    "description": {
+      "description": "Short text generation with minimal latency-oriented controls.",
+      "overrides": {
+        "temperature": 0.2
+      },
+      "profile": "fast_text",
+      "source": "fixture",
+      "tradeoffs": "Keeps token budget and sampling low; not intended for tools, long reasoning, or strict schemas."
+    },
+    "kwargs": {
+      "max_output_tokens": 512,
+      "temperature": 0.2
+    },
+    "overrides": {
+      "temperature": 0.2
+    },
+    "profile_name": "fast_text",
+    "source": "fixture"
+  },
+  "schema_version": 2,
+  "session": {
+    "_kind": "AgentSession",
+    "agent_id": "agent_fixture",
+    "id": "sess_fixture",
+    "metadata": {
+      "tenant": "dev"
+    },
+    "model": "gpt-5.4",
+    "provider": "local",
+    "status": "running",
+    "task": "fixture"
+  },
+  "session_ref": {
+    "_kind": "SessionRef",
+    "agent_id": "agent_fixture",
+    "id": "sess_fixture",
+    "metadata": {
+      "tenant": "dev"
+    },
+    "provider": "local"
+  },
   "usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 3,
+    "cached_input_tokens": 3,
     "input_tokens": 10,
     "output_tokens": 5,
-    "total_tokens": 15,
-    "cached_input_tokens": 3,
-    "cache_read_input_tokens": 3,
-    "cache_creation_input_tokens": 0,
+    "provider_details": {
+      "request_id": "req_fixture"
+    },
     "reasoning_tokens": 2,
     "tool_calls": 1,
-    "provider_details": { "request_id": "req_fixture" }
+    "total_tokens": 15
   }
 }
