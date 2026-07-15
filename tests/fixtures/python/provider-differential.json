@@ -1,0 +1,451 @@
+{
+  "generated_by": "python-parent",
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "scenarios": [
+    {
+      "expected": {
+        "events": {
+          "completed": true,
+          "reasoning_delta": false,
+          "request_started": true,
+          "text_delta": true
+        },
+        "items": [
+          {
+            "call_id": "tool_openai",
+            "id": "call_openai",
+            "name": "lookup",
+            "provider": "openai",
+            "type": "function_call"
+          }
+        ],
+        "output_text": "openai answer",
+        "provider_state": {
+          "previous_response_id": "resp_openai",
+          "provider": "openai"
+        },
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 3,
+          "output_tokens": 2,
+          "reasoning_tokens": 0,
+          "total_tokens": 5
+        }
+      },
+      "final_response": {
+        "id": "resp_openai",
+        "output": [
+          {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_openai",
+            "id": "call_openai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          {
+            "content": [
+              {
+                "text": "openai answer",
+                "type": "output_text"
+              }
+            ],
+            "id": "msg_openai",
+            "status": "completed",
+            "type": "message"
+          }
+        ],
+        "usage": {
+          "input_tokens": 3,
+          "output_tokens": 2,
+          "total_tokens": 5
+        }
+      },
+      "model": "gpt-5.4",
+      "provider": "openai",
+      "wire_events": [
+        {
+          "response": {
+            "id": "resp_openai"
+          },
+          "type": "response.created"
+        },
+        {
+          "item": {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_openai",
+            "id": "call_openai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          "type": "response.output_item.added"
+        },
+        {
+          "delta": "openai answer",
+          "type": "response.output_text.delta"
+        },
+        {
+          "item": {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_openai",
+            "id": "call_openai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          "type": "response.output_item.done"
+        },
+        {
+          "response": {
+            "id": "resp_openai",
+            "output": [
+              {
+                "arguments": "{\"id\":\"42\"}",
+                "call_id": "tool_openai",
+                "id": "call_openai",
+                "name": "lookup",
+                "status": "completed",
+                "type": "function_call"
+              },
+              {
+                "content": [
+                  {
+                    "text": "openai answer",
+                    "type": "output_text"
+                  }
+                ],
+                "id": "msg_openai",
+                "status": "completed",
+                "type": "message"
+              }
+            ],
+            "usage": {
+              "input_tokens": 3,
+              "output_tokens": 2,
+              "total_tokens": 5
+            }
+          },
+          "type": "response.completed"
+        }
+      ]
+    },
+    {
+      "expected": {
+        "events": {
+          "completed": true,
+          "reasoning_delta": false,
+          "request_started": true,
+          "text_delta": true
+        },
+        "items": [
+          {
+            "call_id": "tool_xai",
+            "id": "call_xai",
+            "name": "lookup",
+            "provider": "xai",
+            "type": "function_call"
+          }
+        ],
+        "output_text": "xai answer",
+        "provider_state": {
+          "previous_response_id": "resp_xai",
+          "provider": "xai"
+        },
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 3,
+          "output_tokens": 2,
+          "reasoning_tokens": 0,
+          "total_tokens": 5
+        }
+      },
+      "final_response": {
+        "id": "resp_xai",
+        "output": [
+          {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_xai",
+            "id": "call_xai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          {
+            "content": [
+              {
+                "text": "xai answer",
+                "type": "output_text"
+              }
+            ],
+            "id": "msg_xai",
+            "status": "completed",
+            "type": "message"
+          }
+        ],
+        "usage": {
+          "input_tokens": 3,
+          "output_tokens": 2,
+          "total_tokens": 5
+        }
+      },
+      "model": "grok-4.3",
+      "provider": "xai",
+      "wire_events": [
+        {
+          "response": {
+            "id": "resp_xai"
+          },
+          "type": "response.created"
+        },
+        {
+          "item": {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_xai",
+            "id": "call_xai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          "type": "response.output_item.added"
+        },
+        {
+          "delta": "xai answer",
+          "type": "response.output_text.delta"
+        },
+        {
+          "item": {
+            "arguments": "{\"id\":\"42\"}",
+            "call_id": "tool_xai",
+            "id": "call_xai",
+            "name": "lookup",
+            "status": "completed",
+            "type": "function_call"
+          },
+          "type": "response.output_item.done"
+        },
+        {
+          "response": {
+            "id": "resp_xai",
+            "output": [
+              {
+                "arguments": "{\"id\":\"42\"}",
+                "call_id": "tool_xai",
+                "id": "call_xai",
+                "name": "lookup",
+                "status": "completed",
+                "type": "function_call"
+              },
+              {
+                "content": [
+                  {
+                    "text": "xai answer",
+                    "type": "output_text"
+                  }
+                ],
+                "id": "msg_xai",
+                "status": "completed",
+                "type": "message"
+              }
+            ],
+            "usage": {
+              "input_tokens": 3,
+              "output_tokens": 2,
+              "total_tokens": 5
+            }
+          },
+          "type": "response.completed"
+        }
+      ]
+    },
+    {
+      "expected": {
+        "events": {
+          "completed": true,
+          "reasoning_delta": false,
+          "request_started": true,
+          "text_delta": true
+        },
+        "items": [
+          {
+            "call_id": "tool_anthropic",
+            "id": "tool_anthropic",
+            "name": "lookup",
+            "provider": "anthropic",
+            "type": "function_call"
+          }
+        ],
+        "output_text": "anthropic answer",
+        "provider_state": {
+          "provider": "anthropic"
+        },
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 5,
+          "output_tokens": 2,
+          "reasoning_tokens": 0,
+          "total_tokens": 7
+        }
+      },
+      "final_response": {
+        "content": [
+          {
+            "id": "tool_anthropic",
+            "input": {
+              "id": "42"
+            },
+            "name": "lookup",
+            "type": "tool_use"
+          },
+          {
+            "text": "anthropic answer",
+            "type": "text"
+          }
+        ],
+        "id": "msg_anthropic",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 5,
+          "output_tokens": 2
+        }
+      },
+      "model": "claude-haiku-4-5-20251001",
+      "provider": "anthropic",
+      "wire_events": [
+        {
+          "message": {
+            "id": "msg_anthropic",
+            "model": "claude-haiku-4-5-20251001",
+            "usage": {
+              "input_tokens": 5,
+              "output_tokens": 0
+            }
+          },
+          "type": "message_start"
+        },
+        {
+          "content_block": {
+            "id": "tool_anthropic",
+            "name": "lookup",
+            "type": "tool_use"
+          },
+          "index": 0,
+          "type": "content_block_start"
+        },
+        {
+          "delta": {
+            "partial_json": "{\"id\":\"42\"}",
+            "type": "input_json_delta"
+          },
+          "index": 0,
+          "type": "content_block_delta"
+        },
+        {
+          "index": 0,
+          "type": "content_block_stop"
+        },
+        {
+          "content_block": {
+            "text": "",
+            "type": "text"
+          },
+          "index": 1,
+          "type": "content_block_start"
+        },
+        {
+          "delta": {
+            "text": "anthropic answer",
+            "type": "text_delta"
+          },
+          "index": 1,
+          "type": "content_block_delta"
+        },
+        {
+          "index": 1,
+          "type": "content_block_stop"
+        },
+        {
+          "type": "message_delta",
+          "usage": {
+            "output_tokens": 2
+          }
+        },
+        {
+          "type": "message_stop"
+        }
+      ]
+    },
+    {
+      "expected": {
+        "events": {
+          "completed": true,
+          "reasoning_delta": false,
+          "request_started": true,
+          "text_delta": true
+        },
+        "items": [
+          {
+            "call_id": "tool_google",
+            "id": "tool_google",
+            "name": "lookup",
+            "provider": "google",
+            "type": "function_call"
+          }
+        ],
+        "output_text": "google answer",
+        "provider_state": {
+          "provider": "google"
+        },
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 7,
+          "output_tokens": 2,
+          "reasoning_tokens": 0,
+          "total_tokens": 9
+        }
+      },
+      "model": "gemini-2.5-flash",
+      "provider": "google",
+      "wire_events": [
+        {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "functionCall": {
+                      "args": {
+                        "id": "42"
+                      },
+                      "id": "tool_google",
+                      "name": "lookup"
+                    }
+                  },
+                  {
+                    "text": "google answer"
+                  }
+                ],
+                "role": "model"
+              }
+            }
+          ],
+          "responseId": "resp_google",
+          "usageMetadata": {
+            "candidatesTokenCount": 2,
+            "promptTokenCount": 7,
+            "totalTokenCount": 9
+          }
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}

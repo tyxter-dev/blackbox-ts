@@ -1,17 +1,16 @@
 # Blackbox TypeScript Feature-Parity Plan
 
-**Status:** Implemented and locally verified; repository/npm publication remains an external delivery gate
+**Status:** Implemented, published, and protected by pinned-parent maintenance automation
 **Analysis date:** 2026-07-14
 **TypeScript baseline:** `blackbox-ts` commit `fbe3ebf1add1d7686f4d07dcd8092119d5a02b7b`
 **Parent baseline:** `tyxter-dev/blackbox` commit `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
 
-Implementation verification is recorded in the generated parity matrix. It currently maps
-169 parent-catalog and implementation-supplement requirements to scoped code and offline test
-evidence. The local release gates cover formatting, inventory/matrix freshness, TypeScript
-contracts and examples, public API snapshots, lint, 121 passing offline tests (plus five
-credential-gated smoke tests), build, catalog/package snapshots, tarball inspection, and clean
-consumer installation. Creating/publishing the configured GitHub and npm repositories requires
-external account authorization and is intentionally not treated as a library behavior gap.
+Implementation verification is recorded in the generated parity matrix. It maps 143 Python
+catalog features and 26 verification supplements to scoped code and offline test evidence;
+TypeScript extensions are reported separately. Release gates cover formatting,
+inventory/matrix/crosswalk freshness, bidirectional Python/TypeScript fixtures, provider and
+catalog differentials, TypeScript contracts and examples, public API snapshots, lint, tests,
+build, catalog/package snapshots, tarball inspection, and clean consumer installation.
 
 ## 1. Goal and parity definition
 
@@ -46,8 +45,8 @@ order when sources disagree:
 4. Parent `docs/PRD.md` for original P0/P1/P2 requirements.
 5. Parent `ROADMAP.md` for explicitly unfinished work.
 
-The pinned baseline contains 143 catalogued features: 137 supported, 3 partial, 2
-contract-only, and 1 explicitly unsupported. Realtime, workflow configuration, prompt
+The pinned baseline contains 143 catalogued features: 136 supported, 1 supported where
+advertised, 3 partial, 2 contract-only, and 1 explicitly unsupported. Realtime, workflow configuration, prompt
 planning, and some integration surfaces must also be tracked because they shipped after
 the original feature table was created.
 

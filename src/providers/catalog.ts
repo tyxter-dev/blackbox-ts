@@ -311,5 +311,6 @@ function xaiDeprecatingModels(
 
 function modelDisplayName(id: string): string {
   const suffix = id.replace('gemini-2.5-', '');
+  if (suffix === 'flash-lite') return 'Gemini 2.5 Flash-Lite';
   return `Gemini 2.5 ${suffix.charAt(0).toUpperCase()}${suffix.slice(1).replace('-', '-')}`;
 }

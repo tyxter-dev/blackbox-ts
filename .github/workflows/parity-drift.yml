@@ -1,0 +1,27 @@
+name: Python parent drift
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compare the pinned Python parent with its default branch
+        run: node scripts/check-parent-drift.mjs --output parent-drift-report.json --fail-on-drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-parent-drift-report
+          path: parent-drift-report.json

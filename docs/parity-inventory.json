@@ -1,467 +1,1795 @@
 {
-  "schema_version": 1,
-  "parent_repository": "tyxter-dev/blackbox",
-  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "schema_version": 2,
+  "parent": {
+    "repository": "tyxter-dev/blackbox",
+    "default_branch": "master",
+    "commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+    "feature_catalog": "FEATURES.md"
+  },
   "catalog_unique_feature_count": 143,
+  "evidence": {
+    "high-level-runtime": {
+      "parent": {
+        "sources": ["src/blackbox/runtime/main.py", "src/blackbox/runtime/agent_loop.py"],
+        "tests": ["tests/runtime/test_runtime_run.py", "tests/runtime/test_runtime_stream.py"],
+        "symbols": ["AgentRuntime", "AgentLoop"]
+      },
+      "typescript": {
+        "sources": ["src/runtime/agent-loop.ts", "src/runtime/agent-runtime.ts"],
+        "tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"],
+        "symbols": ["AgentRuntime", "AgentLoop"]
+      }
+    },
+    "skills-and-workspace-agents": {
+      "parent": {
+        "sources": ["src/blackbox/skills/specs.py", "src/blackbox/workspace_agents/runtime.py"],
+        "tests": [
+          "tests/unit/skills/test_skills.py",
+          "tests/unit/workspace_agents/test_workspace_agents.py"
+        ],
+        "symbols": ["SkillSpec", "run_workspace_agent"]
+      },
+      "typescript": {
+        "sources": ["src/skills/index.ts", "src/workspace-agents/index.ts"],
+        "tests": ["tests/unit/workspace-agents.test.ts"],
+        "symbols": ["SkillSpec", "WorkspaceAgentSpec"]
+      }
+    },
+    "structured-output": {
+      "parent": {
+        "sources": ["src/blackbox/core/results.py", "src/blackbox/output/schema.py"],
+        "tests": [
+          "tests/unit/output/test_output_schema.py",
+          "tests/unit/output/test_output_validation.py"
+        ],
+        "symbols": ["OutputSpec", "validate_output"]
+      },
+      "typescript": {
+        "sources": ["src/core/results.ts", "src/output/schema.ts", "src/output/validation.ts"],
+        "tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+        "symbols": ["OutputSpec", "validateOutputText"]
+      }
+    },
+    "local-tools": {
+      "parent": {
+        "sources": ["src/blackbox/tools/registry.py", "src/blackbox/tools/runtime.py"],
+        "tests": ["tests/unit/tools/test_tool_runtime.py", "tests/unit/tools/test_tool_routing.py"],
+        "symbols": ["ToolRegistry", "ToolRuntime"]
+      },
+      "typescript": {
+        "sources": ["src/tools/registry.ts", "src/tools/runtime.ts"],
+        "tests": ["tests/unit/tools-output.test.ts"],
+        "symbols": ["ToolRegistry", "ToolRuntime"]
+      }
+    },
+    "hosted-tools": {
+      "parent": {
+        "sources": ["src/blackbox/tools/hosted/specs.py", "src/blackbox/tools/hosted_runtime.py"],
+        "tests": [
+          "tests/unit/tools/test_hosted_tools.py",
+          "tests/unit/tools/test_hosted_tools_v2.py"
+        ],
+        "symbols": ["HostedToolSpec", "HostedToolRunner"]
+      },
+      "typescript": {
+        "sources": ["src/providers/base.ts", "src/tools/types.ts", "src/runtime/agent-loop.ts"],
+        "tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+        "symbols": ["HostedToolSpec", "hosted_tools"]
+      }
+    },
+    "policy-approvals-and-safety": {
+      "parent": {
+        "sources": ["src/blackbox/core/policy.py", "src/blackbox/core/approvals.py"],
+        "tests": [
+          "tests/runtime/test_realtime_approvals.py",
+          "tests/contracts/test_capability_honesty.py"
+        ],
+        "symbols": ["PolicyDecision", "ApprovalRequest"]
+      },
+      "typescript": {
+        "sources": ["src/core/policy.ts", "src/core/approvals.ts"],
+        "tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+        "symbols": ["PolicyDecision", "ApprovalRequest"]
+      }
+    },
+    "core-events-and-state": {
+      "parent": {
+        "sources": ["src/blackbox/core/events.py", "src/blackbox/core/state.py"],
+        "tests": ["tests/unit/core/test_state.py", "tests/unit/core/test_stores_persistent.py"],
+        "symbols": ["AgentEvent", "ProviderState"]
+      },
+      "typescript": {
+        "sources": ["src/core/events.ts", "src/core/state.ts"],
+        "tests": ["tests/unit/core-contracts.test.ts", "tests/golden/core-contracts.test.ts"],
+        "symbols": ["AgentEvent", "ProviderState"]
+      }
+    },
+    "provider-state-mapping": {
+      "parent": {
+        "sources": ["src/blackbox/core/state.py", "src/blackbox/providers/base.py"],
+        "tests": [
+          "tests/golden/openai/test_responses_event_mapping.py",
+          "tests/golden/gemini/test_generate_content_event_mapping.py"
+        ],
+        "symbols": ["ProviderState", "TurnResult"]
+      },
+      "typescript": {
+        "sources": ["src/core/state.ts", "src/providers/base.ts"],
+        "tests": ["tests/golden/providers.test.ts"],
+        "symbols": ["ProviderState", "TurnResult"]
+      }
+    },
+    "persistence": {
+      "parent": {
+        "sources": ["src/blackbox/core/stores.py", "src/blackbox/core/serialization.py"],
+        "tests": [
+          "tests/unit/core/test_stores_persistent.py",
+          "tests/runtime/test_resume_run_from_saved_state.py"
+        ],
+        "symbols": ["RunStore", "run_state_to_dict"]
+      },
+      "typescript": {
+        "sources": ["src/persistence/stores.ts", "src/core/serialization.ts"],
+        "tests": ["tests/unit/persistence-observability.test.ts"],
+        "symbols": ["RunStore", "serializeDurable"]
+      }
+    },
+    "provider-controls-and-catalog": {
+      "parent": {
+        "sources": ["src/blackbox/providers/model_catalog.py", "src/blackbox/providers/catalog.py"],
+        "tests": [
+          "tests/unit/providers/test_model_catalog.py",
+          "tests/unit/providers/test_bundled_model_catalog.py"
+        ],
+        "symbols": ["ProviderModelCatalog", "bundled_provider_models"]
+      },
+      "typescript": {
+        "sources": ["src/providers/catalog.ts", "src/core/capabilities.ts"],
+        "tests": ["tests/unit/registry-catalog.test.ts", "tests/unit/capabilities.test.ts"],
+        "symbols": ["ProviderModelCatalog", "bundledProviderModels"]
+      }
+    },
+    "accounting-and-cache": {
+      "parent": {
+        "sources": ["src/blackbox/core/accounting.py", "src/blackbox/core/cache.py"],
+        "tests": [
+          "tests/unit/core/test_model_accounting.py",
+          "tests/unit/core/test_provider_cache.py"
+        ],
+        "symbols": ["ModelUsage", "ProviderCache"]
+      },
+      "typescript": {
+        "sources": ["src/core/usage.ts", "src/pricing/index.ts", "src/cache/index.ts"],
+        "tests": ["tests/unit/planning-accounting-config.test.ts"],
+        "symbols": ["ModelUsage", "ProviderCache"]
+      }
+    },
+    "granular-model-capabilities": {
+      "parent": {
+        "sources": [
+          "src/blackbox/core/capabilities.py",
+          "src/blackbox/providers/model_adapters/capability_validation.py"
+        ],
+        "tests": [
+          "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+          "tests/runtime/test_model_capability_validation.py"
+        ],
+        "symbols": ["ModelCapabilityProfile", "validate_turn_request_capabilities"]
+      },
+      "typescript": {
+        "sources": ["src/core/capabilities.ts"],
+        "tests": ["tests/unit/capabilities.test.ts", "tests/unit/provider-contracts.test.ts"],
+        "symbols": ["CapabilityProfile", "assertTurnRequestCapabilities"]
+      }
+    },
+    "provider-runtime": {
+      "parent": {
+        "sources": ["src/blackbox/providers/base.py", "src/blackbox/runtime/model.py"],
+        "tests": [
+          "tests/journey/model_provider/test_model_provider_journeys.py",
+          "tests/unit/providers/model_adapters/test_model_provider_hardening.py"
+        ],
+        "symbols": ["ModelProvider", "ModelRuntime"]
+      },
+      "typescript": {
+        "sources": ["src/providers/base.ts", "src/runtime/model-runtime.ts"],
+        "tests": ["tests/unit/provider-contracts.test.ts", "tests/unit/model-runtime.test.ts"],
+        "symbols": ["ModelProvider", "ModelRuntime"]
+      }
+    },
+    "native-model-providers": {
+      "parent": {
+        "sources": [
+          "src/blackbox/providers/model_adapters/openai_responses/provider.py",
+          "src/blackbox/providers/model_adapters/anthropic_messages/provider.py",
+          "src/blackbox/providers/model_adapters/gemini_generate_content/provider.py",
+          "src/blackbox/providers/model_adapters/xai_responses/provider.py"
+        ],
+        "tests": [
+          "tests/golden/openai/test_responses_event_mapping.py",
+          "tests/golden/anthropic/test_messages_event_mapping.py",
+          "tests/golden/gemini/test_generate_content_event_mapping.py"
+        ],
+        "symbols": [
+          "OpenAIResponsesProvider",
+          "AnthropicMessagesProvider",
+          "GeminiGenerateContentProvider",
+          "XAIResponsesProvider"
+        ]
+      },
+      "typescript": {
+        "sources": [
+          "src/providers/openai/responses-provider.ts",
+          "src/providers/anthropic/index.ts",
+          "src/providers/gemini/index.ts",
+          "src/providers/xai/index.ts"
+        ],
+        "tests": ["tests/golden/providers.test.ts", "tests/unit/provider-contracts.test.ts"],
+        "symbols": ["OpenAIResponsesProvider", "AnthropicProvider", "GeminiProvider", "XAIProvider"]
+      }
+    },
+    "agent-sessions": {
+      "parent": {
+        "sources": ["src/blackbox/runtime/agents.py", "src/blackbox/core/sessions.py"],
+        "tests": [
+          "tests/runtime/test_agent_session_run.py",
+          "tests/runtime/test_agent_session_persistence.py"
+        ],
+        "symbols": ["AgentRuntime", "AgentSession"]
+      },
+      "typescript": {
+        "sources": ["src/runtime/agent-sessions.ts", "src/providers/agent.ts"],
+        "tests": ["tests/unit/agent-sessions.test.ts"],
+        "symbols": ["AgentSessionsRuntime", "AgentSession"]
+      }
+    },
+    "environment-workers": {
+      "parent": {
+        "sources": ["src/blackbox/workers/source.py", "src/blackbox/workers/worker.py"],
+        "tests": [
+          "tests/unit/workers/test_work_source.py",
+          "tests/unit/workers/test_environment_worker.py"
+        ],
+        "symbols": ["WorkSource", "EnvironmentWorker"]
+      },
+      "typescript": {
+        "sources": ["src/workers/index.ts"],
+        "tests": ["tests/unit/workers-observability.test.ts"],
+        "symbols": ["WorkSource", "EnvironmentWorker"]
+      }
+    },
+    "artifacts": {
+      "parent": {
+        "sources": ["src/blackbox/core/artifacts.py"],
+        "tests": ["tests/unit/core/test_data_models.py"],
+        "symbols": ["Artifact"]
+      },
+      "typescript": {
+        "sources": ["src/core/artifacts.ts"],
+        "tests": ["tests/unit/core-contracts.test.ts"],
+        "symbols": ["Artifact"]
+      }
+    },
+    "workspaces": {
+      "parent": {
+        "sources": ["src/blackbox/workspaces/provider.py", "src/blackbox/workspaces/runtime.py"],
+        "tests": [
+          "tests/journey/workspace_provider/test_workspace_provider_journeys.py",
+          "tests/unit/workspaces/test_workspace_runtime.py"
+        ],
+        "symbols": ["WorkspaceProvider", "WorkspaceRuntime"]
+      },
+      "typescript": {
+        "sources": ["src/workspaces/providers.ts", "src/workspaces/runtime.ts"],
+        "tests": ["tests/unit/workspaces.test.ts"],
+        "symbols": ["WorkspaceProvider", "WorkspaceRuntime"]
+      }
+    },
+    "mcp": {
+      "parent": {
+        "sources": ["src/blackbox/mcp/client.py", "src/blackbox/mcp/server.py"],
+        "tests": ["tests/unit/mcp/test_mcp_client.py", "tests/unit/mcp/test_mcp_server.py"],
+        "symbols": ["MCPClient", "MCPServer"]
+      },
+      "typescript": {
+        "sources": ["src/mcp/client.ts", "src/mcp/server.ts"],
+        "tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+        "symbols": ["MCPClient", "MCPServer"]
+      }
+    },
+    "observability": {
+      "parent": {
+        "sources": ["src/blackbox/observability/sinks.py", "src/blackbox/observability/traces.py"],
+        "tests": [
+          "tests/unit/observability/test_event_sinks.py",
+          "tests/unit/observability/test_trace_spans.py"
+        ],
+        "symbols": ["EventSink", "TraceSpan"]
+      },
+      "typescript": {
+        "sources": ["src/observability/sinks.ts", "src/observability/advanced.ts"],
+        "tests": [
+          "tests/unit/workers-observability.test.ts",
+          "tests/unit/persistence-observability.test.ts"
+        ],
+        "symbols": ["EventSink", "TraceSpan"]
+      }
+    },
+    "realtime": {
+      "parent": {
+        "sources": ["src/blackbox/realtime/runtime.py", "src/blackbox/realtime/provider.py"],
+        "tests": [
+          "tests/runtime/test_realtime_runtime.py",
+          "tests/runtime/test_realtime_tool_loop.py"
+        ],
+        "symbols": ["RealtimeRuntime", "RealtimeProvider"]
+      },
+      "typescript": {
+        "sources": ["src/runtime/realtime-runtime.ts", "src/providers/realtime.ts"],
+        "tests": ["tests/unit/realtime.test.ts"],
+        "symbols": ["RealtimeRuntime", "RealtimeProvider"]
+      }
+    },
+    "runtime-configuration": {
+      "parent": {
+        "sources": ["src/blackbox/runtime/config.py"],
+        "tests": ["tests/runtime/test_runtime_config.py"],
+        "symbols": ["RuntimeConfig"]
+      },
+      "typescript": {
+        "sources": ["src/config/index.ts"],
+        "tests": ["tests/unit/planning-accounting-config.test.ts"],
+        "symbols": ["RuntimeConfig"]
+      }
+    },
+    "prompt-planning": {
+      "parent": {
+        "sources": ["src/blackbox/planning/prompts.py", "src/blackbox/runtime/prompting.py"],
+        "tests": ["tests/runtime/test_prompt_composition.py"],
+        "symbols": ["PromptComposer", "PromptBundle"]
+      },
+      "typescript": {
+        "sources": ["src/planning/index.ts"],
+        "tests": ["tests/unit/planning-accounting-config.test.ts"],
+        "symbols": ["PromptPlan", "composePrompt"]
+      }
+    },
+    "workspace-providers-and-security": {
+      "parent": {
+        "sources": [
+          "src/blackbox/workspaces/local.py",
+          "src/blackbox/workspaces/sandbox.py",
+          "src/blackbox/workspaces/git.py"
+        ],
+        "tests": [
+          "tests/unit/workspaces/test_local_workspace_provider.py",
+          "tests/unit/workspaces/test_sandbox_workspace_provider.py"
+        ],
+        "symbols": ["LocalWorkspaceProvider", "SandboxWorkspaceProvider"]
+      },
+      "typescript": {
+        "sources": [
+          "src/workspaces/local.ts",
+          "src/workspaces/providers.ts",
+          "src/workspaces/runtime.ts"
+        ],
+        "tests": ["tests/unit/workspaces.test.ts", "tests/security/boundaries.test.ts"],
+        "symbols": ["LocalWorkspaceProvider", "SandboxWorkspaceProvider"]
+      }
+    },
+    "persistence-contracts": {
+      "parent": {
+        "sources": ["src/blackbox/core/stores.py", "src/blackbox/core/serialization.py"],
+        "tests": [
+          "tests/unit/core/test_stores_persistent.py",
+          "tests/unit/core/test_session_store.py"
+        ],
+        "symbols": ["JSONLEventStore", "SQLiteRunStore"]
+      },
+      "typescript": {
+        "sources": ["src/persistence/jsonl.ts", "src/persistence/sqlite.ts"],
+        "tests": ["tests/unit/persistence-observability.test.ts"],
+        "symbols": ["JSONLEventStore", "SQLiteRunStore"]
+      }
+    },
+    "mcp-lifecycle-security": {
+      "parent": {
+        "sources": [
+          "src/blackbox/mcp/client.py",
+          "src/blackbox/mcp/transports.py",
+          "src/blackbox/mcp/security.py"
+        ],
+        "tests": [
+          "tests/unit/mcp/test_mcp_security_validation.py",
+          "tests/unit/mcp/test_mcp_transports.py"
+        ],
+        "symbols": ["MCPClient", "validate_mcp_server"]
+      },
+      "typescript": {
+        "sources": ["src/mcp/client.ts", "src/mcp/transports.ts"],
+        "tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+        "symbols": ["MCPClient", "MCPTrustPresets"]
+      }
+    },
+    "runtime-lifecycle-hardening": {
+      "parent": {
+        "sources": [
+          "src/blackbox/runtime/main.py",
+          "src/blackbox/runtime/output.py",
+          "src/blackbox/realtime/runtime.py"
+        ],
+        "tests": [
+          "tests/runtime/test_runtime_retry.py",
+          "tests/runtime/test_provider_native_output.py",
+          "tests/runtime/test_realtime_approvals.py"
+        ],
+        "symbols": ["AgentRuntime", "resolve_output_strategy"]
+      },
+      "typescript": {
+        "sources": [
+          "src/runtime/agent-loop.ts",
+          "src/runtime/realtime-runtime.ts",
+          "src/tools/runtime.ts"
+        ],
+        "tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"],
+        "symbols": ["AgentRuntime", "resolveOutputStrategy"]
+      }
+    },
+    "package-and-worker-hardening": {
+      "parent": {
+        "sources": ["src/blackbox/workspace_agents/package.py", "src/blackbox/workers/worker.py"],
+        "tests": [
+          "tests/unit/workspace_agents/test_package.py",
+          "tests/unit/workers/test_environment_worker.py"
+        ],
+        "symbols": ["pack_workspace_agent_package", "EnvironmentWorker"]
+      },
+      "typescript": {
+        "sources": ["src/workspace-agents/package.ts", "src/workers/index.ts"],
+        "tests": [
+          "tests/unit/workspace-agents.test.ts",
+          "tests/unit/workers-observability.test.ts"
+        ],
+        "symbols": ["packWorkspaceAgent", "EnvironmentWorker"]
+      }
+    },
+    "workspace-agent-registry": {
+      "parent": {
+        "sources": ["src/blackbox/workspace_agents/registry.py"],
+        "tests": ["tests/unit/workspace_agents/test_sqlite_registry.py"],
+        "symbols": ["SQLiteWorkspaceAgentRegistry"]
+      },
+      "typescript": {
+        "sources": ["src/workspace-agents/registry.ts"],
+        "tests": ["tests/unit/workspace-agents.test.ts"],
+        "symbols": ["SQLiteWorkspaceAgentRegistry"]
+      }
+    },
+    "workspace-agent-validation": {
+      "parent": {
+        "sources": ["src/blackbox/workspace_agents/validation.py"],
+        "tests": ["tests/unit/workspace_agents/test_validation.py"],
+        "symbols": ["validate_workspace_agent"]
+      },
+      "typescript": {
+        "sources": ["src/workspace-agents/validation.ts"],
+        "tests": ["tests/unit/workspace-agents.test.ts"],
+        "symbols": ["validateWorkspaceAgent"]
+      }
+    },
+    "workspace-agent-package": {
+      "parent": {
+        "sources": ["src/blackbox/workspace_agents/package.py"],
+        "tests": ["tests/unit/workspace_agents/test_package.py"],
+        "symbols": ["pack_workspace_agent_package"]
+      },
+      "typescript": {
+        "sources": ["src/workspace-agents/package.ts"],
+        "tests": ["tests/unit/workspace-agents.test.ts", "tests/security/boundaries.test.ts"],
+        "symbols": ["packWorkspaceAgent"]
+      }
+    },
+    "schedule-executor": {
+      "parent": {
+        "sources": ["src/blackbox/workspace_agents/schedules.py"],
+        "tests": ["tests/unit/workspace_agents/test_schedule_executor.py"],
+        "symbols": ["ScheduleExecutor"]
+      },
+      "typescript": {
+        "sources": ["src/schedules/index.ts"],
+        "tests": ["tests/unit/workspace-agents.test.ts"],
+        "symbols": ["ScheduleExecutor"]
+      }
+    },
+    "persistent-stores": {
+      "parent": {
+        "sources": ["src/blackbox/core/stores.py"],
+        "tests": ["tests/unit/core/test_stores_persistent.py"],
+        "symbols": ["JSONLEventStore", "SQLiteRunStore"]
+      },
+      "typescript": {
+        "sources": ["src/persistence/jsonl.ts", "src/persistence/sqlite.ts"],
+        "tests": ["tests/unit/persistence-observability.test.ts"],
+        "symbols": ["JSONLEventStore", "SQLiteRunStore"]
+      }
+    },
+    "resume-run-state": {
+      "parent": {
+        "sources": ["src/blackbox/runtime/main.py", "src/blackbox/core/stores.py"],
+        "tests": ["tests/runtime/test_resume_run_from_saved_state.py"],
+        "symbols": ["resume_run"]
+      },
+      "typescript": {
+        "sources": ["src/runtime/agent-runtime.ts", "src/persistence/stores.ts"],
+        "tests": ["tests/unit/persistence-observability.test.ts"],
+        "symbols": ["resume"]
+      }
+    },
+    "anthropic-work-source": {
+      "parent": {
+        "sources": ["src/blackbox/workers/anthropic.py"],
+        "tests": ["tests/unit/workers/test_anthropic_work_source.py"],
+        "symbols": ["AnthropicEnvironmentWorkSource"]
+      },
+      "typescript": {
+        "sources": ["src/workers/index.ts"],
+        "tests": ["tests/unit/workers-observability.test.ts"],
+        "symbols": ["AnthropicEnvironmentWorkSource"]
+      }
+    },
+    "openrouter": {
+      "parent": {
+        "sources": [],
+        "tests": [],
+        "symbols": []
+      },
+      "typescript": {
+        "sources": ["src/providers/openrouter/index.ts"],
+        "tests": ["tests/golden/providers.test.ts", "tests/unit/provider-contracts.test.ts"],
+        "symbols": ["OpenRouterProvider"]
+      }
+    }
+  },
   "groups": [
     {
+      "id": "high-level-runtime",
+      "classification": "parent",
       "domain": "High-Level Runtime",
       "owner_phase": 4,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Complete blackbox agent loop",
-        "Streaming blackbox loop",
-        "Typed agent result",
-        "Text-only runs",
-        "Max-iteration guard",
-        "Provider fallback routing",
-        "Mock tool execution"
+        {
+          "id": "parent.high-level-runtime.complete-blackbox-agent-loop",
+          "name": "Complete blackbox agent loop",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.streaming-blackbox-loop",
+          "name": "Streaming blackbox loop",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.typed-agent-result",
+          "name": "Typed agent result",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.text-only-runs",
+          "name": "Text-only runs",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.max-iteration-guard",
+          "name": "Max-iteration guard",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.provider-fallback-routing",
+          "name": "Provider fallback routing",
+          "evidence": ["high-level-runtime"]
+        },
+        {
+          "id": "parent.high-level-runtime.mock-tool-execution",
+          "name": "Mock tool execution",
+          "evidence": ["high-level-runtime"]
+        }
       ]
     },
     {
+      "id": "skills-and-workspace-agents",
+      "classification": "parent",
       "domain": "Skills and Workspace Agents",
       "owner_phase": 8,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Portable skill packs",
-        "Workspace agent package contracts",
-        "Workspace agent validation",
-        "SQLite workspace agent registry",
-        "Workspace agent package on disk",
-        "Schedule execution (reference executor)"
+        {
+          "id": "parent.skills-and-workspace-agents.portable-skill-packs",
+          "name": "Portable skill packs",
+          "evidence": ["skills-and-workspace-agents"]
+        },
+        {
+          "id": "parent.skills-and-workspace-agents.workspace-agent-package-contracts",
+          "name": "Workspace agent package contracts",
+          "evidence": ["skills-and-workspace-agents"]
+        },
+        {
+          "id": "parent.skills-and-workspace-agents.workspace-agent-validation",
+          "name": "Workspace agent validation",
+          "evidence": ["workspace-agent-validation"]
+        },
+        {
+          "id": "parent.skills-and-workspace-agents.sqlite-workspace-agent-registry",
+          "name": "SQLite workspace agent registry",
+          "evidence": ["workspace-agent-registry"]
+        },
+        {
+          "id": "parent.skills-and-workspace-agents.workspace-agent-package-on-disk",
+          "name": "Workspace agent package on disk",
+          "evidence": ["workspace-agent-package"]
+        },
+        {
+          "id": "parent.skills-and-workspace-agents.schedule-execution-reference-executor",
+          "name": "Schedule execution (reference executor)",
+          "evidence": ["schedule-executor"]
+        }
       ]
     },
     {
+      "id": "structured-output",
+      "classification": "parent",
       "domain": "Structured Output",
       "owner_phase": 4,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Pydantic structured output",
-        "Dataclass structured output",
-        "String output",
-        "Fail-fast validation errors",
-        "Provider-native structured output",
-        "Finalizer tool structured output",
-        "Raw JSON Schema post-hoc output",
-        "Structured output retry/repair"
+        {
+          "id": "parent.structured-output.pydantic-structured-output",
+          "name": "Pydantic structured output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.dataclass-structured-output",
+          "name": "Dataclass structured output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.string-output",
+          "name": "String output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.fail-fast-validation-errors",
+          "name": "Fail-fast validation errors",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.provider-native-structured-output",
+          "name": "Provider-native structured output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.finalizer-tool-structured-output",
+          "name": "Finalizer tool structured output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.raw-json-schema-post-hoc-output",
+          "name": "Raw JSON Schema post-hoc output",
+          "evidence": ["structured-output"]
+        },
+        {
+          "id": "parent.structured-output.structured-output-retry-repair",
+          "name": "Structured output retry/repair",
+          "evidence": ["structured-output"]
+        }
       ]
     },
     {
+      "id": "local-tools",
+      "classification": "parent",
       "domain": "Local Tools",
       "owner_phase": 4,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Local tool registration",
-        "Dynamic tool sessions",
-        "Tool lookup/listing",
-        "Provider-neutral tool schema export",
-        "Manual JSON schema override",
-        "Tool metadata",
-        "Blocking tool offload",
-        "Async tool execution",
-        "Tool timeouts",
-        "Tool concurrency cap",
-        "High-level tool controls",
-        "Multiple tool calls in one turn",
-        "Tool result coercion",
-        "Tool payload separation",
-        "Context injection",
-        "Context schema privacy",
-        "Tool catalog search",
-        "Runtime toolsets and dynamic loading",
-        "Dynamic tool surface persistence",
-        "Workspace tool backend"
+        {
+          "id": "parent.local-tools.local-tool-registration",
+          "name": "Local tool registration",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.dynamic-tool-sessions",
+          "name": "Dynamic tool sessions",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-lookup-listing",
+          "name": "Tool lookup/listing",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.provider-neutral-tool-schema-export",
+          "name": "Provider-neutral tool schema export",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.manual-json-schema-override",
+          "name": "Manual JSON schema override",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-metadata",
+          "name": "Tool metadata",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.blocking-tool-offload",
+          "name": "Blocking tool offload",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.async-tool-execution",
+          "name": "Async tool execution",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-timeouts",
+          "name": "Tool timeouts",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-concurrency-cap",
+          "name": "Tool concurrency cap",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.high-level-tool-controls",
+          "name": "High-level tool controls",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.multiple-tool-calls-in-one-turn",
+          "name": "Multiple tool calls in one turn",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-result-coercion",
+          "name": "Tool result coercion",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-payload-separation",
+          "name": "Tool payload separation",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.context-injection",
+          "name": "Context injection",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.context-schema-privacy",
+          "name": "Context schema privacy",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.tool-catalog-search",
+          "name": "Tool catalog search",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.runtime-toolsets-and-dynamic-loading",
+          "name": "Runtime toolsets and dynamic loading",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.dynamic-tool-surface-persistence",
+          "name": "Dynamic tool surface persistence",
+          "evidence": ["local-tools"]
+        },
+        {
+          "id": "parent.local-tools.workspace-tool-backend",
+          "name": "Workspace tool backend",
+          "evidence": ["local-tools"]
+        }
       ]
     },
     {
+      "id": "local-tools",
+      "classification": "parent",
       "domain": "Local Tools",
       "owner_phase": 4,
       "parent_status": "Not supported yet",
       "target_status": "Not supported yet",
       "source": "FEATURES.md",
-      "features": ["Namespaced `ToolRef` IDs"]
+      "features": [
+        {
+          "id": "parent.local-tools.namespaced-toolref-ids",
+          "name": "Namespaced `ToolRef` IDs",
+          "evidence": ["local-tools"]
+        }
+      ]
     },
     {
+      "id": "hosted-tools",
+      "classification": "parent",
       "domain": "Hosted Tools",
       "owner_phase": 4,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Typed hosted tool specs",
-        "OpenAI hosted tool mapping",
-        "OpenAI hosted tool events",
-        "Hosted tool result metadata",
-        "Provider-native remote MCP",
-        "MCP result metadata",
-        "Gemini hosted web search",
-        "Raw hosted tool passthrough"
+        {
+          "id": "parent.hosted-tools.typed-hosted-tool-specs",
+          "name": "Typed hosted tool specs",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.openai-hosted-tool-mapping",
+          "name": "OpenAI hosted tool mapping",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.openai-hosted-tool-events",
+          "name": "OpenAI hosted tool events",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.hosted-tool-result-metadata",
+          "name": "Hosted tool result metadata",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.provider-native-remote-mcp",
+          "name": "Provider-native remote MCP",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.mcp-result-metadata",
+          "name": "MCP result metadata",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.gemini-hosted-web-search",
+          "name": "Gemini hosted web search",
+          "evidence": ["hosted-tools"]
+        },
+        {
+          "id": "parent.hosted-tools.raw-hosted-tool-passthrough",
+          "name": "Raw hosted tool passthrough",
+          "evidence": ["hosted-tools"]
+        }
       ]
     },
     {
+      "id": "policy-approvals-and-safety",
+      "classification": "parent",
       "domain": "Policy, Approvals, and Safety",
       "owner_phase": 5,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Allow-all default policy",
-        "Policy allow/deny gate",
-        "Approval-required gate",
-        "Approval resume",
-        "Approval denial",
-        "Typed approval errors"
+        {
+          "id": "parent.policy-approvals-and-safety.allow-all-default-policy",
+          "name": "Allow-all default policy",
+          "evidence": ["policy-approvals-and-safety"]
+        },
+        {
+          "id": "parent.policy-approvals-and-safety.policy-allow-deny-gate",
+          "name": "Policy allow/deny gate",
+          "evidence": ["policy-approvals-and-safety"]
+        },
+        {
+          "id": "parent.policy-approvals-and-safety.approval-required-gate",
+          "name": "Approval-required gate",
+          "evidence": ["policy-approvals-and-safety"]
+        },
+        {
+          "id": "parent.policy-approvals-and-safety.approval-resume",
+          "name": "Approval resume",
+          "evidence": ["policy-approvals-and-safety"]
+        },
+        {
+          "id": "parent.policy-approvals-and-safety.approval-denial",
+          "name": "Approval denial",
+          "evidence": ["policy-approvals-and-safety"]
+        },
+        {
+          "id": "parent.policy-approvals-and-safety.typed-approval-errors",
+          "name": "Typed approval errors",
+          "evidence": ["policy-approvals-and-safety"]
+        }
       ]
     },
     {
+      "id": "core-events-and-state",
+      "classification": "parent",
       "domain": "Core Events and State",
       "owner_phase": 1,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Canonical event taxonomy",
-        "Run IDs",
-        "Monotonic event sequence",
-        "Provider-native continuation state",
-        "Raw provider payload preservation"
+        {
+          "id": "parent.core-events-and-state.canonical-event-taxonomy",
+          "name": "Canonical event taxonomy",
+          "evidence": ["core-events-and-state"]
+        },
+        {
+          "id": "parent.core-events-and-state.run-ids",
+          "name": "Run IDs",
+          "evidence": ["core-events-and-state"]
+        },
+        {
+          "id": "parent.core-events-and-state.monotonic-event-sequence",
+          "name": "Monotonic event sequence",
+          "evidence": ["core-events-and-state"]
+        },
+        {
+          "id": "parent.core-events-and-state.provider-native-continuation-state",
+          "name": "Provider-native continuation state",
+          "evidence": ["core-events-and-state"]
+        },
+        {
+          "id": "parent.core-events-and-state.raw-provider-payload-preservation",
+          "name": "Raw provider payload preservation",
+          "evidence": ["core-events-and-state"]
+        }
       ]
     },
     {
+      "id": "provider-state-mapping",
+      "classification": "parent",
       "domain": "Provider State Mapping",
       "owner_phase": 3,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "OpenAI previous response continuation",
-        "Provider tool/source state preservation"
+        {
+          "id": "parent.provider-state-mapping.openai-previous-response-continuation",
+          "name": "OpenAI previous response continuation",
+          "evidence": ["provider-state-mapping"]
+        },
+        {
+          "id": "parent.provider-state-mapping.provider-tool-source-state-preservation",
+          "name": "Provider tool/source state preservation",
+          "evidence": ["provider-state-mapping"]
+        }
       ]
     },
     {
+      "id": "persistence",
+      "classification": "parent",
       "domain": "Persistence",
       "owner_phase": 5,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Event store protocol",
-        "In-memory event store",
-        "Run store protocol",
-        "In-memory run store",
-        "Session store protocol",
-        "In-memory session store",
-        "Resume run from persisted state",
-        "JSONL/SQLite stores"
+        {
+          "id": "parent.persistence.event-store-protocol",
+          "name": "Event store protocol",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.in-memory-event-store",
+          "name": "In-memory event store",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.run-store-protocol",
+          "name": "Run store protocol",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.in-memory-run-store",
+          "name": "In-memory run store",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.session-store-protocol",
+          "name": "Session store protocol",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.in-memory-session-store",
+          "name": "In-memory session store",
+          "evidence": ["persistence"]
+        },
+        {
+          "id": "parent.persistence.resume-run-from-persisted-state",
+          "name": "Resume run from persisted state",
+          "evidence": ["resume-run-state"]
+        },
+        {
+          "id": "parent.persistence.jsonl-sqlite-stores",
+          "name": "JSONL/SQLite stores",
+          "evidence": ["persistent-stores"]
+        }
       ]
     },
     {
+      "id": "provider-controls-and-catalog",
+      "classification": "parent",
       "domain": "Provider Controls and Catalog",
       "owner_phase": 2,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
-      "features": ["Provider-native request controls", "Provider model catalog"]
+      "features": [
+        {
+          "id": "parent.provider-controls-and-catalog.provider-native-request-controls",
+          "name": "Provider-native request controls",
+          "evidence": ["provider-controls-and-catalog"]
+        },
+        {
+          "id": "parent.provider-controls-and-catalog.provider-model-catalog",
+          "name": "Provider model catalog",
+          "evidence": ["provider-controls-and-catalog"]
+        }
+      ]
     },
     {
+      "id": "accounting-and-cache",
+      "classification": "parent",
       "domain": "Accounting and Cache",
       "owner_phase": 9,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Model usage and cost accounting",
-        "Native provider cache controls",
-        "Provider cache registry"
+        {
+          "id": "parent.accounting-and-cache.model-usage-and-cost-accounting",
+          "name": "Model usage and cost accounting",
+          "evidence": ["accounting-and-cache"]
+        },
+        {
+          "id": "parent.accounting-and-cache.native-provider-cache-controls",
+          "name": "Native provider cache controls",
+          "evidence": ["accounting-and-cache"]
+        },
+        {
+          "id": "parent.accounting-and-cache.provider-cache-registry",
+          "name": "Provider cache registry",
+          "evidence": ["accounting-and-cache"]
+        }
       ]
     },
     {
+      "id": "accounting-and-cache",
+      "classification": "parent",
       "domain": "Accounting and Cache",
       "owner_phase": 9,
       "parent_status": "Partial",
       "target_status": "Partial",
       "source": "FEATURES.md",
-      "features": ["Provider-side cache lifecycle"]
+      "features": [
+        {
+          "id": "parent.accounting-and-cache.provider-side-cache-lifecycle",
+          "name": "Provider-side cache lifecycle",
+          "evidence": ["accounting-and-cache"]
+        }
+      ]
     },
     {
+      "id": "granular-model-capabilities",
+      "classification": "parent",
       "domain": "Granular Model Capabilities",
       "owner_phase": 2,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Model capability profile",
-        "Hosted-tool capability validation",
-        "Output strategy fallback resolution",
-        "Control capability validation",
-        "State mode validation",
-        "Compatibility profile derivation",
-        "OpenAI tool-search control",
-        "Provider-native compaction control",
-        "Multimodal model input (content parts)"
+        {
+          "id": "parent.granular-model-capabilities.model-capability-profile",
+          "name": "Model capability profile",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.hosted-tool-capability-validation",
+          "name": "Hosted-tool capability validation",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.output-strategy-fallback-resolution",
+          "name": "Output strategy fallback resolution",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.control-capability-validation",
+          "name": "Control capability validation",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.state-mode-validation",
+          "name": "State mode validation",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.compatibility-profile-derivation",
+          "name": "Compatibility profile derivation",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.openai-tool-search-control",
+          "name": "OpenAI tool-search control",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.provider-native-compaction-control",
+          "name": "Provider-native compaction control",
+          "evidence": ["granular-model-capabilities"]
+        },
+        {
+          "id": "parent.granular-model-capabilities.multimodal-model-input-content-parts",
+          "name": "Multimodal model input (content parts)",
+          "evidence": ["granular-model-capabilities"]
+        }
       ]
     },
     {
+      "id": "granular-model-capabilities",
+      "classification": "parent",
       "domain": "Granular Model Capabilities",
       "owner_phase": 2,
       "parent_status": "Contract only",
       "target_status": "Contract only",
       "source": "FEATURES.md",
-      "features": ["Modalities control"]
+      "features": [
+        {
+          "id": "parent.granular-model-capabilities.modalities-control",
+          "name": "Modalities control",
+          "evidence": ["granular-model-capabilities"]
+        }
+      ]
     },
     {
+      "id": "provider-runtime",
+      "classification": "parent",
       "domain": "Provider Runtime",
       "owner_phase": 2,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Provider registry",
-        "Provider reference parsing",
-        "Model provider protocol",
-        "Agent provider protocol",
-        "Chat compatibility facade",
-        "Capability flags",
-        "Granular model capability profile",
-        "Direct model run",
-        "Direct model stream",
-        "Echo model provider"
+        {
+          "id": "parent.provider-runtime.provider-registry",
+          "name": "Provider registry",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.provider-reference-parsing",
+          "name": "Provider reference parsing",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.model-provider-protocol",
+          "name": "Model provider protocol",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.agent-provider-protocol",
+          "name": "Agent provider protocol",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.chat-compatibility-facade",
+          "name": "Chat compatibility facade",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.capability-flags",
+          "name": "Capability flags",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.granular-model-capability-profile",
+          "name": "Granular model capability profile",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.direct-model-run",
+          "name": "Direct model run",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.direct-model-stream",
+          "name": "Direct model stream",
+          "evidence": ["provider-runtime"]
+        },
+        {
+          "id": "parent.provider-runtime.echo-model-provider",
+          "name": "Echo model provider",
+          "evidence": ["provider-runtime"]
+        }
       ]
     },
     {
+      "id": "native-model-providers",
+      "classification": "parent",
       "domain": "Native Model Providers",
       "owner_phase": 3,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "OpenAI Responses model provider",
-        "xAI Responses model provider",
-        "Anthropic Messages model provider",
-        "Gemini GenerateContent model provider"
+        {
+          "id": "parent.native-model-providers.openai-responses-model-provider",
+          "name": "OpenAI Responses model provider",
+          "evidence": ["native-model-providers"]
+        },
+        {
+          "id": "parent.native-model-providers.xai-responses-model-provider",
+          "name": "xAI Responses model provider",
+          "evidence": ["native-model-providers"]
+        },
+        {
+          "id": "parent.native-model-providers.anthropic-messages-model-provider",
+          "name": "Anthropic Messages model provider",
+          "evidence": ["native-model-providers"]
+        },
+        {
+          "id": "parent.native-model-providers.gemini-generatecontent-model-provider",
+          "name": "Gemini GenerateContent model provider",
+          "evidence": ["native-model-providers"]
+        }
       ]
     },
     {
+      "id": "agent-sessions",
+      "classification": "parent",
       "domain": "Agent Sessions",
       "owner_phase": 7,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Local agent provider",
-        "Create agent",
-        "Create/start session",
-        "Stream session events",
-        "Durable session persistence",
-        "Durable session replay",
-        "Send message to session",
-        "Cancel session",
-        "List session artifacts",
-        "Session approval pause/resume/deny",
-        "OpenAI Agents SDK provider",
-        "Claude Code Agent SDK provider",
-        "Claude Code subscription auth"
+        {
+          "id": "parent.agent-sessions.local-agent-provider",
+          "name": "Local agent provider",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.create-agent",
+          "name": "Create agent",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.create-start-session",
+          "name": "Create/start session",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.stream-session-events",
+          "name": "Stream session events",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.durable-session-persistence",
+          "name": "Durable session persistence",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.durable-session-replay",
+          "name": "Durable session replay",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.send-message-to-session",
+          "name": "Send message to session",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.cancel-session",
+          "name": "Cancel session",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.list-session-artifacts",
+          "name": "List session artifacts",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.session-approval-pause-resume-deny",
+          "name": "Session approval pause/resume/deny",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.openai-agents-sdk-provider",
+          "name": "OpenAI Agents SDK provider",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.claude-code-agent-sdk-provider",
+          "name": "Claude Code Agent SDK provider",
+          "evidence": ["agent-sessions"]
+        },
+        {
+          "id": "parent.agent-sessions.claude-code-subscription-auth",
+          "name": "Claude Code subscription auth",
+          "evidence": ["agent-sessions"]
+        }
       ]
     },
     {
+      "id": "agent-sessions",
+      "classification": "parent",
       "domain": "Agent Sessions",
       "owner_phase": 7,
       "parent_status": "Supported where advertised",
       "target_status": "Supported where advertised",
       "source": "FEATURES.md",
-      "features": ["Provider-native live resume"]
+      "features": [
+        {
+          "id": "parent.agent-sessions.provider-native-live-resume",
+          "name": "Provider-native live resume",
+          "evidence": ["agent-sessions"]
+        }
+      ]
     },
     {
+      "id": "agent-sessions",
+      "classification": "parent",
       "domain": "Agent Sessions",
       "owner_phase": 7,
       "parent_status": "Partial",
       "target_status": "Partial",
       "source": "FEATURES.md",
-      "features": ["Cloud agent providers"]
+      "features": [
+        {
+          "id": "parent.agent-sessions.cloud-agent-providers",
+          "name": "Cloud agent providers",
+          "evidence": ["agent-sessions"]
+        }
+      ]
     },
     {
+      "id": "agent-sessions",
+      "classification": "parent",
       "domain": "Agent Sessions",
       "owner_phase": 7,
       "parent_status": "Contract only",
       "target_status": "Contract only",
       "source": "FEATURES.md",
-      "features": ["Cloud agent webhook ingress"]
+      "features": [
+        {
+          "id": "parent.agent-sessions.cloud-agent-webhook-ingress",
+          "name": "Cloud agent webhook ingress",
+          "evidence": ["agent-sessions"]
+        }
+      ]
     },
     {
+      "id": "environment-workers",
+      "classification": "parent",
       "domain": "Environment Workers",
       "owner_phase": 11,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Lab-neutral work-queue contract",
-        "In-memory reference work source",
-        "Environment worker daemon",
-        "Inbound work policy gate",
-        "Scoped worker credentials"
+        {
+          "id": "parent.environment-workers.lab-neutral-work-queue-contract",
+          "name": "Lab-neutral work-queue contract",
+          "evidence": ["environment-workers"]
+        },
+        {
+          "id": "parent.environment-workers.in-memory-reference-work-source",
+          "name": "In-memory reference work source",
+          "evidence": ["environment-workers"]
+        },
+        {
+          "id": "parent.environment-workers.environment-worker-daemon",
+          "name": "Environment worker daemon",
+          "evidence": ["environment-workers"]
+        },
+        {
+          "id": "parent.environment-workers.inbound-work-policy-gate",
+          "name": "Inbound work policy gate",
+          "evidence": ["environment-workers"]
+        },
+        {
+          "id": "parent.environment-workers.scoped-worker-credentials",
+          "name": "Scoped worker credentials",
+          "evidence": ["environment-workers"]
+        }
       ]
     },
     {
+      "id": "environment-workers",
+      "classification": "parent",
       "domain": "Environment Workers",
       "owner_phase": 11,
       "parent_status": "Partial",
       "target_status": "Partial",
       "source": "FEATURES.md",
-      "features": ["Anthropic Managed Agents work source"]
+      "features": [
+        {
+          "id": "parent.environment-workers.anthropic-managed-agents-work-source",
+          "name": "Anthropic Managed Agents work source",
+          "evidence": ["anthropic-work-source"]
+        }
+      ]
     },
     {
+      "id": "artifacts",
+      "classification": "parent",
       "domain": "Artifacts",
       "owner_phase": 1,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
-      "features": ["Artifact data contracts"]
+      "features": [
+        {
+          "id": "parent.artifacts.artifact-data-contracts",
+          "name": "Artifact data contracts",
+          "evidence": ["artifacts"]
+        }
+      ]
     },
     {
+      "id": "workspaces",
+      "classification": "parent",
       "domain": "Workspaces",
       "owner_phase": 6,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Workspace runtime facade",
-        "Local workspace runtime",
-        "Workspace data contracts"
+        {
+          "id": "parent.workspaces.workspace-runtime-facade",
+          "name": "Workspace runtime facade",
+          "evidence": ["workspaces"]
+        },
+        {
+          "id": "parent.workspaces.local-workspace-runtime",
+          "name": "Local workspace runtime",
+          "evidence": ["workspaces"]
+        },
+        {
+          "id": "parent.workspaces.workspace-data-contracts",
+          "name": "Workspace data contracts",
+          "evidence": ["workspaces"]
+        }
       ]
     },
     {
+      "id": "mcp",
+      "classification": "parent",
       "domain": "MCP",
       "owner_phase": 6,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "MCP server spec",
-        "MCP server authoring",
-        "MCP protocol compatibility matrix",
-        "Remote MCP auth refresh",
-        "MCP trust policy presets",
-        "Local MCP dispatch connector",
-        "MCP runtime tool bridge",
-        "MCP toolset routing"
+        {
+          "id": "parent.mcp.mcp-server-spec",
+          "name": "MCP server spec",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.mcp-server-authoring",
+          "name": "MCP server authoring",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.mcp-protocol-compatibility-matrix",
+          "name": "MCP protocol compatibility matrix",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.remote-mcp-auth-refresh",
+          "name": "Remote MCP auth refresh",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.mcp-trust-policy-presets",
+          "name": "MCP trust policy presets",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.local-mcp-dispatch-connector",
+          "name": "Local MCP dispatch connector",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.mcp-runtime-tool-bridge",
+          "name": "MCP runtime tool bridge",
+          "evidence": ["mcp"]
+        },
+        {
+          "id": "parent.mcp.mcp-toolset-routing",
+          "name": "MCP toolset routing",
+          "evidence": ["mcp"]
+        }
       ]
     },
     {
+      "id": "observability",
+      "classification": "parent",
       "domain": "Observability",
       "owner_phase": 11,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "FEATURES.md",
       "features": [
-        "Observability sink protocol",
-        "Production observability presets",
-        "Event trace context",
-        "Workflow trace spans",
-        "OpenTelemetry trace export",
-        "Standard production metrics",
-        "Replay and run diffing",
-        "Evaluator hooks"
+        {
+          "id": "parent.observability.observability-sink-protocol",
+          "name": "Observability sink protocol",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.production-observability-presets",
+          "name": "Production observability presets",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.event-trace-context",
+          "name": "Event trace context",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.workflow-trace-spans",
+          "name": "Workflow trace spans",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.opentelemetry-trace-export",
+          "name": "OpenTelemetry trace export",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.standard-production-metrics",
+          "name": "Standard production metrics",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.replay-and-run-diffing",
+          "name": "Replay and run diffing",
+          "evidence": ["observability"]
+        },
+        {
+          "id": "parent.observability.evaluator-hooks",
+          "name": "Evaluator hooks",
+          "evidence": ["observability"]
+        }
       ]
     },
     {
+      "id": "realtime",
+      "classification": "supplement",
       "domain": "Realtime",
       "owner_phase": 10,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
-      "features": ["Realtime protocol, runtime, and provider adapters"]
+      "features": [
+        {
+          "id": "supplement.realtime.realtime-protocol-runtime-and-provider-adapters",
+          "name": "Realtime protocol, runtime, and provider adapters",
+          "evidence": ["realtime"]
+        }
+      ]
     },
     {
+      "id": "runtime-configuration",
+      "classification": "supplement",
       "domain": "Runtime Configuration",
       "owner_phase": 9,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
-      "features": ["Workflow profiles and layered runtime configuration"]
+      "features": [
+        {
+          "id": "supplement.runtime-configuration.workflow-profiles-and-layered-runtime-configuration",
+          "name": "Workflow profiles and layered runtime configuration",
+          "evidence": ["runtime-configuration"]
+        }
+      ]
     },
     {
+      "id": "prompt-planning",
+      "classification": "supplement",
       "domain": "Prompt Planning",
       "owner_phase": 9,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
-      "features": ["Prompt planning, composition, parity checks, and cache sections"]
+      "features": [
+        {
+          "id": "supplement.prompt-planning.prompt-planning-composition-parity-checks-and-cache-sections",
+          "name": "Prompt planning, composition, parity checks, and cache sections",
+          "evidence": ["prompt-planning"]
+        }
+      ]
     },
     {
+      "id": "workspace-providers-and-security",
+      "classification": "supplement",
       "domain": "Workspace Providers and Security",
       "owner_phase": 6,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": [
-        "Workspace provider registry and managed runtime facade",
-        "Git ref checkout provider",
-        "Injected sandbox and Docker providers",
-        "Injected and opaque cloud workspace refs",
-        "Read-only artifact-bundle workspaces",
-        "Lexical and filesystem-link path containment",
-        "Workspace command timeout, cancellation, and output limits"
+        {
+          "id": "supplement.workspace-providers-and-security.workspace-provider-registry-and-managed-runtime-facade",
+          "name": "Workspace provider registry and managed runtime facade",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.git-ref-checkout-provider",
+          "name": "Git ref checkout provider",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.injected-sandbox-and-docker-providers",
+          "name": "Injected sandbox and Docker providers",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.injected-and-opaque-cloud-workspace-refs",
+          "name": "Injected and opaque cloud workspace refs",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.read-only-artifact-bundle-workspaces",
+          "name": "Read-only artifact-bundle workspaces",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.lexical-and-filesystem-link-path-containment",
+          "name": "Lexical and filesystem-link path containment",
+          "evidence": ["workspace-providers-and-security"]
+        },
+        {
+          "id": "supplement.workspace-providers-and-security.workspace-command-timeout-cancellation-and-output-limits",
+          "name": "Workspace command timeout, cancellation, and output limits",
+          "evidence": ["workspace-providers-and-security"]
+        }
       ]
     },
     {
+      "id": "persistence-contracts",
+      "classification": "supplement",
       "domain": "Persistence Contracts",
       "owner_phase": 5,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": [
-        "Concurrent JSONL append ordering and corruption detection",
-        "JSONL session snapshot restoration",
-        "Injected SQLite event, run, session, and cache contracts",
-        "Observability failure isolation"
+        {
+          "id": "supplement.persistence-contracts.concurrent-jsonl-append-ordering-and-corruption-detection",
+          "name": "Concurrent JSONL append ordering and corruption detection",
+          "evidence": ["persistence-contracts"]
+        },
+        {
+          "id": "supplement.persistence-contracts.jsonl-session-snapshot-restoration",
+          "name": "JSONL session snapshot restoration",
+          "evidence": ["persistence-contracts"]
+        },
+        {
+          "id": "supplement.persistence-contracts.injected-sqlite-event-run-session-and-cache-contracts",
+          "name": "Injected SQLite event, run, session, and cache contracts",
+          "evidence": ["persistence-contracts"]
+        },
+        {
+          "id": "supplement.persistence-contracts.observability-failure-isolation",
+          "name": "Observability failure isolation",
+          "evidence": ["persistence-contracts"]
+        }
       ]
     },
     {
+      "id": "mcp-lifecycle-security",
+      "classification": "supplement",
       "domain": "MCP Lifecycle Security",
       "owner_phase": 6,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": [
-        "MCP cancellation propagation",
-        "MCP listChanged cache invalidation",
-        "Secret-safe MCP cache identity",
-        "HTTP JSON-RPC and SSE response mapping"
+        {
+          "id": "supplement.mcp-lifecycle-security.mcp-cancellation-propagation",
+          "name": "MCP cancellation propagation",
+          "evidence": ["mcp-lifecycle-security"]
+        },
+        {
+          "id": "supplement.mcp-lifecycle-security.mcp-listchanged-cache-invalidation",
+          "name": "MCP listChanged cache invalidation",
+          "evidence": ["mcp-lifecycle-security"]
+        },
+        {
+          "id": "supplement.mcp-lifecycle-security.secret-safe-mcp-cache-identity",
+          "name": "Secret-safe MCP cache identity",
+          "evidence": ["mcp-lifecycle-security"]
+        },
+        {
+          "id": "supplement.mcp-lifecycle-security.http-json-rpc-and-sse-response-mapping",
+          "name": "HTTP JSON-RPC and SSE response mapping",
+          "evidence": ["mcp-lifecycle-security"]
+        }
       ]
     },
     {
+      "id": "runtime-lifecycle-hardening",
+      "classification": "supplement",
       "domain": "Runtime Lifecycle Hardening",
       "owner_phase": 4,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": [
-        "Run and active-tool cancellation propagation",
-        "Structured-output strategy and provider-rejection fallback",
-        "Managed realtime local tool execution and approvals"
+        {
+          "id": "supplement.runtime-lifecycle-hardening.run-and-active-tool-cancellation-propagation",
+          "name": "Run and active-tool cancellation propagation",
+          "evidence": ["runtime-lifecycle-hardening"]
+        },
+        {
+          "id": "supplement.runtime-lifecycle-hardening.structured-output-strategy-and-provider-rejection-fallback",
+          "name": "Structured-output strategy and provider-rejection fallback",
+          "evidence": ["runtime-lifecycle-hardening"]
+        },
+        {
+          "id": "supplement.runtime-lifecycle-hardening.managed-realtime-local-tool-execution-and-approvals",
+          "name": "Managed realtime local tool execution and approvals",
+          "evidence": ["runtime-lifecycle-hardening"]
+        }
       ]
     },
     {
+      "id": "package-and-worker-hardening",
+      "classification": "supplement",
       "domain": "Package and Worker Hardening",
       "owner_phase": 11,
       "parent_status": "Supported",
       "target_status": "Supported",
       "source": "implementation supplement",
       "features": [
-        "Deterministic real ZIP package encoding and decoding",
-        "Archive CRC, size, duplicate-name, version, and traversal validation",
-        "Automatic worker lease heartbeat and control-plane stop polling",
-        "Graceful and forced worker stop semantics",
-        "Lost-lease cancellation without terminal overwrite"
+        {
+          "id": "supplement.package-and-worker-hardening.deterministic-real-zip-package-encoding-and-decoding",
+          "name": "Deterministic real ZIP package encoding and decoding",
+          "evidence": ["package-and-worker-hardening"]
+        },
+        {
+          "id": "supplement.package-and-worker-hardening.archive-crc-size-duplicate-name-version-and-traversal-validation",
+          "name": "Archive CRC, size, duplicate-name, version, and traversal validation",
+          "evidence": ["package-and-worker-hardening"]
+        },
+        {
+          "id": "supplement.package-and-worker-hardening.automatic-worker-lease-heartbeat-and-control-plane-stop-polling",
+          "name": "Automatic worker lease heartbeat and control-plane stop polling",
+          "evidence": ["package-and-worker-hardening"]
+        },
+        {
+          "id": "supplement.package-and-worker-hardening.graceful-and-forced-worker-stop-semantics",
+          "name": "Graceful and forced worker stop semantics",
+          "evidence": ["package-and-worker-hardening"]
+        },
+        {
+          "id": "supplement.package-and-worker-hardening.lost-lease-cancellation-without-terminal-overwrite",
+          "name": "Lost-lease cancellation without terminal overwrite",
+          "evidence": ["package-and-worker-hardening"]
+        }
       ]
+    }
+  ],
+  "extensions": [
+    {
+      "id": "extension.openrouter",
+      "classification": "extension",
+      "included_in_python_parity_score": false,
+      "name": "OpenRouter aggregator provider",
+      "rationale": "TypeScript-only extension; excluded from the Python parity score.",
+      "evidence": ["openrouter"]
     }
   ]
 }

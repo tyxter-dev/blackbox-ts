@@ -1,0 +1,684 @@
+{
+  "generated_by": "python-parent",
+  "models": [
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1000000,
+      "display_name": "GPT-5.5",
+      "family": "gpt-5",
+      "id": "gpt-5.5",
+      "max_output_tokens": 128000,
+      "metadata": {
+        "knowledge_cutoff": "2025-12-01",
+        "reasoning_efforts": ["none", "low", "medium", "high", "xhigh"]
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "openai",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1050000,
+      "display_name": "GPT-5.4",
+      "family": "gpt-5",
+      "id": "gpt-5.4",
+      "max_output_tokens": 128000,
+      "metadata": {
+        "knowledge_cutoff": "2025-08-31",
+        "reasoning_efforts": ["none", "low", "medium", "high", "xhigh"]
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "openai",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": ["gpt-5.4-mini-2026-03-17"],
+      "catalog_version": "2026-05-06",
+      "context_window": 400000,
+      "display_name": "GPT-5.4 mini",
+      "family": "gpt-5",
+      "id": "gpt-5.4-mini",
+      "max_output_tokens": 128000,
+      "metadata": {
+        "knowledge_cutoff": "2025-08-31",
+        "reasoning_efforts": ["none", "low", "medium", "high", "xhigh"]
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "openai",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1000000,
+      "display_name": "Claude Opus 4.7",
+      "family": "claude-opus",
+      "id": "claude-opus-4-7",
+      "max_output_tokens": 128000,
+      "metadata": {
+        "training_cutoff": "2026-01"
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "anthropic",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1000000,
+      "display_name": "Claude Sonnet 4.6",
+      "family": "claude-sonnet",
+      "id": "claude-sonnet-4-6",
+      "max_output_tokens": 64000,
+      "metadata": {
+        "training_cutoff": "2026-01"
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "anthropic",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "active"
+    },
+    {
+      "aliases": ["claude-haiku-4-5"],
+      "catalog_version": "2026-05-06",
+      "context_window": 200000,
+      "display_name": "Claude Haiku 4.5",
+      "family": "claude-haiku",
+      "id": "claude-haiku-4-5-20251001",
+      "max_output_tokens": 64000,
+      "metadata": {
+        "training_cutoff": "2025-07"
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "anthropic",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "active"
+    },
+    {
+      "aliases": ["claude-opus-4-1-20250805"],
+      "catalog_version": "2026-05-06",
+      "display_name": "Claude Opus 4.1",
+      "family": "claude-opus",
+      "id": "claude-opus-4-1",
+      "metadata": {},
+      "modalities": ["text"],
+      "provider": "anthropic",
+      "replacement_model": "claude-opus-4-7",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "unknown"
+    },
+    {
+      "aliases": ["claude-opus-4-20250514"],
+      "catalog_version": "2026-05-06",
+      "display_name": "Claude Opus 4",
+      "family": "claude-opus",
+      "id": "claude-opus-4",
+      "metadata": {},
+      "modalities": ["text"],
+      "provider": "anthropic",
+      "replacement_model": "claude-opus-4-7",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "unknown"
+    },
+    {
+      "aliases": ["claude-sonnet-4-5-20250929"],
+      "catalog_version": "2026-05-06",
+      "context_window": 200000,
+      "display_name": "Claude Sonnet 4.5",
+      "family": "claude-sonnet",
+      "id": "claude-sonnet-4-5",
+      "max_output_tokens": 64000,
+      "metadata": {
+        "context_window_beta": 1000000
+      },
+      "modalities": ["text"],
+      "provider": "anthropic",
+      "replacement_model": "claude-sonnet-4-6",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "unknown"
+    },
+    {
+      "aliases": ["claude-sonnet-4-20250514"],
+      "catalog_version": "2026-05-06",
+      "display_name": "Claude Sonnet 4",
+      "family": "claude-sonnet",
+      "id": "claude-sonnet-4",
+      "metadata": {},
+      "modalities": ["text"],
+      "provider": "anthropic",
+      "replacement_model": "claude-sonnet-4-6",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "unknown"
+    },
+    {
+      "aliases": ["claude-3-5-haiku-20241022"],
+      "catalog_version": "2026-05-06",
+      "display_name": "Claude Haiku 3.5",
+      "family": "claude-haiku",
+      "id": "claude-haiku-3-5",
+      "metadata": {},
+      "modalities": ["text"],
+      "provider": "anthropic",
+      "replacement_model": "claude-haiku-4-5",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+      "status": "unknown"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "display_name": "Gemini 3 Flash Preview",
+      "family": "gemini-3",
+      "id": "gemini-3-flash-preview",
+      "metadata": {},
+      "modalities": ["text", "image", "audio", "video", "pdf", "tools"],
+      "provider": "google",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/models",
+      "status": "preview"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1048576,
+      "display_name": "Gemini 2.5 Pro",
+      "family": "gemini-2.5",
+      "id": "gemini-2.5-pro",
+      "max_output_tokens": 65536,
+      "metadata": {},
+      "modalities": ["text", "image", "audio", "video", "pdf", "tools"],
+      "provider": "google",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1048576,
+      "display_name": "Gemini 2.5 Flash",
+      "family": "gemini-2.5",
+      "id": "gemini-2.5-flash",
+      "max_output_tokens": 65536,
+      "metadata": {},
+      "modalities": ["text", "image", "audio", "video", "pdf", "tools"],
+      "provider": "google",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1048576,
+      "display_name": "Gemini 2.5 Flash-Lite",
+      "family": "gemini-2.5",
+      "id": "gemini-2.5-flash-lite",
+      "max_output_tokens": 65536,
+      "metadata": {},
+      "modalities": ["text", "image", "audio", "video", "pdf", "tools"],
+      "provider": "google",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 1000000,
+      "display_name": "Grok 4.3",
+      "family": "grok-4",
+      "id": "grok-4.3",
+      "metadata": {},
+      "modalities": ["text", "image", "tools"],
+      "provider": "xai",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models",
+      "status": "active"
+    },
+    {
+      "aliases": ["grok-4.20-non-reasoning"],
+      "catalog_version": "2026-05-06",
+      "context_window": 2000000,
+      "display_name": "Grok 4.20 non-reasoning",
+      "family": "grok-4",
+      "id": "grok-4.20-0309-non-reasoning",
+      "metadata": {},
+      "modalities": ["text", "image", "tools"],
+      "provider": "xai",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models",
+      "status": "active"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 2000000,
+      "display_name": "Grok 4.1 Fast Reasoning",
+      "family": "grok-4",
+      "id": "grok-4-1-fast-reasoning",
+      "metadata": {
+        "deprecates_at": "2026-05-15T12:00:00-07:00",
+        "deprecation_url": "https://docs.x.ai/developers/migration/may-15-deprecation"
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "xai",
+      "replacement_model": "grok-4.3",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models",
+      "status": "deprecating"
+    },
+    {
+      "aliases": [],
+      "catalog_version": "2026-05-06",
+      "context_window": 2000000,
+      "display_name": "Grok 4.1 Fast Non-Reasoning",
+      "family": "grok-4",
+      "id": "grok-4-1-fast-non-reasoning",
+      "metadata": {
+        "deprecates_at": "2026-05-15T12:00:00-07:00",
+        "deprecation_url": "https://docs.x.ai/developers/migration/may-15-deprecation"
+      },
+      "modalities": ["text", "image", "tools"],
+      "provider": "xai",
+      "replacement_model": "grok-4.20-0309-non-reasoning",
+      "retrieved_at": "2026-05-06",
+      "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models",
+      "status": "deprecating"
+    }
+  ],
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "pricing": [
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gpt-5.5",
+      "provider": "openai",
+      "rates": {
+        "cache_creation_per_million": 5.0,
+        "cache_read_per_million": 0.5,
+        "input_per_million": 5.0,
+        "output_per_million": 30.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gpt-5.4",
+      "provider": "openai",
+      "rates": {
+        "cache_creation_per_million": 2.5,
+        "cache_read_per_million": 0.25,
+        "input_per_million": 2.5,
+        "output_per_million": 15.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gpt-5.4-mini",
+      "provider": "openai",
+      "rates": {
+        "cache_creation_per_million": 0.75,
+        "cache_read_per_million": 0.075,
+        "input_per_million": 0.75,
+        "output_per_million": 4.5
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-opus-4-1",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 18.75,
+        "cache_read_per_million": 1.5,
+        "input_per_million": 15.0,
+        "output_per_million": 75.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-opus-4-1-20250805",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 18.75,
+        "cache_read_per_million": 1.5,
+        "input_per_million": 15.0,
+        "output_per_million": 75.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-opus-4",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 18.75,
+        "cache_read_per_million": 1.5,
+        "input_per_million": 15.0,
+        "output_per_million": 75.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-opus-4-20250514",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 18.75,
+        "cache_read_per_million": 1.5,
+        "input_per_million": 15.0,
+        "output_per_million": 75.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-sonnet-4-5",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 3.75,
+        "cache_read_per_million": 0.30000000000000004,
+        "input_per_million": 3.0,
+        "output_per_million": 15.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-sonnet-4-5-20250929",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 3.75,
+        "cache_read_per_million": 0.30000000000000004,
+        "input_per_million": 3.0,
+        "output_per_million": 15.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-sonnet-4",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 3.75,
+        "cache_read_per_million": 0.30000000000000004,
+        "input_per_million": 3.0,
+        "output_per_million": 15.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-sonnet-4-20250514",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 3.75,
+        "cache_read_per_million": 0.30000000000000004,
+        "input_per_million": 3.0,
+        "output_per_million": 15.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-haiku-4-5",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 1.25,
+        "cache_read_per_million": 0.1,
+        "input_per_million": 1.0,
+        "output_per_million": 5.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-haiku-4-5-20251001",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 1.25,
+        "cache_read_per_million": 0.1,
+        "input_per_million": 1.0,
+        "output_per_million": 5.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-haiku-3-5",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 1.0,
+        "cache_read_per_million": 0.08000000000000002,
+        "input_per_million": 0.8,
+        "output_per_million": 4.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "claude-3-5-haiku-20241022",
+      "provider": "anthropic",
+      "rates": {
+        "cache_creation_per_million": 1.0,
+        "cache_read_per_million": 0.08000000000000002,
+        "input_per_million": 0.8,
+        "output_per_million": 4.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gemini-3-flash-preview",
+      "provider": "google",
+      "rates": {
+        "cache_creation_per_million": 0.5,
+        "cache_read_per_million": 0.05,
+        "input_per_million": 0.5,
+        "output_per_million": 3.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gemini-2.5-pro",
+      "provider": "google",
+      "rates": {
+        "cache_creation_per_million": 1.25,
+        "cache_read_per_million": 0.125,
+        "input_per_million": 1.25,
+        "output_per_million": 10.0
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gemini-2.5-flash",
+      "provider": "google",
+      "rates": {
+        "cache_creation_per_million": 0.3,
+        "cache_read_per_million": 0.03,
+        "input_per_million": 0.3,
+        "output_per_million": 2.5
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "gemini-2.5-flash-lite",
+      "provider": "google",
+      "rates": {
+        "cache_creation_per_million": 0.1,
+        "cache_read_per_million": 0.01,
+        "input_per_million": 0.1,
+        "output_per_million": 0.4
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "grok-4-1-fast-reasoning",
+      "provider": "xai",
+      "rates": {
+        "cache_creation_per_million": 0.2,
+        "input_per_million": 0.2,
+        "output_per_million": 0.5
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    },
+    {
+      "currency": "USD",
+      "effective_at": "2026-05-06T00:00:00.000Z",
+      "metadata": {
+        "replaceable": true
+      },
+      "model": "grok-4-1-fast-non-reasoning",
+      "provider": "xai",
+      "rates": {
+        "cache_creation_per_million": 0.2,
+        "input_per_million": 0.2,
+        "output_per_million": 0.5
+      },
+      "source": "blackbox-bundled",
+      "version": "2026-05-06"
+    }
+  ],
+  "schema_version": 1
+}

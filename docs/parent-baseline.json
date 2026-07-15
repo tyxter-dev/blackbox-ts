@@ -1,0 +1,1101 @@
+{
+  "schema_version": 1,
+  "parent_repository": "tyxter-dev/blackbox",
+  "parent_default_branch": "master",
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "parent_tree": "1d54b26dc1d4a60cc07bfe2cb55e80deef951c1c",
+  "committed_at": "2026-06-27T18:28:22Z",
+  "feature_catalog": {
+    "path": "FEATURES.md",
+    "sha256": "e60a24b4039ee4cfcd5e50fb9798e65372754ae3982a4751720e649560495d32"
+  },
+  "evidence_files": [
+    {
+      "path": "FEATURES.md",
+      "blob_sha": "cf627ce04e3ca309f711fb85a4e1c872856dbbd4",
+      "size": 31958
+    },
+    {
+      "path": "src/blackbox/core/accounting.py",
+      "blob_sha": "e781e58d9dff0c034ba3e3c93d4aede023db8c1d",
+      "size": 20066
+    },
+    {
+      "path": "src/blackbox/core/approvals.py",
+      "blob_sha": "1d369a5994d13fcaee62bca14aa8cdf3191d051f",
+      "size": 995
+    },
+    {
+      "path": "src/blackbox/core/artifacts.py",
+      "blob_sha": "04e6ed4a2746afde63aedd3761a72a6237107f30",
+      "size": 1155
+    },
+    {
+      "path": "src/blackbox/core/cache.py",
+      "blob_sha": "ae4b99c15999aca6908543bf28b66d01eff15d39",
+      "size": 21851
+    },
+    {
+      "path": "src/blackbox/core/capabilities.py",
+      "blob_sha": "4ef7b9d4ad6fa9c066a10e44ecacefb05f39e925",
+      "size": 15726
+    },
+    {
+      "path": "src/blackbox/core/events.py",
+      "blob_sha": "be53bd7785d8113f74e08c4028281f186e1433ff",
+      "size": 10031
+    },
+    {
+      "path": "src/blackbox/core/policy.py",
+      "blob_sha": "d4520354ae26490b6f433a746f30044ed64a9ed1",
+      "size": 2950
+    },
+    {
+      "path": "src/blackbox/core/results.py",
+      "blob_sha": "1a0be2b1ffb0a85231eb7a105ca0d792d42f76db",
+      "size": 15616
+    },
+    {
+      "path": "src/blackbox/core/serialization.py",
+      "blob_sha": "e9c7497b7bd2da590c725485fa52ee59a81a1fb1",
+      "size": 41074
+    },
+    {
+      "path": "src/blackbox/core/sessions.py",
+      "blob_sha": "083b032ed810ede5f087acb6ab8072257c797132",
+      "size": 1732
+    },
+    {
+      "path": "src/blackbox/core/state.py",
+      "blob_sha": "88b896da25e55f44af489421d9fb85a9e87a739d",
+      "size": 1343
+    },
+    {
+      "path": "src/blackbox/core/stores.py",
+      "blob_sha": "1c8c846bbb3508427dc9265dd940fa725fa0a84f",
+      "size": 39916
+    },
+    {
+      "path": "src/blackbox/mcp/client.py",
+      "blob_sha": "1d563f76dc03d8f1ebb3659d9b984ed480be114a",
+      "size": 5816
+    },
+    {
+      "path": "src/blackbox/mcp/security.py",
+      "blob_sha": "e4e1fc231e1735ff77edeb51ec29dc0b9d4e7dad",
+      "size": 8065
+    },
+    {
+      "path": "src/blackbox/mcp/server.py",
+      "blob_sha": "717f44745b5cd764da1be444b3c27285d819c465",
+      "size": 15729
+    },
+    {
+      "path": "src/blackbox/mcp/transports.py",
+      "blob_sha": "132f4237b0ab8f529c1be00abd074cbbfaa5920c",
+      "size": 18285
+    },
+    {
+      "path": "src/blackbox/observability/sinks.py",
+      "blob_sha": "3c0a857aa94ad9ef3824b57ea364112f9c6f6456",
+      "size": 3635
+    },
+    {
+      "path": "src/blackbox/observability/traces.py",
+      "blob_sha": "f0bf085a05e6b1ba5f38a42709c05137b7b0601e",
+      "size": 22894
+    },
+    {
+      "path": "src/blackbox/output/schema.py",
+      "blob_sha": "39f8e01f7bf68c8d90a6d0a005626af22ff41665",
+      "size": 6523
+    },
+    {
+      "path": "src/blackbox/planning/prompts.py",
+      "blob_sha": "cde8638d7624442564449faaf6ddef903d4382e4",
+      "size": 30123
+    },
+    {
+      "path": "src/blackbox/providers/base.py",
+      "blob_sha": "ac1a37a331ea1630398f87db70203631e6577fd6",
+      "size": 8817
+    },
+    {
+      "path": "src/blackbox/providers/catalog.py",
+      "blob_sha": "3ebc7b7fd61f50d8e2b9b0c256c4e2797bde0e5a",
+      "size": 10477
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/anthropic_messages/provider.py",
+      "blob_sha": "77b175aeaa45dbdb35923fca378155e40e2e712f",
+      "size": 44943
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/capability_validation.py",
+      "blob_sha": "303c28507bd833a8fec3cab7cb9ff37e57162d5e",
+      "size": 10703
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/gemini_generate_content/provider.py",
+      "blob_sha": "c4b7d4c952ecc0e8e17b87e4a211af26cfe73bd1",
+      "size": 41192
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/openai_responses/provider.py",
+      "blob_sha": "6a6ca9e5a89efb4805afc7c1bc0bf71444cdf0ba",
+      "size": 48631
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/xai_responses/provider.py",
+      "blob_sha": "80e6c5c25731550ed6db7d7573e7e47ebc1f0f49",
+      "size": 6756
+    },
+    {
+      "path": "src/blackbox/providers/model_catalog.py",
+      "blob_sha": "c1e3f59e7f30a887b33dcb84a68e842321796a96",
+      "size": 3598
+    },
+    {
+      "path": "src/blackbox/realtime/provider.py",
+      "blob_sha": "c0b0469b2492d6b7ae793f4a78cdfb1ac61142fa",
+      "size": 5159
+    },
+    {
+      "path": "src/blackbox/realtime/runtime.py",
+      "blob_sha": "96b960f298e4553a8a48756f83d4a8b5941bbef4",
+      "size": 29580
+    },
+    {
+      "path": "src/blackbox/runtime/agent_loop.py",
+      "blob_sha": "91ba9906ed777b39b60417c879de2701b10a803e",
+      "size": 31916
+    },
+    {
+      "path": "src/blackbox/runtime/agents.py",
+      "blob_sha": "87416c4e96e301d01e65d104b63839c6f0c3ba8f",
+      "size": 41432
+    },
+    {
+      "path": "src/blackbox/runtime/config.py",
+      "blob_sha": "0ed95d8e0ba79c04f9f8dcc706e2c6cab15341d9",
+      "size": 22730
+    },
+    {
+      "path": "src/blackbox/runtime/main.py",
+      "blob_sha": "cd3bb2bcc28b4cf16501fda008ed8e7aee35da00",
+      "size": 100643
+    },
+    {
+      "path": "src/blackbox/runtime/model.py",
+      "blob_sha": "6a57289a7719feb61b1f732ec94c1203d17e07a6",
+      "size": 19707
+    },
+    {
+      "path": "src/blackbox/runtime/output.py",
+      "blob_sha": "88adeecdb8f8f5978eb8d00ed7e338ff6ceeeddb",
+      "size": 8836
+    },
+    {
+      "path": "src/blackbox/runtime/prompting.py",
+      "blob_sha": "ad356ea3769dba4aef86d175df3813b7b7775df2",
+      "size": 625
+    },
+    {
+      "path": "src/blackbox/skills/specs.py",
+      "blob_sha": "cb34907794203dfddac3b4d192049c9708538a34",
+      "size": 17895
+    },
+    {
+      "path": "src/blackbox/tools/hosted_runtime.py",
+      "blob_sha": "e30ed7ed10b1586a6a06eb8c8dd46d7f37505e88",
+      "size": 8433
+    },
+    {
+      "path": "src/blackbox/tools/hosted/specs.py",
+      "blob_sha": "b40f6eab264d6fc22e0f9ae1728158e1670e055d",
+      "size": 26933
+    },
+    {
+      "path": "src/blackbox/tools/registry.py",
+      "blob_sha": "483bac52a102f013bead19b9da86a11d8054dee0",
+      "size": 7649
+    },
+    {
+      "path": "src/blackbox/tools/runtime.py",
+      "blob_sha": "41a439db20c2cf989a72d69fc32d3ca55bb5a3a3",
+      "size": 3675
+    },
+    {
+      "path": "src/blackbox/workers/anthropic.py",
+      "blob_sha": "a39ecb37669227c58f50026141c98f79f8b1ff89",
+      "size": 8808
+    },
+    {
+      "path": "src/blackbox/workers/source.py",
+      "blob_sha": "819e7aef5f0e96a2e505775fbbbc022f5e56740b",
+      "size": 10392
+    },
+    {
+      "path": "src/blackbox/workers/worker.py",
+      "blob_sha": "da37f3476e3169d1aa189d333ffb869a3f220777",
+      "size": 9895
+    },
+    {
+      "path": "src/blackbox/workspace_agents/package.py",
+      "blob_sha": "233b5d0288d7a7ffea7b601fc2a7468f2e1c5015",
+      "size": 10574
+    },
+    {
+      "path": "src/blackbox/workspace_agents/registry.py",
+      "blob_sha": "bdbe9c337c03adb63e4bea51af1587eda4a7d874",
+      "size": 9997
+    },
+    {
+      "path": "src/blackbox/workspace_agents/runtime.py",
+      "blob_sha": "2a274d2ddfea07271cbf3af0ecf68b9f6d1acc60",
+      "size": 5880
+    },
+    {
+      "path": "src/blackbox/workspace_agents/schedules.py",
+      "blob_sha": "4bcde8b2a06e37b972e88df80ef390c5be1eb475",
+      "size": 1316
+    },
+    {
+      "path": "src/blackbox/workspace_agents/validation.py",
+      "blob_sha": "b9d426da5ba332e70231f7934974406953d0fb39",
+      "size": 14403
+    },
+    {
+      "path": "src/blackbox/workspaces/git.py",
+      "blob_sha": "05f33406923eab01179295ca28e113e2dd506250",
+      "size": 5716
+    },
+    {
+      "path": "src/blackbox/workspaces/local.py",
+      "blob_sha": "b66c69c29053bc42c28f0d3489c48f23ea20a3fc",
+      "size": 27369
+    },
+    {
+      "path": "src/blackbox/workspaces/provider.py",
+      "blob_sha": "bb7f8d486d538a30e510ea3a866775b7edb0e596",
+      "size": 5023
+    },
+    {
+      "path": "src/blackbox/workspaces/runtime.py",
+      "blob_sha": "8e16929aa92557cf5c59d98e8bea291a7f6af8cd",
+      "size": 190
+    },
+    {
+      "path": "src/blackbox/workspaces/sandbox.py",
+      "blob_sha": "809765ea54c0fc9ca689c692df6c1b5b58148432",
+      "size": 23231
+    },
+    {
+      "path": "tests/contracts/test_capability_honesty.py",
+      "blob_sha": "a07c08433ee9b59ef44860fdcd352a4efcb94d83",
+      "size": 15268
+    },
+    {
+      "path": "tests/golden/anthropic/test_messages_event_mapping.py",
+      "blob_sha": "a01e50a9b5d0b0267219530ab9496d42b2985122",
+      "size": 12039
+    },
+    {
+      "path": "tests/golden/gemini/test_generate_content_event_mapping.py",
+      "blob_sha": "d4fc3c0b9ca0a005dff389f97670d3d11c524597",
+      "size": 7175
+    },
+    {
+      "path": "tests/golden/openai/test_responses_event_mapping.py",
+      "blob_sha": "78c930b02dd481353835b9e2498b77ab73b08382",
+      "size": 13987
+    },
+    {
+      "path": "tests/journey/model_provider/test_model_provider_journeys.py",
+      "blob_sha": "eb793b51a983d83686e8e9eeb0ecbbe3ab341243",
+      "size": 36049
+    },
+    {
+      "path": "tests/journey/workspace_provider/test_workspace_provider_journeys.py",
+      "blob_sha": "6f68fa9e2050a34ae62dd47f665d9051548602f6",
+      "size": 35524
+    },
+    {
+      "path": "tests/runtime/test_agent_session_persistence.py",
+      "blob_sha": "a080e0ed35aa55ee53a72730ca9191999053b225",
+      "size": 8141
+    },
+    {
+      "path": "tests/runtime/test_agent_session_run.py",
+      "blob_sha": "5ae4f70359c2083e650066b2c94281bccaf0a630",
+      "size": 8641
+    },
+    {
+      "path": "tests/runtime/test_model_capability_validation.py",
+      "blob_sha": "34cf6998be03a332adc6326b76764b066ce2bbb8",
+      "size": 8663
+    },
+    {
+      "path": "tests/runtime/test_prompt_composition.py",
+      "blob_sha": "b8514210cb5c706af114b4402bdbed693148fbbf",
+      "size": 10208
+    },
+    {
+      "path": "tests/runtime/test_provider_native_output.py",
+      "blob_sha": "65d8d2e2e646922cb9e352f4a02fa649aae379d0",
+      "size": 9013
+    },
+    {
+      "path": "tests/runtime/test_realtime_approvals.py",
+      "blob_sha": "0099380e21d640c2d4506c98c2aaa49c1f0a85e3",
+      "size": 1585
+    },
+    {
+      "path": "tests/runtime/test_realtime_runtime.py",
+      "blob_sha": "b76a3a32d487dc40c5bcfc30c5ffbc065d028bfd",
+      "size": 2072
+    },
+    {
+      "path": "tests/runtime/test_realtime_tool_loop.py",
+      "blob_sha": "0e20b48e4147a380056b9cc2a192c2728245a948",
+      "size": 2034
+    },
+    {
+      "path": "tests/runtime/test_resume_run_from_saved_state.py",
+      "blob_sha": "e5e097cf9d6f03422ccf038feaf4c7a106cd5834",
+      "size": 3018
+    },
+    {
+      "path": "tests/runtime/test_runtime_config.py",
+      "blob_sha": "cbc0686a88d35df717868252494e054a892b1239",
+      "size": 12454
+    },
+    {
+      "path": "tests/runtime/test_runtime_retry.py",
+      "blob_sha": "eec7d137697cc541ef17b0f4855039352b0761d2",
+      "size": 3919
+    },
+    {
+      "path": "tests/runtime/test_runtime_run.py",
+      "blob_sha": "cb4b9ceff47a0bcb541579d09731616b22bf5e8c",
+      "size": 24109
+    },
+    {
+      "path": "tests/runtime/test_runtime_stream.py",
+      "blob_sha": "d3fa9759f2aa99eb69fcfe90d68f29af09e377a9",
+      "size": 4723
+    },
+    {
+      "path": "tests/unit/core/test_data_models.py",
+      "blob_sha": "d47ae0e78bbdba719d8afe11e597a10bc1be8884",
+      "size": 3022
+    },
+    {
+      "path": "tests/unit/core/test_model_accounting.py",
+      "blob_sha": "536edd04fe7251581361ade2d708b4e2cb913092",
+      "size": 18345
+    },
+    {
+      "path": "tests/unit/core/test_provider_cache.py",
+      "blob_sha": "13a1498d664b081356f1e71ea833efb7b88628f5",
+      "size": 3286
+    },
+    {
+      "path": "tests/unit/core/test_session_store.py",
+      "blob_sha": "88badb6cb1c99de6deb8681fefaab1e7ec8340cf",
+      "size": 6309
+    },
+    {
+      "path": "tests/unit/core/test_state.py",
+      "blob_sha": "010ca505101dbc07ad807cc02ebf6410a8f5b8ed",
+      "size": 1304
+    },
+    {
+      "path": "tests/unit/core/test_stores_persistent.py",
+      "blob_sha": "1f41a7fd9215fc722cb2761898bef11fdce9553f",
+      "size": 8210
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_client.py",
+      "blob_sha": "6bcf393dffaf5f096a03cbda3405cbc37d34ffc1",
+      "size": 4958
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_security_validation.py",
+      "blob_sha": "6cf28612b1962918732a7ee0b6c0d894fac04316",
+      "size": 1989
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_server.py",
+      "blob_sha": "a057ab7b76abfe14f3df652eba9ab3c3f9faa9fb",
+      "size": 6177
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_transports.py",
+      "blob_sha": "74a091c3b16ca53071c1bb87ed4b846f1ac4475a",
+      "size": 1257
+    },
+    {
+      "path": "tests/unit/observability/test_event_sinks.py",
+      "blob_sha": "4e913871735ff2e4dc68734041143d32d9c9164b",
+      "size": 4604
+    },
+    {
+      "path": "tests/unit/observability/test_trace_spans.py",
+      "blob_sha": "cf9b4e9af11bca4dcebb7ddca258b2664f990ebc",
+      "size": 3052
+    },
+    {
+      "path": "tests/unit/output/test_output_schema.py",
+      "blob_sha": "df4cde010b9e3d9043c332ca8ea9b668a5d4920f",
+      "size": 3542
+    },
+    {
+      "path": "tests/unit/output/test_output_validation.py",
+      "blob_sha": "3d9ccc734084cdeb189316681578e5115b1076d6",
+      "size": 1104
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+      "blob_sha": "6969e58a49d501877a91c0e85530c7bd14829d87",
+      "size": 9612
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_model_provider_hardening.py",
+      "blob_sha": "3de22b04d47f859f578a0e61a5bac9cf5ab02592",
+      "size": 3307
+    },
+    {
+      "path": "tests/unit/providers/test_bundled_model_catalog.py",
+      "blob_sha": "5e0d43d39e600be4ab061f12f365580e4b8fdb13",
+      "size": 2855
+    },
+    {
+      "path": "tests/unit/providers/test_model_catalog.py",
+      "blob_sha": "57a18f7d34ab35c75fb848cc66cc8cc9c11e1612",
+      "size": 2504
+    },
+    {
+      "path": "tests/unit/skills/test_skills.py",
+      "blob_sha": "eeb006d0a321b3b33d68a3f815c371e922baa01e",
+      "size": 3699
+    },
+    {
+      "path": "tests/unit/tools/test_hosted_tools_v2.py",
+      "blob_sha": "0dba622aee43460d66dc7a71498186bb13fa26da",
+      "size": 4228
+    },
+    {
+      "path": "tests/unit/tools/test_hosted_tools.py",
+      "blob_sha": "165ce5a0de84fa06e77687c0effb86db2660b0a5",
+      "size": 6167
+    },
+    {
+      "path": "tests/unit/tools/test_tool_routing.py",
+      "blob_sha": "fce52dab09929866d2b628ce8af54355499818d7",
+      "size": 5363
+    },
+    {
+      "path": "tests/unit/tools/test_tool_runtime.py",
+      "blob_sha": "614ebbc2d1c532841b62cf5a9c4d403f98864b08",
+      "size": 6954
+    },
+    {
+      "path": "tests/unit/workers/test_anthropic_work_source.py",
+      "blob_sha": "de9d49be866970dba06c11f5a7d17bec86bd348c",
+      "size": 7518
+    },
+    {
+      "path": "tests/unit/workers/test_environment_worker.py",
+      "blob_sha": "d33acbc419d523c575cf59b56f1b7679e58d998f",
+      "size": 6728
+    },
+    {
+      "path": "tests/unit/workers/test_work_source.py",
+      "blob_sha": "8a5764aedf8eb8abd9a4703a64ed9d4cee4c791d",
+      "size": 4886
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_package.py",
+      "blob_sha": "f8b9564c448b237eaaeaeaa7c323393c7520f3c4",
+      "size": 8975
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_schedule_executor.py",
+      "blob_sha": "d3e4fe3f99c62190a660d204dba35009a04fe36a",
+      "size": 7120
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_sqlite_registry.py",
+      "blob_sha": "caeae279b06cde21beb4405eabc9cb12f77effe1",
+      "size": 3563
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_validation.py",
+      "blob_sha": "5fe54cf13c9a9abe75c10d8e9f3cd9b84f39b0f4",
+      "size": 6184
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_workspace_agents.py",
+      "blob_sha": "b8dd902e49d4d4193bd6a1a9aa261cc1d8b91a25",
+      "size": 10414
+    },
+    {
+      "path": "tests/unit/workspaces/test_local_workspace_provider.py",
+      "blob_sha": "a6efab33ae5e6fa0a9943bb208d890382fd62210",
+      "size": 3749
+    },
+    {
+      "path": "tests/unit/workspaces/test_sandbox_workspace_provider.py",
+      "blob_sha": "4042faa0bdf398c97487e63f3b22670263da7bd8",
+      "size": 2469
+    },
+    {
+      "path": "tests/unit/workspaces/test_workspace_runtime.py",
+      "blob_sha": "625d1105683d43123714588daef04ff72cb99ea2",
+      "size": 9346
+    }
+  ],
+  "test_files": [
+    {
+      "path": "tests/contracts/test_capability_honesty.py",
+      "blob_sha": "a07c08433ee9b59ef44860fdcd352a4efcb94d83",
+      "size": 15268
+    },
+    {
+      "path": "tests/e2e/test_diet_coach_example.py",
+      "blob_sha": "0e5e6794c83f42afc172637717f14c087f307013",
+      "size": 1520
+    },
+    {
+      "path": "tests/golden/anthropic/test_messages_event_mapping.py",
+      "blob_sha": "a01e50a9b5d0b0267219530ab9496d42b2985122",
+      "size": 12039
+    },
+    {
+      "path": "tests/golden/gemini_live/test_event_mapping.py",
+      "blob_sha": "5191ac014eb4e978d44d63b255b5a0da510f8420",
+      "size": 3180
+    },
+    {
+      "path": "tests/golden/gemini/test_generate_content_event_mapping.py",
+      "blob_sha": "d4fc3c0b9ca0a005dff389f97670d3d11c524597",
+      "size": 7175
+    },
+    {
+      "path": "tests/golden/openai_realtime/test_event_mapping.py",
+      "blob_sha": "8a55d979cd6fca838ca40bf8dc57043d61a5d475",
+      "size": 3518
+    },
+    {
+      "path": "tests/golden/openai/test_hosted_tools_v2_event_mapping.py",
+      "blob_sha": "01158bebff1dc710d41de16e3072114577b72a17",
+      "size": 3164
+    },
+    {
+      "path": "tests/golden/openai/test_responses_event_mapping.py",
+      "blob_sha": "78c930b02dd481353835b9e2498b77ab73b08382",
+      "size": 13987
+    },
+    {
+      "path": "tests/integration/anthropic/test_cache_and_cost.py",
+      "blob_sha": "02482f27740999f04a33d7920294a0fceab3b0a4",
+      "size": 2442
+    },
+    {
+      "path": "tests/integration/anthropic/test_messages_smoke.py",
+      "blob_sha": "271e1c458d4b6997322a6b02eeb445884456843f",
+      "size": 1255
+    },
+    {
+      "path": "tests/integration/gemini/test_cache_and_cost.py",
+      "blob_sha": "831380b62d808737ad71236b8b3af49aaef22534",
+      "size": 2598
+    },
+    {
+      "path": "tests/integration/gemini/test_generate_content_smoke.py",
+      "blob_sha": "1516fbd5b5aee472f1261a40e2ea9b0d62b652ae",
+      "size": 1279
+    },
+    {
+      "path": "tests/integration/openai/test_cache_and_cost.py",
+      "blob_sha": "54a6ba8e44d98aaa7a6cd853304883127770e87f",
+      "size": 2144
+    },
+    {
+      "path": "tests/integration/openai/test_responses_smoke.py",
+      "blob_sha": "62f7d42a00e4c6858f4d7e8efc8dee13ec86850d",
+      "size": 3933
+    },
+    {
+      "path": "tests/integration/xai/test_cost_tracking.py",
+      "blob_sha": "a5169706698fb82510bed1130f8f9b3239def2a7",
+      "size": 1417
+    },
+    {
+      "path": "tests/integration/xai/test_responses_smoke.py",
+      "blob_sha": "80e5c1b4c2fe569d95b8e97241f39e5e9f8599fc",
+      "size": 1123
+    },
+    {
+      "path": "tests/journey/agent_provider/test_agent_provider_journeys.py",
+      "blob_sha": "a2a02c8b418acf87162e2ac2b46aac11f606d928",
+      "size": 31203
+    },
+    {
+      "path": "tests/journey/business_cases/test_bella_cucina_returning_guest.py",
+      "blob_sha": "517f714cb217fa6b18bbf7ae2610e9fd751f6431",
+      "size": 1148
+    },
+    {
+      "path": "tests/journey/model_provider/test_model_provider_journeys.py",
+      "blob_sha": "eb793b51a983d83686e8e9eeb0ecbbe3ab341243",
+      "size": 36049
+    },
+    {
+      "path": "tests/journey/workspace_provider/test_workspace_provider_journeys.py",
+      "blob_sha": "6f68fa9e2050a34ae62dd47f665d9051548602f6",
+      "size": 35524
+    },
+    {
+      "path": "tests/perf/test_benchmarks.py",
+      "blob_sha": "28929325f7926a7afeb454f86651cce1f3bf567b",
+      "size": 3990
+    },
+    {
+      "path": "tests/runtime/test_agent_session_persistence.py",
+      "blob_sha": "a080e0ed35aa55ee53a72730ca9191999053b225",
+      "size": 8141
+    },
+    {
+      "path": "tests/runtime/test_agent_session_run.py",
+      "blob_sha": "5ae4f70359c2083e650066b2c94281bccaf0a630",
+      "size": 8641
+    },
+    {
+      "path": "tests/runtime/test_agent_webhook_ingress.py",
+      "blob_sha": "60141be4747566f2a0eff05d3cfbc5b7be19a7c3",
+      "size": 6131
+    },
+    {
+      "path": "tests/runtime/test_claude_code_agent_provider.py",
+      "blob_sha": "cc6dd84e516761a9b0d548b23ffa32539844a66d",
+      "size": 13856
+    },
+    {
+      "path": "tests/runtime/test_dynamic_tool_routing.py",
+      "blob_sha": "0d83e9a42ffd617a653ee5acf40760bb1d23cb27",
+      "size": 7315
+    },
+    {
+      "path": "tests/runtime/test_dynamic_toolsets.py",
+      "blob_sha": "52adc8c032e8fa6580034decfe153a8ea514809c",
+      "size": 14150
+    },
+    {
+      "path": "tests/runtime/test_hosted_tool_loop.py",
+      "blob_sha": "633a73af9d3010c8491191b8068c472bb6ab97fc",
+      "size": 5928
+    },
+    {
+      "path": "tests/runtime/test_local_agent_provider.py",
+      "blob_sha": "b3935cf2274814c40707e549b16ae0d11e72b239",
+      "size": 14008
+    },
+    {
+      "path": "tests/runtime/test_loop_input_shapes.py",
+      "blob_sha": "ced7c62e2691f48cc10be10144c0f222f679073f",
+      "size": 3730
+    },
+    {
+      "path": "tests/runtime/test_maia_business_case_example.py",
+      "blob_sha": "57cc4e54482aaf7c461545a0a01c5f4401ff5626",
+      "size": 4919
+    },
+    {
+      "path": "tests/runtime/test_mcp_toolset_runtime.py",
+      "blob_sha": "0e3118c1105dcae0b72c3c4f89b90d509403cc02",
+      "size": 8170
+    },
+    {
+      "path": "tests/runtime/test_model_capability_validation.py",
+      "blob_sha": "34cf6998be03a332adc6326b76764b066ce2bbb8",
+      "size": 8663
+    },
+    {
+      "path": "tests/runtime/test_observability_presets.py",
+      "blob_sha": "e6575f884f43d3aa6c358c435be0bee5c63b6ad9",
+      "size": 3260
+    },
+    {
+      "path": "tests/runtime/test_openai_agents_provider.py",
+      "blob_sha": "4230f0c44567dc040a9ebbbbd51b39d771a21219",
+      "size": 7205
+    },
+    {
+      "path": "tests/runtime/test_prompt_composition.py",
+      "blob_sha": "b8514210cb5c706af114b4402bdbed693148fbbf",
+      "size": 10208
+    },
+    {
+      "path": "tests/runtime/test_provider_fallback.py",
+      "blob_sha": "e3e4aa048a1a303f5d1135eadbac115c9ae2e76d",
+      "size": 6542
+    },
+    {
+      "path": "tests/runtime/test_provider_native_output.py",
+      "blob_sha": "65d8d2e2e646922cb9e352f4a02fa649aae379d0",
+      "size": 9013
+    },
+    {
+      "path": "tests/runtime/test_realtime_approvals.py",
+      "blob_sha": "0099380e21d640c2d4506c98c2aaa49c1f0a85e3",
+      "size": 1585
+    },
+    {
+      "path": "tests/runtime/test_realtime_runtime.py",
+      "blob_sha": "b76a3a32d487dc40c5bcfc30c5ffbc065d028bfd",
+      "size": 2072
+    },
+    {
+      "path": "tests/runtime/test_realtime_tool_loop.py",
+      "blob_sha": "0e20b48e4147a380056b9cc2a192c2728245a948",
+      "size": 2034
+    },
+    {
+      "path": "tests/runtime/test_resume_run_from_saved_state.py",
+      "blob_sha": "e5e097cf9d6f03422ccf038feaf4c7a106cd5834",
+      "size": 3018
+    },
+    {
+      "path": "tests/runtime/test_runtime_config.py",
+      "blob_sha": "cbc0686a88d35df717868252494e054a892b1239",
+      "size": 12454
+    },
+    {
+      "path": "tests/runtime/test_runtime_retry.py",
+      "blob_sha": "eec7d137697cc541ef17b0f4855039352b0761d2",
+      "size": 3919
+    },
+    {
+      "path": "tests/runtime/test_runtime_run.py",
+      "blob_sha": "cb4b9ceff47a0bcb541579d09731616b22bf5e8c",
+      "size": 24109
+    },
+    {
+      "path": "tests/runtime/test_runtime_skills.py",
+      "blob_sha": "b154a8037e0dca9cb37b70017e9bc3694ab7c313",
+      "size": 2658
+    },
+    {
+      "path": "tests/runtime/test_runtime_stream.py",
+      "blob_sha": "d3fa9759f2aa99eb69fcfe90d68f29af09e377a9",
+      "size": 4723
+    },
+    {
+      "path": "tests/runtime/test_workspace_tool_loop.py",
+      "blob_sha": "b5bf4cb9f831946994418446d6786e26ad836ff4",
+      "size": 5960
+    },
+    {
+      "path": "tests/unit/compat/test_chat_compat.py",
+      "blob_sha": "3c1820a328909cedd25c78d031fcde32f9c3950c",
+      "size": 1324
+    },
+    {
+      "path": "tests/unit/compat/test_compat_providers.py",
+      "blob_sha": "9cd2639ca3576e6bc6dadcccaf1e42d4aa96fb36",
+      "size": 5099
+    },
+    {
+      "path": "tests/unit/core/test_data_models.py",
+      "blob_sha": "d47ae0e78bbdba719d8afe11e597a10bc1be8884",
+      "size": 3022
+    },
+    {
+      "path": "tests/unit/core/test_errors.py",
+      "blob_sha": "f6c0fa243321461aefc166a8990e4a2379cb16d9",
+      "size": 824
+    },
+    {
+      "path": "tests/unit/core/test_model_accounting.py",
+      "blob_sha": "536edd04fe7251581361ade2d708b4e2cb913092",
+      "size": 18345
+    },
+    {
+      "path": "tests/unit/core/test_multimodal_content.py",
+      "blob_sha": "d33d5916675e56390286d9785206bf2609f313f3",
+      "size": 2788
+    },
+    {
+      "path": "tests/unit/core/test_pricing_catalog.py",
+      "blob_sha": "0666cd7fa16d59f39a59e28fd60b4f85f9cc4f4f",
+      "size": 5396
+    },
+    {
+      "path": "tests/unit/core/test_provider_cache.py",
+      "blob_sha": "13a1498d664b081356f1e71ea833efb7b88628f5",
+      "size": 3286
+    },
+    {
+      "path": "tests/unit/core/test_session_state_serialization.py",
+      "blob_sha": "4ba311cbd1a94e466a208ca911f1563ace9e7493",
+      "size": 4294
+    },
+    {
+      "path": "tests/unit/core/test_session_store.py",
+      "blob_sha": "88badb6cb1c99de6deb8681fefaab1e7ec8340cf",
+      "size": 6309
+    },
+    {
+      "path": "tests/unit/core/test_state.py",
+      "blob_sha": "010ca505101dbc07ad807cc02ebf6410a8f5b8ed",
+      "size": 1304
+    },
+    {
+      "path": "tests/unit/core/test_stores_persistent.py",
+      "blob_sha": "1f41a7fd9215fc722cb2761898bef11fdce9553f",
+      "size": 8210
+    },
+    {
+      "path": "tests/unit/core/test_stores.py",
+      "blob_sha": "f4b2f6ec76880bfb538d7c740708d35a0bc8a7d2",
+      "size": 3967
+    },
+    {
+      "path": "tests/unit/core/test_streams.py",
+      "blob_sha": "d41dd38fb1e43127428b2d7e1911c1dc5d8ecd4c",
+      "size": 586
+    },
+    {
+      "path": "tests/unit/integrations/test_google_integrations.py",
+      "blob_sha": "3e21370e188e54d0c095eccd58a480d12bf6aa78",
+      "size": 2590
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_auth.py",
+      "blob_sha": "139dbb8f8a2b110c26a95cf72ef92d4d8d8ef4df",
+      "size": 5068
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_client.py",
+      "blob_sha": "6bcf393dffaf5f096a03cbda3405cbc37d34ffc1",
+      "size": 4958
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_connector.py",
+      "blob_sha": "e6acb4e06c38a8b371262e423fe6a6bff50125b3",
+      "size": 17409
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_security_validation.py",
+      "blob_sha": "6cf28612b1962918732a7ee0b6c0d894fac04316",
+      "size": 1989
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_server.py",
+      "blob_sha": "a057ab7b76abfe14f3df652eba9ab3c3f9faa9fb",
+      "size": 6177
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_spec.py",
+      "blob_sha": "daf8e96faa05c6c36f28e57d64acf7e6883861d8",
+      "size": 2153
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_toolset.py",
+      "blob_sha": "7407b24e4f16d3ed9a499bcf0740121015a5cce7",
+      "size": 5159
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_transports.py",
+      "blob_sha": "74a091c3b16ca53071c1bb87ed4b846f1ac4475a",
+      "size": 1257
+    },
+    {
+      "path": "tests/unit/mcp/test_mcp_trust_policy.py",
+      "blob_sha": "0f07e797218eac99e8cebee7b41dfbc14f6e8250",
+      "size": 4790
+    },
+    {
+      "path": "tests/unit/observability/test_event_sinks.py",
+      "blob_sha": "4e913871735ff2e4dc68734041143d32d9c9164b",
+      "size": 4604
+    },
+    {
+      "path": "tests/unit/observability/test_metrics.py",
+      "blob_sha": "9efc2404b13879661ea4ddc590f9e9df8b9cf220",
+      "size": 3829
+    },
+    {
+      "path": "tests/unit/observability/test_observability_workflows.py",
+      "blob_sha": "7e6353176dcb4bf4067d3663ef9e2f568333a60f",
+      "size": 8795
+    },
+    {
+      "path": "tests/unit/observability/test_presets.py",
+      "blob_sha": "b9236602702c5bf55514f194518bf12a10c5e648",
+      "size": 2819
+    },
+    {
+      "path": "tests/unit/observability/test_trace_spans.py",
+      "blob_sha": "cf9b4e9af11bca4dcebb7ddca258b2664f990ebc",
+      "size": 3052
+    },
+    {
+      "path": "tests/unit/output/test_output_schema.py",
+      "blob_sha": "df4cde010b9e3d9043c332ca8ea9b668a5d4920f",
+      "size": 3542
+    },
+    {
+      "path": "tests/unit/output/test_output_validation.py",
+      "blob_sha": "3d9ccc734084cdeb189316681578e5115b1076d6",
+      "size": 1104
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_echo_model.py",
+      "blob_sha": "faab1794ed197985394618367e43096118db930e",
+      "size": 851
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+      "blob_sha": "6969e58a49d501877a91c0e85530c7bd14829d87",
+      "size": 9612
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_model_provider_hardening.py",
+      "blob_sha": "3de22b04d47f859f578a0e61a5bac9cf5ab02592",
+      "size": 3307
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_model_request_controls.py",
+      "blob_sha": "ef531610ecf88906e84c6a5a41c4af3d02c3a82c",
+      "size": 21967
+    },
+    {
+      "path": "tests/unit/providers/model_adapters/test_multimodal_input.py",
+      "blob_sha": "04c3fe804278eab06a60e5743f7ad1bddf22094c",
+      "size": 7109
+    },
+    {
+      "path": "tests/unit/providers/test_bundled_model_catalog.py",
+      "blob_sha": "5e0d43d39e600be4ab061f12f365580e4b8fdb13",
+      "size": 2855
+    },
+    {
+      "path": "tests/unit/providers/test_model_catalog.py",
+      "blob_sha": "57a18f7d34ab35c75fb848cc66cc8cc9c11e1612",
+      "size": 2504
+    },
+    {
+      "path": "tests/unit/providers/test_registry.py",
+      "blob_sha": "144d2e73c1148bf925bf73cb63af5e657470bb52",
+      "size": 1416
+    },
+    {
+      "path": "tests/unit/realtime/test_realtime_capabilities.py",
+      "blob_sha": "a1021f54fbb46ddc7ec6cc8ee850dddc0957ce3c",
+      "size": 1586
+    },
+    {
+      "path": "tests/unit/realtime/test_realtime_event_types.py",
+      "blob_sha": "f8ad1bac52041a2b434da4eeab61ed857b06a5fd",
+      "size": 2814
+    },
+    {
+      "path": "tests/unit/realtime/test_realtime_registry.py",
+      "blob_sha": "c973fa15cae12fffa11a5ffdb315aace59c0d39e",
+      "size": 942
+    },
+    {
+      "path": "tests/unit/skills/test_skills.py",
+      "blob_sha": "eeb006d0a321b3b33d68a3f815c371e922baa01e",
+      "size": 3699
+    },
+    {
+      "path": "tests/unit/tools/test_hosted_tool_capabilities.py",
+      "blob_sha": "5c06a3d7953a77fd0a5afe61ee7202d56f0c94c8",
+      "size": 1276
+    },
+    {
+      "path": "tests/unit/tools/test_hosted_tools_v2.py",
+      "blob_sha": "0dba622aee43460d66dc7a71498186bb13fa26da",
+      "size": 4228
+    },
+    {
+      "path": "tests/unit/tools/test_hosted_tools.py",
+      "blob_sha": "165ce5a0de84fa06e77687c0effb86db2660b0a5",
+      "size": 6167
+    },
+    {
+      "path": "tests/unit/tools/test_tool_routing.py",
+      "blob_sha": "fce52dab09929866d2b628ce8af54355499818d7",
+      "size": 5363
+    },
+    {
+      "path": "tests/unit/tools/test_tool_runtime.py",
+      "blob_sha": "614ebbc2d1c532841b62cf5a9c4d403f98864b08",
+      "size": 6954
+    },
+    {
+      "path": "tests/unit/workers/test_anthropic_work_source.py",
+      "blob_sha": "de9d49be866970dba06c11f5a7d17bec86bd348c",
+      "size": 7518
+    },
+    {
+      "path": "tests/unit/workers/test_environment_worker.py",
+      "blob_sha": "d33acbc419d523c575cf59b56f1b7679e58d998f",
+      "size": 6728
+    },
+    {
+      "path": "tests/unit/workers/test_work_source.py",
+      "blob_sha": "8a5764aedf8eb8abd9a4703a64ed9d4cee4c791d",
+      "size": 4886
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_package.py",
+      "blob_sha": "f8b9564c448b237eaaeaeaa7c323393c7520f3c4",
+      "size": 8975
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_schedule_executor.py",
+      "blob_sha": "d3e4fe3f99c62190a660d204dba35009a04fe36a",
+      "size": 7120
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_sqlite_registry.py",
+      "blob_sha": "caeae279b06cde21beb4405eabc9cb12f77effe1",
+      "size": 3563
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_validation.py",
+      "blob_sha": "5fe54cf13c9a9abe75c10d8e9f3cd9b84f39b0f4",
+      "size": 6184
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_workspace_agents.py",
+      "blob_sha": "b8dd902e49d4d4193bd6a1a9aa261cc1d8b91a25",
+      "size": 10414
+    },
+    {
+      "path": "tests/unit/workspaces/test_local_workspace_provider.py",
+      "blob_sha": "a6efab33ae5e6fa0a9943bb208d890382fd62210",
+      "size": 3749
+    },
+    {
+      "path": "tests/unit/workspaces/test_sandbox_workspace_provider.py",
+      "blob_sha": "4042faa0bdf398c97487e63f3b22670263da7bd8",
+      "size": 2469
+    },
+    {
+      "path": "tests/unit/workspaces/test_workspace_provider_contracts.py",
+      "blob_sha": "eb54a7ef3f0134a2985ec79fdc22150161cff0d9",
+      "size": 3539
+    },
+    {
+      "path": "tests/unit/workspaces/test_workspace_runtime.py",
+      "blob_sha": "625d1105683d43123714588daef04ff72cb99ea2",
+      "size": 9346
+    }
+  ]
+}

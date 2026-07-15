@@ -1,0 +1,2083 @@
+{
+  "schema_version": 1,
+  "parent_repository": "tyxter-dev/blackbox",
+  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "generated_from": "docs/parent-baseline.json",
+  "summary": {
+    "python_test_modules": 108,
+    "direct_evidence": 53,
+    "semantic_projections": 55,
+    "domains_covered": 20,
+    "classifications": {
+      "semantic": 87,
+      "sdk_protocol_fixture": 6,
+      "integration_smoke": 4,
+      "partial_contract_negative": 11
+    }
+  },
+  "entries": [
+    {
+      "id": "python-test.contracts.test.capability.honesty",
+      "python_test": "tests/contracts/test_capability_honesty.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Policy, Approvals, and Safety"],
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/core-contracts.test.ts"]
+    },
+    {
+      "id": "python-test.e2e.test.diet.coach.example",
+      "python_test": "tests/e2e/test_diet_coach_example.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.golden.anthropic.test.messages.event.mapping",
+      "python_test": "tests/golden/anthropic/test_messages_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "direct_evidence",
+      "domains": ["Native Model Providers"],
+      "evidence_refs": ["native-model-providers"],
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.golden.gemini.test.generate.content.event.mapping",
+      "python_test": "tests/golden/gemini/test_generate_content_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "direct_evidence",
+      "domains": ["Provider State Mapping", "Native Model Providers"],
+      "evidence_refs": ["provider-state-mapping", "native-model-providers"],
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.golden.gemini.live.test.event.mapping",
+      "python_test": "tests/golden/gemini_live/test_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "semantic_projection",
+      "domains": ["Native Model Providers"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/python-provider-differential.test.ts",
+        "tests/golden/providers.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.golden.openai.test.hosted.tools.v2.event.mapping",
+      "python_test": "tests/golden/openai/test_hosted_tools_v2_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "semantic_projection",
+      "domains": ["Native Model Providers"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/python-provider-differential.test.ts",
+        "tests/golden/providers.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.golden.openai.test.responses.event.mapping",
+      "python_test": "tests/golden/openai/test_responses_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "direct_evidence",
+      "domains": ["Provider State Mapping", "Native Model Providers"],
+      "evidence_refs": ["provider-state-mapping", "native-model-providers"],
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.golden.openai.realtime.test.event.mapping",
+      "python_test": "tests/golden/openai_realtime/test_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "semantic_projection",
+      "domains": ["Native Model Providers"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/python-provider-differential.test.ts",
+        "tests/golden/providers.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.integration.anthropic.test.cache.and.cost",
+      "python_test": "tests/integration/anthropic/test_cache_and_cost.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.anthropic.test.messages.smoke",
+      "python_test": "tests/integration/anthropic/test_messages_smoke.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.gemini.test.cache.and.cost",
+      "python_test": "tests/integration/gemini/test_cache_and_cost.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.gemini.test.generate.content.smoke",
+      "python_test": "tests/integration/gemini/test_generate_content_smoke.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.openai.test.cache.and.cost",
+      "python_test": "tests/integration/openai/test_cache_and_cost.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.openai.test.responses.smoke",
+      "python_test": "tests/integration/openai/test_responses_smoke.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.xai.test.cost.tracking",
+      "python_test": "tests/integration/xai/test_cost_tracking.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.integration.xai.test.responses.smoke",
+      "python_test": "tests/integration/xai/test_responses_smoke.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.journey.agent.provider.test.agent.provider.journeys",
+      "python_test": "tests/journey/agent_provider/test_agent_provider_journeys.py",
+      "classification": "integration_smoke",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.journey.business.cases.test.bella.cucina.returning.guest",
+      "python_test": "tests/journey/business_cases/test_bella_cucina_returning_guest.py",
+      "classification": "integration_smoke",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.journey.model.provider.test.model.provider.journeys",
+      "python_test": "tests/journey/model_provider/test_model_provider_journeys.py",
+      "classification": "integration_smoke",
+      "coverage": "direct_evidence",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": ["provider-runtime"],
+      "typescript_tests": [
+        "tests/unit/model-runtime.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.journey.workspace.provider.test.workspace.provider.journeys",
+      "python_test": "tests/journey/workspace_provider/test_workspace_provider_journeys.py",
+      "classification": "integration_smoke",
+      "coverage": "direct_evidence",
+      "domains": ["Workspaces"],
+      "evidence_refs": ["workspaces"],
+      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+    },
+    {
+      "id": "python-test.perf.test.benchmarks",
+      "python_test": "tests/perf/test_benchmarks.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.agent.session.persistence",
+      "python_test": "tests/runtime/test_agent_session_persistence.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.agent.session.run",
+      "python_test": "tests/runtime/test_agent_session_run.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.agent.webhook.ingress",
+      "python_test": "tests/runtime/test_agent_webhook_ingress.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.claude.code.agent.provider",
+      "python_test": "tests/runtime/test_claude_code_agent_provider.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.dynamic.tool.routing",
+      "python_test": "tests/runtime/test_dynamic_tool_routing.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Local Tools"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.dynamic.toolsets",
+      "python_test": "tests/runtime/test_dynamic_toolsets.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Local Tools"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.hosted.tool.loop",
+      "python_test": "tests/runtime/test_hosted_tool_loop.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Hosted Tools"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.local.agent.provider",
+      "python_test": "tests/runtime/test_local_agent_provider.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.loop.input.shapes",
+      "python_test": "tests/runtime/test_loop_input_shapes.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.maia.business.case.example",
+      "python_test": "tests/runtime/test_maia_business_case_example.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.mcp.toolset.runtime",
+      "python_test": "tests/runtime/test_mcp_toolset_runtime.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.model.capability.validation",
+      "python_test": "tests/runtime/test_model_capability_validation.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Granular Model Capabilities"],
+      "evidence_refs": ["granular-model-capabilities"],
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.observability.presets",
+      "python_test": "tests/runtime/test_observability_presets.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Observability"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.openai.agents.provider",
+      "python_test": "tests/runtime/test_openai_agents_provider.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.prompt.composition",
+      "python_test": "tests/runtime/test_prompt_composition.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Prompt Planning"],
+      "evidence_refs": ["prompt-planning"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.provider.fallback",
+      "python_test": "tests/runtime/test_provider_fallback.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.provider.native.output",
+      "python_test": "tests/runtime/test_provider_native_output.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Structured Output"],
+      "evidence_refs": ["runtime-lifecycle-hardening"],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.realtime.approvals",
+      "python_test": "tests/runtime/test_realtime_approvals.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Policy, Approvals, and Safety"],
+      "evidence_refs": ["policy-approvals-and-safety", "runtime-lifecycle-hardening"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/unit/core-contracts.test.ts",
+        "tests/unit/realtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.realtime.runtime",
+      "python_test": "tests/runtime/test_realtime_runtime.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Realtime"],
+      "evidence_refs": ["realtime"],
+      "typescript_tests": ["tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.realtime.tool.loop",
+      "python_test": "tests/runtime/test_realtime_tool_loop.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Realtime"],
+      "evidence_refs": ["realtime"],
+      "typescript_tests": ["tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.resume.run.from.saved.state",
+      "python_test": "tests/runtime/test_resume_run_from_saved_state.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Persistence"],
+      "evidence_refs": ["persistence", "resume-run-state"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.runtime.config",
+      "python_test": "tests/runtime/test_runtime_config.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Runtime Configuration"],
+      "evidence_refs": ["runtime-configuration"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.runtime.retry",
+      "python_test": "tests/runtime/test_runtime_retry.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
+      "evidence_refs": ["runtime-lifecycle-hardening"],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.runtime.run",
+      "python_test": "tests/runtime/test_runtime_run.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.runtime.skills",
+      "python_test": "tests/runtime/test_runtime_skills.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.runtime.stream",
+      "python_test": "tests/runtime/test_runtime_stream.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.runtime.test.workspace.tool.loop",
+      "python_test": "tests/runtime/test_workspace_tool_loop.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Local Tools"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.unit.compat.test.chat.compat",
+      "python_test": "tests/unit/compat/test_chat_compat.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.unit.compat.test.compat.providers",
+      "python_test": "tests/unit/compat/test_compat_providers.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.data.models",
+      "python_test": "tests/unit/core/test_data_models.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Artifacts"],
+      "evidence_refs": ["artifacts"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts"]
+    },
+    {
+      "id": "python-test.unit.core.test.errors",
+      "python_test": "tests/unit/core/test_errors.py",
+      "classification": "partial_contract_negative",
+      "coverage": "semantic_projection",
+      "domains": ["Core Events and State"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/core-contracts.test.ts",
+        "tests/unit/core-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.model.accounting",
+      "python_test": "tests/unit/core/test_model_accounting.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Accounting and Cache"],
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "id": "python-test.unit.core.test.multimodal.content",
+      "python_test": "tests/unit/core/test_multimodal_content.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Core Events and State"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/core-contracts.test.ts",
+        "tests/unit/core-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.pricing.catalog",
+      "python_test": "tests/unit/core/test_pricing_catalog.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Controls and Catalog", "Accounting and Cache"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/python-catalog-differential.test.ts",
+        "tests/unit/registry-catalog.test.ts",
+        "tests/unit/planning-accounting-config.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.provider.cache",
+      "python_test": "tests/unit/core/test_provider_cache.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Accounting and Cache"],
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "id": "python-test.unit.core.test.session.state.serialization",
+      "python_test": "tests/unit/core/test_session_state_serialization.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "id": "python-test.unit.core.test.session.store",
+      "python_test": "tests/unit/core/test_session_store.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["persistence-contracts"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "id": "python-test.unit.core.test.state",
+      "python_test": "tests/unit/core/test_state.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Core Events and State"],
+      "evidence_refs": ["core-events-and-state"],
+      "typescript_tests": [
+        "tests/golden/core-contracts.test.ts",
+        "tests/unit/core-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.stores",
+      "python_test": "tests/unit/core/test_stores.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Persistence", "Persistence Contracts"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/persistence-observability.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.stores.persistent",
+      "python_test": "tests/unit/core/test_stores_persistent.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Core Events and State", "Persistence"],
+      "evidence_refs": [
+        "core-events-and-state",
+        "persistence",
+        "persistence-contracts",
+        "persistent-stores"
+      ],
+      "typescript_tests": [
+        "tests/golden/core-contracts.test.ts",
+        "tests/unit/core-contracts.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.core.test.streams",
+      "python_test": "tests/unit/core/test_streams.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Core Events and State"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/golden/core-contracts.test.ts",
+        "tests/unit/core-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.integrations.test.google.integrations",
+      "python_test": "tests/unit/integrations/test_google_integrations.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["High-Level Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.auth",
+      "python_test": "tests/unit/mcp/test_mcp_auth.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.client",
+      "python_test": "tests/unit/mcp/test_mcp_client.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["MCP"],
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.connector",
+      "python_test": "tests/unit/mcp/test_mcp_connector.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.security.validation",
+      "python_test": "tests/unit/mcp/test_mcp_security_validation.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": ["mcp-lifecycle-security"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.server",
+      "python_test": "tests/unit/mcp/test_mcp_server.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["MCP"],
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.spec",
+      "python_test": "tests/unit/mcp/test_mcp_spec.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.toolset",
+      "python_test": "tests/unit/mcp/test_mcp_toolset.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.transports",
+      "python_test": "tests/unit/mcp/test_mcp_transports.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": ["mcp-lifecycle-security"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+    },
+    {
+      "id": "python-test.unit.mcp.test.mcp.trust.policy",
+      "python_test": "tests/unit/mcp/test_mcp_trust_policy.py",
+      "classification": "partial_contract_negative",
+      "coverage": "semantic_projection",
+      "domains": ["MCP", "MCP Lifecycle Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.observability.test.event.sinks",
+      "python_test": "tests/unit/observability/test_event_sinks.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Observability"],
+      "evidence_refs": ["observability"],
+      "typescript_tests": [
+        "tests/unit/persistence-observability.test.ts",
+        "tests/unit/workers-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.observability.test.metrics",
+      "python_test": "tests/unit/observability/test_metrics.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Observability"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.observability.test.observability.workflows",
+      "python_test": "tests/unit/observability/test_observability_workflows.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Observability"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.observability.test.presets",
+      "python_test": "tests/unit/observability/test_presets.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Observability"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.observability.test.trace.spans",
+      "python_test": "tests/unit/observability/test_trace_spans.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Observability"],
+      "evidence_refs": ["observability"],
+      "typescript_tests": [
+        "tests/unit/persistence-observability.test.ts",
+        "tests/unit/workers-observability.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.output.test.output.schema",
+      "python_test": "tests/unit/output/test_output_schema.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Structured Output"],
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"]
+    },
+    {
+      "id": "python-test.unit.output.test.output.validation",
+      "python_test": "tests/unit/output/test_output_validation.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Structured Output"],
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"]
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.echo.model",
+      "python_test": "tests/unit/providers/model_adapters/test_echo_model.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.model.capability.profiles",
+      "python_test": "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Granular Model Capabilities"],
+      "evidence_refs": ["granular-model-capabilities"],
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.model.provider.hardening",
+      "python_test": "tests/unit/providers/model_adapters/test_model_provider_hardening.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": ["provider-runtime"],
+      "typescript_tests": [
+        "tests/unit/model-runtime.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.model.request.controls",
+      "python_test": "tests/unit/providers/model_adapters/test_model_request_controls.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.multimodal.input",
+      "python_test": "tests/unit/providers/model_adapters/test_multimodal_input.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.providers.test.bundled.model.catalog",
+      "python_test": "tests/unit/providers/test_bundled_model_catalog.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Provider Controls and Catalog"],
+      "evidence_refs": ["provider-controls-and-catalog"],
+      "typescript_tests": ["tests/unit/capabilities.test.ts", "tests/unit/registry-catalog.test.ts"]
+    },
+    {
+      "id": "python-test.unit.providers.test.model.catalog",
+      "python_test": "tests/unit/providers/test_model_catalog.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Provider Controls and Catalog"],
+      "evidence_refs": ["provider-controls-and-catalog"],
+      "typescript_tests": ["tests/unit/capabilities.test.ts", "tests/unit/registry-catalog.test.ts"]
+    },
+    {
+      "id": "python-test.unit.providers.test.registry",
+      "python_test": "tests/unit/providers/test_registry.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Provider Runtime"],
+      "evidence_refs": [],
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.realtime.test.realtime.capabilities",
+      "python_test": "tests/unit/realtime/test_realtime_capabilities.py",
+      "classification": "partial_contract_negative",
+      "coverage": "semantic_projection",
+      "domains": ["Realtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.unit.realtime.test.realtime.event.types",
+      "python_test": "tests/unit/realtime/test_realtime_event_types.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Realtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.unit.realtime.test.realtime.registry",
+      "python_test": "tests/unit/realtime/test_realtime_registry.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Realtime"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/realtime.test.ts"]
+    },
+    {
+      "id": "python-test.unit.skills.test.skills",
+      "python_test": "tests/unit/skills/test_skills.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["skills-and-workspace-agents"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "id": "python-test.unit.tools.test.hosted.tool.capabilities",
+      "python_test": "tests/unit/tools/test_hosted_tool_capabilities.py",
+      "classification": "partial_contract_negative",
+      "coverage": "semantic_projection",
+      "domains": ["Hosted Tools"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.unit.tools.test.hosted.tools",
+      "python_test": "tests/unit/tools/test_hosted_tools.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Hosted Tools"],
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.unit.tools.test.hosted.tools.v2",
+      "python_test": "tests/unit/tools/test_hosted_tools_v2.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Hosted Tools"],
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "id": "python-test.unit.tools.test.tool.routing",
+      "python_test": "tests/unit/tools/test_tool_routing.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Local Tools"],
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "id": "python-test.unit.tools.test.tool.runtime",
+      "python_test": "tests/unit/tools/test_tool_runtime.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Local Tools"],
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workers.test.anthropic.work.source",
+      "python_test": "tests/unit/workers/test_anthropic_work_source.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Environment Workers"],
+      "evidence_refs": ["anthropic-work-source"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workers.test.environment.worker",
+      "python_test": "tests/unit/workers/test_environment_worker.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Environment Workers"],
+      "evidence_refs": ["environment-workers", "package-and-worker-hardening"],
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/workspace-agents.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.workers.test.work.source",
+      "python_test": "tests/unit/workers/test_work_source.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Environment Workers"],
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.package",
+      "python_test": "tests/unit/workspace_agents/test_package.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["package-and-worker-hardening", "workspace-agent-package"],
+      "typescript_tests": [
+        "tests/security/boundaries.test.ts",
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/workspace-agents.test.ts"
+      ]
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.schedule.executor",
+      "python_test": "tests/unit/workspace_agents/test_schedule_executor.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["schedule-executor"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.sqlite.registry",
+      "python_test": "tests/unit/workspace_agents/test_sqlite_registry.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-registry"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.validation",
+      "python_test": "tests/unit/workspace_agents/test_validation.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-validation"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.workspace.agents",
+      "python_test": "tests/unit/workspace_agents/test_workspace_agents.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["skills-and-workspace-agents"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspaces.test.local.workspace.provider",
+      "python_test": "tests/unit/workspaces/test_local_workspace_provider.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Workspaces", "Workspace Providers and Security"],
+      "evidence_refs": ["workspace-providers-and-security"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspaces.test.sandbox.workspace.provider",
+      "python_test": "tests/unit/workspaces/test_sandbox_workspace_provider.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Workspaces", "Workspace Providers and Security"],
+      "evidence_refs": ["workspace-providers-and-security"],
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspaces.test.workspace.provider.contracts",
+      "python_test": "tests/unit/workspaces/test_workspace_provider_contracts.py",
+      "classification": "semantic",
+      "coverage": "semantic_projection",
+      "domains": ["Workspaces", "Workspace Providers and Security"],
+      "evidence_refs": [],
+      "typescript_tests": ["tests/unit/workspaces.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "id": "python-test.unit.workspaces.test.workspace.runtime",
+      "python_test": "tests/unit/workspaces/test_workspace_runtime.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Workspaces"],
+      "evidence_refs": ["workspaces"],
+      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+    }
+  ],
+  "feature_coverage": [
+    {
+      "feature_id": "parent.high-level-runtime.complete-blackbox-agent-loop",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.streaming-blackbox-loop",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.typed-agent-result",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.text-only-runs",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.max-iteration-guard",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.provider-fallback-routing",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.high-level-runtime.mock-tool-execution",
+      "domain": "High-Level Runtime",
+      "evidence_ref": "high-level-runtime",
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.portable-skill-packs",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "skills-and-workspace-agents",
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.workspace-agent-package-contracts",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "skills-and-workspace-agents",
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.workspace-agent-validation",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "workspace-agent-validation",
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.sqlite-workspace-agent-registry",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "workspace-agent-registry",
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.workspace-agent-package-on-disk",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "workspace-agent-package",
+      "typescript_tests": [
+        "tests/unit/workspace-agents.test.ts",
+        "tests/security/boundaries.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.schedule-execution-reference-executor",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "schedule-executor",
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.pydantic-structured-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.dataclass-structured-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.string-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.fail-fast-validation-errors",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.provider-native-structured-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.finalizer-tool-structured-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.raw-json-schema-post-hoc-output",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.structured-output.structured-output-retry-repair",
+      "domain": "Structured Output",
+      "evidence_ref": "structured-output",
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.local-tool-registration",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.dynamic-tool-sessions",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-lookup-listing",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.provider-neutral-tool-schema-export",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.manual-json-schema-override",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-metadata",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.blocking-tool-offload",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.async-tool-execution",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-timeouts",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-concurrency-cap",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.high-level-tool-controls",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.multiple-tool-calls-in-one-turn",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-result-coercion",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-payload-separation",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.context-injection",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.context-schema-privacy",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.tool-catalog-search",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.runtime-toolsets-and-dynamic-loading",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.dynamic-tool-surface-persistence",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.workspace-tool-backend",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.local-tools.namespaced-toolref-ids",
+      "domain": "Local Tools",
+      "evidence_ref": "local-tools",
+      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.typed-hosted-tool-specs",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.openai-hosted-tool-mapping",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.openai-hosted-tool-events",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.hosted-tool-result-metadata",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.provider-native-remote-mcp",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.mcp-result-metadata",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.gemini-hosted-web-search",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.hosted-tools.raw-hosted-tool-passthrough",
+      "domain": "Hosted Tools",
+      "evidence_ref": "hosted-tools",
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.allow-all-default-policy",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.policy-allow-deny-gate",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.approval-required-gate",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.approval-resume",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.approval-denial",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.policy-approvals-and-safety.typed-approval-errors",
+      "domain": "Policy, Approvals, and Safety",
+      "evidence_ref": "policy-approvals-and-safety",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+    },
+    {
+      "feature_id": "parent.core-events-and-state.canonical-event-taxonomy",
+      "domain": "Core Events and State",
+      "evidence_ref": "core-events-and-state",
+      "typescript_tests": [
+        "tests/unit/core-contracts.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.core-events-and-state.run-ids",
+      "domain": "Core Events and State",
+      "evidence_ref": "core-events-and-state",
+      "typescript_tests": [
+        "tests/unit/core-contracts.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.core-events-and-state.monotonic-event-sequence",
+      "domain": "Core Events and State",
+      "evidence_ref": "core-events-and-state",
+      "typescript_tests": [
+        "tests/unit/core-contracts.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.core-events-and-state.provider-native-continuation-state",
+      "domain": "Core Events and State",
+      "evidence_ref": "core-events-and-state",
+      "typescript_tests": [
+        "tests/unit/core-contracts.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.core-events-and-state.raw-provider-payload-preservation",
+      "domain": "Core Events and State",
+      "evidence_ref": "core-events-and-state",
+      "typescript_tests": [
+        "tests/unit/core-contracts.test.ts",
+        "tests/golden/core-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-state-mapping.openai-previous-response-continuation",
+      "domain": "Provider State Mapping",
+      "evidence_ref": "provider-state-mapping",
+      "typescript_tests": ["tests/golden/providers.test.ts"]
+    },
+    {
+      "feature_id": "parent.provider-state-mapping.provider-tool-source-state-preservation",
+      "domain": "Provider State Mapping",
+      "evidence_ref": "provider-state-mapping",
+      "typescript_tests": ["tests/golden/providers.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.event-store-protocol",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.in-memory-event-store",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.run-store-protocol",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.in-memory-run-store",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.session-store-protocol",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.in-memory-session-store",
+      "domain": "Persistence",
+      "evidence_ref": "persistence",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.resume-run-from-persisted-state",
+      "domain": "Persistence",
+      "evidence_ref": "resume-run-state",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.persistence.jsonl-sqlite-stores",
+      "domain": "Persistence",
+      "evidence_ref": "persistent-stores",
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.provider-controls-and-catalog.provider-native-request-controls",
+      "domain": "Provider Controls and Catalog",
+      "evidence_ref": "provider-controls-and-catalog",
+      "typescript_tests": ["tests/unit/registry-catalog.test.ts", "tests/unit/capabilities.test.ts"]
+    },
+    {
+      "feature_id": "parent.provider-controls-and-catalog.provider-model-catalog",
+      "domain": "Provider Controls and Catalog",
+      "evidence_ref": "provider-controls-and-catalog",
+      "typescript_tests": ["tests/unit/registry-catalog.test.ts", "tests/unit/capabilities.test.ts"]
+    },
+    {
+      "feature_id": "parent.accounting-and-cache.model-usage-and-cost-accounting",
+      "domain": "Accounting and Cache",
+      "evidence_ref": "accounting-and-cache",
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "feature_id": "parent.accounting-and-cache.native-provider-cache-controls",
+      "domain": "Accounting and Cache",
+      "evidence_ref": "accounting-and-cache",
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "feature_id": "parent.accounting-and-cache.provider-cache-registry",
+      "domain": "Accounting and Cache",
+      "evidence_ref": "accounting-and-cache",
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "feature_id": "parent.accounting-and-cache.provider-side-cache-lifecycle",
+      "domain": "Accounting and Cache",
+      "evidence_ref": "accounting-and-cache",
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.model-capability-profile",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.hosted-tool-capability-validation",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.output-strategy-fallback-resolution",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.control-capability-validation",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.state-mode-validation",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.compatibility-profile-derivation",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.openai-tool-search-control",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.provider-native-compaction-control",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.multimodal-model-input-content-parts",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.granular-model-capabilities.modalities-control",
+      "domain": "Granular Model Capabilities",
+      "evidence_ref": "granular-model-capabilities",
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.provider-registry",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.provider-reference-parsing",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.model-provider-protocol",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.agent-provider-protocol",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.chat-compatibility-facade",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.capability-flags",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.granular-model-capability-profile",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.direct-model-run",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.direct-model-stream",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.provider-runtime.echo-model-provider",
+      "domain": "Provider Runtime",
+      "evidence_ref": "provider-runtime",
+      "typescript_tests": [
+        "tests/unit/provider-contracts.test.ts",
+        "tests/unit/model-runtime.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.native-model-providers.openai-responses-model-provider",
+      "domain": "Native Model Providers",
+      "evidence_ref": "native-model-providers",
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.native-model-providers.xai-responses-model-provider",
+      "domain": "Native Model Providers",
+      "evidence_ref": "native-model-providers",
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.native-model-providers.anthropic-messages-model-provider",
+      "domain": "Native Model Providers",
+      "evidence_ref": "native-model-providers",
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.native-model-providers.gemini-generatecontent-model-provider",
+      "domain": "Native Model Providers",
+      "evidence_ref": "native-model-providers",
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.agent-sessions.local-agent-provider",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.create-agent",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.create-start-session",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.stream-session-events",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.durable-session-persistence",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.durable-session-replay",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.send-message-to-session",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.cancel-session",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.list-session-artifacts",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.session-approval-pause-resume-deny",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.openai-agents-sdk-provider",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.claude-code-agent-sdk-provider",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.claude-code-subscription-auth",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.provider-native-live-resume",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.cloud-agent-providers",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.agent-sessions.cloud-agent-webhook-ingress",
+      "domain": "Agent Sessions",
+      "evidence_ref": "agent-sessions",
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.lab-neutral-work-queue-contract",
+      "domain": "Environment Workers",
+      "evidence_ref": "environment-workers",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.in-memory-reference-work-source",
+      "domain": "Environment Workers",
+      "evidence_ref": "environment-workers",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.environment-worker-daemon",
+      "domain": "Environment Workers",
+      "evidence_ref": "environment-workers",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.inbound-work-policy-gate",
+      "domain": "Environment Workers",
+      "evidence_ref": "environment-workers",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.scoped-worker-credentials",
+      "domain": "Environment Workers",
+      "evidence_ref": "environment-workers",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.environment-workers.anthropic-managed-agents-work-source",
+      "domain": "Environment Workers",
+      "evidence_ref": "anthropic-work-source",
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+    },
+    {
+      "feature_id": "parent.artifacts.artifact-data-contracts",
+      "domain": "Artifacts",
+      "evidence_ref": "artifacts",
+      "typescript_tests": ["tests/unit/core-contracts.test.ts"]
+    },
+    {
+      "feature_id": "parent.workspaces.workspace-runtime-facade",
+      "domain": "Workspaces",
+      "evidence_ref": "workspaces",
+      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+    },
+    {
+      "feature_id": "parent.workspaces.local-workspace-runtime",
+      "domain": "Workspaces",
+      "evidence_ref": "workspaces",
+      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+    },
+    {
+      "feature_id": "parent.workspaces.workspace-data-contracts",
+      "domain": "Workspaces",
+      "evidence_ref": "workspaces",
+      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-server-spec",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-server-authoring",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-protocol-compatibility-matrix",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.remote-mcp-auth-refresh",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-trust-policy-presets",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.local-mcp-dispatch-connector",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-runtime-tool-bridge",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.mcp.mcp-toolset-routing",
+      "domain": "MCP",
+      "evidence_ref": "mcp",
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+    },
+    {
+      "feature_id": "parent.observability.observability-sink-protocol",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.production-observability-presets",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.event-trace-context",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.workflow-trace-spans",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.opentelemetry-trace-export",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.standard-production-metrics",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.replay-and-run-diffing",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    },
+    {
+      "feature_id": "parent.observability.evaluator-hooks",
+      "domain": "Observability",
+      "evidence_ref": "observability",
+      "typescript_tests": [
+        "tests/unit/workers-observability.test.ts",
+        "tests/unit/persistence-observability.test.ts"
+      ]
+    }
+  ]
+}

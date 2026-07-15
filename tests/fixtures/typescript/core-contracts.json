@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "generated_by": "blackbox-ts",
+  "target_parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "payloads": {
+    "event": {
+      "_kind": "AgentEvent",
+      "id": "evt_ts_fixture",
+      "type": "model.completed",
+      "run_id": "run_ts_fixture",
+      "sequence": 4,
+      "trace_id": "trace_ts_fixture",
+      "span_id": "span_ts_fixture",
+      "parent_span_id": null,
+      "span_kind": null,
+      "session_id": null,
+      "provider": "anthropic",
+      "item_id": null,
+      "provider_trace_id": null,
+      "provider_span_id": null,
+      "provider_request_id": "req_ts_fixture",
+      "data": {
+        "output_text": "hello from TypeScript"
+      },
+      "raw": {
+        "id": "msg_ts_fixture"
+      },
+      "timestamp": "2026-01-02T03:04:05+00:00"
+    },
+    "run_state": {
+      "_kind": "RunState",
+      "session_id": "sess_ts_fixture",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "provider_state": {
+        "_kind": "ProviderState",
+        "provider": "anthropic",
+        "conversation_id": null,
+        "previous_response_id": null,
+        "native_history": [
+          {
+            "role": "assistant",
+            "content": "hello from TypeScript"
+          }
+        ],
+        "reasoning_state": {
+          "signature": "sig_ts"
+        },
+        "tool_state": {
+          "call_id": "call_ts_fixture"
+        },
+        "continuation": {
+          "last_message_id": "msg_ts_fixture"
+        }
+      },
+      "items": [
+        {
+          "_kind": "RunItem",
+          "type": "function_call",
+          "provider": "anthropic",
+          "data": {
+            "name": "lookup",
+            "call_id": "call_ts_fixture",
+            "arguments": {
+              "id": "42"
+            }
+          },
+          "status": "completed",
+          "id": "item_ts_fixture",
+          "parent_id": null
+        }
+      ],
+      "metadata": {
+        "fixture": true
+      }
+    },
+    "agent_ref": {
+      "_kind": "AgentRef",
+      "provider": "local",
+      "id": "agent_ts_fixture",
+      "metadata": {
+        "version": 1
+      }
+    },
+    "session_ref": {
+      "_kind": "SessionRef",
+      "provider": "local",
+      "id": "sess_ts_fixture",
+      "agent_id": "agent_ts_fixture",
+      "metadata": {
+        "tenant": "dev"
+      }
+    },
+    "invocation_ref": {
+      "_kind": "InvocationRef",
+      "provider": "local",
+      "session_id": "sess_ts_fixture",
+      "id": "invoke_ts_fixture",
+      "metadata": {
+        "turn": 1
+      }
+    },
+    "session": {
+      "_kind": "AgentSession",
+      "provider": "local",
+      "task": "typescript fixture",
+      "agent_id": "agent_ts_fixture",
+      "model": "claude-sonnet-4-6",
+      "status": "running",
+      "metadata": {
+        "tenant": "dev"
+      },
+      "id": "sess_ts_fixture"
+    },
+    "artifact_ref": {
+      "_kind": "ArtifactRef",
+      "id": "art_ts_fixture",
+      "provider": "local",
+      "uri": "artifact://art_ts_fixture"
+    },
+    "artifact": {
+      "_kind": "Artifact",
+      "type": "report",
+      "name": "typescript-result.json",
+      "data": {
+        "ok": true
+      },
+      "metadata": {
+        "source": "typescript"
+      },
+      "id": "art_ts_fixture",
+      "uri": null
+    }
+  },
+  "values": {
+    "approval_request": {
+      "action": "workspace.write",
+      "reason": "sensitive",
+      "data": {
+        "path": "typescript.txt"
+      },
+      "id": "approval_ts_fixture"
+    },
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3,
+      "total_tokens": 11,
+      "cached_input_tokens": 2,
+      "cache_read_input_tokens": 2,
+      "cache_creation_input_tokens": 0,
+      "reasoning_tokens": 1,
+      "tool_calls": 1,
+      "provider_details": {
+        "request_id": "req_ts_fixture"
+      }
+    },
+    "runtime_config": {
+      "profile_name": "fast_text",
+      "overrides": {
+        "temperature": 0.1
+      },
+      "source": "typescript-fixture",
+      "kwargs": {
+        "temperature": 0.1,
+        "max_output_tokens": 512
+      }
+    },
+    "output_spec": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string"
+          }
+        }
+      },
+      "strategy": "provider_native",
+      "max_validation_retries": 1,
+      "allow_partial": false,
+      "name": "typescript_output",
+      "strict": true,
+      "fallback": "posthoc_parse"
+    }
+  }
+}

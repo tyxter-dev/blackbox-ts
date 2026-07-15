@@ -117,8 +117,8 @@ export const BUNDLED_PRICING = new PricingCatalog([
   pricing('google', 'gemini-2.5-pro', 1.25, 10, 0.125),
   pricing('google', 'gemini-2.5-flash', 0.3, 2.5, 0.03),
   pricing('google', 'gemini-2.5-flash-lite', 0.1, 0.4, 0.01),
-  pricing('xai', 'grok-4-1-fast-reasoning', 0.2, 0.5, 0.2),
-  pricing('xai', 'grok-4-1-fast-non-reasoning', 0.2, 0.5, 0.2),
+  pricing('xai', 'grok-4-1-fast-reasoning', 0.2, 0.5),
+  pricing('xai', 'grok-4-1-fast-non-reasoning', 0.2, 0.5),
 ]);
 
 function anthropicPricing(
@@ -136,7 +136,7 @@ function pricing(
   model: string,
   input: number,
   output: number,
-  cacheRead: number,
+  cacheRead?: number,
   cacheCreation = input,
 ): PricingEntry {
   return {
@@ -146,7 +146,7 @@ function pricing(
     rates: {
       input_per_million: input,
       output_per_million: output,
-      cache_read_per_million: cacheRead,
+      ...(cacheRead === undefined ? {} : { cache_read_per_million: cacheRead }),
       cache_creation_per_million: cacheCreation,
     },
     source: 'blackbox-bundled',
