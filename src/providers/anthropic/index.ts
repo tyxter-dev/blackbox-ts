@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import {
   assertTurnRequestCapabilities,
   capability,
@@ -7,6 +9,7 @@ import type { AgentContentPart, AgentMessage } from '../../core/content.js';
 import {
   ConfigurationError,
   ProviderExecutionError,
+  UnsupportedCapabilityError,
   UnsupportedFeatureError,
 } from '../../core/errors.js';
 import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../../core/events.js';
@@ -33,6 +36,78 @@ import {
   throwResponseError,
   timeoutSignal,
 } from '../http.js';
+
+/**
+ * Claude ids that ship the adaptive control set.
+ *
+ * These models carry reasoning effort in `output_config.effort` next to a bare
+ * adaptive thinking block, reject nondefault sampling parameters, and pin the
+ * current hosted web search spec. The control layer matches ids exactly, as the
+ * Python parent does; the model-family helpers below test this same table
+ * against a case- and separator-normalized id first, then fall back to their own
+ * substring tokens.
+ */
+const ADAPTIVE_ANTHROPIC_MODELS: readonly string[] = [
+  'claude-fable-5-1',
+  'claude-fable-5',
+  'claude-opus-5',
+  'claude-sonnet-5',
+  'claude-opus-4-8',
+];
+
+/** Reasoning efforts accepted by {@link ADAPTIVE_ANTHROPIC_MODELS}. */
+const ADAPTIVE_ANTHROPIC_EFFORTS: readonly string[] = ['low', 'medium', 'high', 'xhigh', 'max'];
+
+/** Reasoning efforts advertised for Claude models outside the adaptive set. */
+const LEGACY_ANTHROPIC_EFFORTS: readonly string[] = ['low', 'medium', 'high'];
+
+/** Effort used when neither the typed control nor `output_config` names one. */
+const DEFAULT_ADAPTIVE_EFFORT = 'high';
+
+/** Adaptive models that refuse `thinking: {type:'disabled'}` at any effort. */
+const THINKING_REQUIRED_MODELS: readonly string[] = ['claude-fable-5-1', 'claude-fable-5'];
+
+/** Efforts at which Claude Opus 5 also refuses disabled thinking. */
+const OPUS_5_THINKING_REQUIRED_EFFORTS: readonly string[] = ['xhigh', 'max'];
+
+/** Model-name tokens that enable native structured output outside the adaptive set. */
+const ANTHROPIC_STRUCTURED_OUTPUT_TOKENS: readonly string[] = [
+  'mythos',
+  'opus-4-7',
+  'opus-4-6',
+  'opus-4-5',
+  'sonnet-4-6',
+  'sonnet-4-5',
+  'haiku-4-5',
+];
+
+/** Model-name tokens that enable context compaction outside the adaptive set. */
+const ANTHROPIC_COMPACTION_TOKENS: readonly string[] = [
+  'mythos',
+  'opus-4-7',
+  'opus-4-6',
+  'sonnet-4-6',
+];
+
+/** Model-name tokens that pin the current hosted web search spec. */
+const CURRENT_WEB_SEARCH_TOKENS: readonly string[] = ['sonnet-4-6', 'opus-4-6', '4.6'];
+
+const CURRENT_WEB_SEARCH_VERSION = 'web_search_20260209';
+const LEGACY_WEB_SEARCH_VERSION = 'web_search_20250305';
+
+const FABLE_5_1_MODEL = 'claude-fable-5-1';
+const OPUS_5_MODEL = 'claude-opus-5';
+
+/** `ProviderState.tool_state` key holding Fable 5.1 replay prefix provenance. */
+const FABLE_REPLAY_KEY = 'fable_5_1_prefix';
+
+const STRUCTURED_OUTPUT_REASON =
+  'Native output format requires an adaptive Claude model or a supported 4.5+/4.6+/4.7 version.';
+const COMPACTION_REASON =
+  'Context editing requires an adaptive Claude model or a supported 4.6+/4.7 version.';
+const FABLE_TOOL_CHOICE_REASON =
+  'Fable 5.1 supports only auto/none tool choice; finalizer_tool is unavailable.';
+const REPLAY_CAPABILITY = 'state.provider_stateful';
 
 export interface AnthropicProviderConfig {
   readonly apiKey: string;
@@ -111,15 +186,14 @@ export class AnthropicMessagesProvider implements AgentModelProvider {
       tools: mapAnthropicTools(request),
       tool_choice: mapToolChoice(request.tool_choice),
       output_config: mapAnthropicOutput(request),
-      thinking:
-        request.reasoning_effort === undefined
-          ? undefined
-          : { type: 'adaptive', effort: request.reasoning_effort },
+      thinking: mapAnthropicThinking(request.model, request.reasoning_effort),
       context_management: mapAnthropicCompaction(request.compaction),
       stream: true,
     };
     mergeExtra(body, request.extra);
     removeUndefined(body);
+    // Current-model controls run last so they see extra-injected fields too.
+    applyCurrentAnthropicControls(this.id, request, body);
     return {
       url: `${this.apiBase}/v1/messages`,
       body: body as AnthropicMessagesRequest,
@@ -183,7 +257,7 @@ export class AnthropicMessagesProvider implements AgentModelProvider {
         { max_retries: this.maxRetries },
       );
       if (!response.ok) await throwResponseError(this.id, response);
-      const mapper = new AnthropicEventMapper(request);
+      const mapper = new AnthropicEventMapper(request, built.body);
       if (response.headers.get('content-type')?.includes('text/event-stream')) {
         for await (const message of decodeSSE(response, timeout.signal)) {
           const payload = parseSSEJson(message);
@@ -213,7 +287,10 @@ class AnthropicEventMapper {
   private readonly argumentDeltas = new Map<number, string>();
   private readonly items = new Map<number, RunItem>();
 
-  constructor(private readonly request: TurnRequest) {}
+  constructor(
+    private readonly request: TurnRequest,
+    private readonly requestBody: Readonly<Record<string, unknown>>,
+  ) {}
 
   *map(payload: unknown): Iterable<AgentEvent> {
     if (!isRecord(payload)) return;
@@ -320,21 +397,24 @@ class AnthropicEventMapper {
         content: [...this.blocks.values()],
       },
     ];
-    const state = createProviderState({
-      provider: 'anthropic',
-      model: this.request.model,
-      native_history: nativeHistory,
-      reasoning_state: {
-        signatures: [...this.blocks.values()]
-          .map((block) => block.signature)
-          .filter((value) => typeof value === 'string'),
-      },
-      tool_state: {
-        tool_use_ids: [...this.items.values()]
-          .filter((item) => item.type === 'function_call')
-          .map((item) => item.id),
-      },
-    });
+    const state = recordReplayPrefix(
+      createProviderState({
+        provider: 'anthropic',
+        model: this.request.model,
+        native_history: nativeHistory,
+        reasoning_state: {
+          signatures: [...this.blocks.values()]
+            .map((block) => block.signature)
+            .filter((value) => typeof value === 'string'),
+        },
+        tool_state: {
+          tool_use_ids: [...this.items.values()]
+            .filter((item) => item.type === 'function_call')
+            .map((item) => item.id),
+        },
+      }),
+      this.requestBody,
+    );
     return this.event(AgentEventTypes.MODEL_COMPLETED, raw, {
       output_text: this.text,
       usage,
@@ -362,7 +442,9 @@ class AnthropicEventMapper {
 }
 
 export function anthropicMessagesCapabilityProfile(model?: string): CapabilityProfile {
-  const modern = model?.includes('4-6') === true || model?.includes('4-7') === true;
+  const structuredOutput = anthropicSupportsStructuredOutput(model);
+  const compaction = anthropicSupportsCompaction(model);
+  const adaptive = isAdaptiveAnthropicModel(model);
   return {
     provider: 'anthropic',
     model,
@@ -374,7 +456,7 @@ export function anthropicMessagesCapabilityProfile(model?: string): CapabilityPr
       supports_mcp: true,
       supports_workspaces: false,
       supports_provider_state: true,
-      supports_structured_output: modern,
+      supports_structured_output: structuredOutput,
     },
     tools: {
       function_tools: capability('supported'),
@@ -388,13 +470,16 @@ export function anthropicMessagesCapabilityProfile(model?: string): CapabilityPr
     },
     output: {
       text: capability('supported'),
-      structured_output: modern
+      structured_output: structuredOutput
         ? capability('supported')
-        : capability('unsupported', { reason: 'Native output format requires Claude 4.6+.' }),
-      provider_native: modern
+        : capability('unsupported', { reason: STRUCTURED_OUTPUT_REASON }),
+      provider_native: structuredOutput
         ? capability('supported')
-        : capability('unsupported', { reason: 'Native output format requires Claude 4.6+.' }),
-      finalizer_tool: capability('supported'),
+        : capability('unsupported', { reason: STRUCTURED_OUTPUT_REASON }),
+      finalizer_tool:
+        model === FABLE_5_1_MODEL
+          ? capability('unsupported', { reason: FABLE_TOOL_CHOICE_REASON })
+          : capability('supported'),
       posthoc_parse: capability('supported'),
       posthoc_parse_with_retry: capability('supported'),
     },
@@ -403,14 +488,20 @@ export function anthropicMessagesCapabilityProfile(model?: string): CapabilityPr
       max_output_tokens: capability('supported'),
       temperature: capability('supported'),
       top_p: capability('supported'),
-      tool_choice: capability('supported'),
+      // Supported, with the Fable 5.1 restriction disclosed and enforced on the
+      // dispatched body rather than as a fatal 'conditional' status.
+      tool_choice:
+        model === FABLE_5_1_MODEL
+          ? capability('supported', { reason: FABLE_TOOL_CHOICE_REASON })
+          : capability('supported'),
       parallel_tool_calls: capability('unsupported'),
       reasoning_effort: capability('supported', {
-        supported_values: ['low', 'medium', 'high'],
+        native_name: adaptive ? 'output_config.effort' : 'thinking',
+        supported_values: adaptive ? ADAPTIVE_ANTHROPIC_EFFORTS : LEGACY_ANTHROPIC_EFFORTS,
       }),
-      compaction: modern
+      compaction: compaction
         ? capability('supported')
-        : capability('unsupported', { reason: 'Context editing requires Claude 4.6+.' }),
+        : capability('unsupported', { reason: COMPACTION_REASON }),
       cache: capability('supported'),
       extra: capability('passthrough'),
     },
@@ -593,8 +684,9 @@ function mapAnthropicTools(request: TurnRequest): readonly unknown[] | undefined
     if (hosted.type === 'raw') tools.push({ ...(hosted.config ?? {}) });
     else if (hosted.type === 'web_search') {
       tools.push({
-        type: 'web_search_20250305',
+        type: anthropicWebSearchVersion(request.model),
         name: hosted.name ?? 'web_search',
+        // Spread last: a caller-supplied config.type still pins its own version.
         ...(hosted.config ?? {}),
       });
     } else if (hosted.type === 'remote_mcp') {
@@ -625,6 +717,348 @@ function mapAnthropicCompaction(value: unknown): unknown {
   return isRecord(value) && value.strategy === 'auto'
     ? { edits: [{ type: 'clear_tool_uses_20250919' }] }
     : undefined;
+}
+
+/**
+ * Map typed reasoning effort onto the `thinking` block.
+ *
+ * Adaptive models carry the effort in `output_config.effort` instead, and their
+ * bare `{type:'adaptive'}` block is added by
+ * {@link applyCurrentAnthropicControls} once provider extra has been merged, so
+ * a natively supplied `thinking` still wins.
+ */
+function mapAnthropicThinking(model: string, effort: string | undefined): unknown {
+  if (effort === undefined || isAdaptiveAnthropicModel(model)) return undefined;
+  return { type: 'adaptive', effort };
+}
+
+/**
+ * Pin the hosted web search spec version for the requested model.
+ *
+ * Callers that pass their own `config.type` keep it: {@link mapAnthropicTools}
+ * spreads the config after this version.
+ */
+function anthropicWebSearchVersion(model: string | undefined): string {
+  if (model === undefined) return CURRENT_WEB_SEARCH_VERSION;
+  const normalized = normalizedAnthropicModel(model);
+  if (ADAPTIVE_ANTHROPIC_MODELS.includes(normalized)) return CURRENT_WEB_SEARCH_VERSION;
+  return CURRENT_WEB_SEARCH_TOKENS.some((token) => normalized.includes(token))
+    ? CURRENT_WEB_SEARCH_VERSION
+    : LEGACY_WEB_SEARCH_VERSION;
+}
+
+/** True for the exact adaptive model ids; family helpers normalize instead. */
+function isAdaptiveAnthropicModel(model: string | undefined): boolean {
+  return model !== undefined && ADAPTIVE_ANTHROPIC_MODELS.includes(model);
+}
+
+function normalizedAnthropicModel(model: string | undefined): string {
+  return (model ?? '').toLowerCase().replaceAll('_', '-');
+}
+
+function anthropicSupportsStructuredOutput(model: string | undefined): boolean {
+  const normalized = normalizedAnthropicModel(model);
+  if (ADAPTIVE_ANTHROPIC_MODELS.includes(normalized)) return true;
+  if (normalized === '') return false;
+  return ANTHROPIC_STRUCTURED_OUTPUT_TOKENS.some((token) => normalized.includes(token));
+}
+
+function anthropicSupportsCompaction(model: string | undefined): boolean {
+  const normalized = normalizedAnthropicModel(model);
+  if (ADAPTIVE_ANTHROPIC_MODELS.includes(normalized)) return true;
+  if (normalized === '') return false;
+  return ANTHROPIC_COMPACTION_TOKENS.some((token) => normalized.includes(token));
+}
+
+/**
+ * Enforce the control contract of the adaptive Claude models and the Fable 5.1
+ * replay guard.
+ *
+ * Runs on the built body after provider extra has been merged, so natively
+ * injected `output_config`, `thinking`, `tool_choice`, and sampling fields are
+ * validated exactly like their typed counterparts. `body.model` is the effective
+ * model: `extra.model` always collides with the normalized field in
+ * {@link mergeExtra}. The replay guard is checked for every model, so state
+ * recorded by Fable 5.1 cannot be handed to a different one.
+ */
+function applyCurrentAnthropicControls(
+  provider: string,
+  request: TurnRequest,
+  body: Record<string, unknown>,
+): void {
+  const model = typeof body.model === 'string' ? body.model : undefined;
+  if (model !== undefined && isAdaptiveAnthropicModel(model)) {
+    applyAdaptiveAnthropicControls(provider, request, body, model);
+  }
+  validateAnthropicReplay(provider, request.provider_state, body);
+}
+
+function applyAdaptiveAnthropicControls(
+  provider: string,
+  request: TurnRequest,
+  body: Record<string, unknown>,
+  model: string,
+): void {
+  // Only an absent key defaults to {}: a native `null` is a present value the
+  // parent's mapping check rejects.
+  const declared = body.output_config === undefined ? {} : body.output_config;
+  if (!isRecord(declared)) {
+    throw new UnsupportedCapabilityError(provider, 'output.provider_native', {
+      reason: 'output_config must be an object.',
+    });
+  }
+  let output: Readonly<Record<string, unknown>> = declared;
+  if (request.output?.strategy === 'provider_native' && request.output.schema !== undefined) {
+    const format = { type: 'json_schema', schema: request.output.schema };
+    // Defensive: a native output_config next to a typed schema already collides
+    // in mergeExtra, so only an identically shaped format can reach this branch.
+    if (output.format !== undefined && !sameJsonValue(output.format, format)) {
+      throw new UnsupportedCapabilityError(provider, 'output.provider_native', {
+        reason: 'Native output format conflicts with the declared schema.',
+      });
+    }
+    output = { ...output, format };
+    body.output_config = output;
+  }
+  const typedEffort = request.reasoning_effort;
+  if (typedEffort !== undefined) {
+    if (output.effort !== undefined && output.effort !== typedEffort) {
+      throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+        reason: 'Native and typed reasoning efforts conflict.',
+      });
+    }
+    output = { ...output, effort: typedEffort };
+    body.output_config = output;
+  }
+  // A present `effort` is validated as given, `null` included; only an absent
+  // key falls back to the default.
+  const effort = Object.hasOwn(output, 'effort') ? output.effort : DEFAULT_ADAPTIVE_EFFORT;
+  if (typeof effort !== 'string' || !ADAPTIVE_ANTHROPIC_EFFORTS.includes(effort)) {
+    throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+      reason: `Value '${describeValue(effort)}' is not supported. Supported values: ${ADAPTIVE_ANTHROPIC_EFFORTS.join(', ')}.`,
+    });
+  }
+  for (const parameter of ['temperature', 'top_p', 'top_k'] as const) {
+    if (parameter in body && (parameter === 'top_k' || body[parameter] !== 1)) {
+      throw new UnsupportedCapabilityError(provider, `controls.${parameter}`, {
+        reason: `${model} does not support nondefault ${parameter}.`,
+      });
+    }
+  }
+  const thinking = body.thinking ?? undefined;
+  if (thinking !== undefined) {
+    if (
+      !isRecord(thinking) ||
+      (thinking.type !== 'adaptive' && thinking.type !== 'disabled') ||
+      'budget_tokens' in thinking
+    ) {
+      throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+        reason: 'This model requires adaptive thinking, without a token budget.',
+      });
+    }
+    if (
+      thinking.type === 'disabled' &&
+      (THINKING_REQUIRED_MODELS.includes(model) ||
+        (model === OPUS_5_MODEL && OPUS_5_THINKING_REQUIRED_EFFORTS.includes(effort)))
+    ) {
+      throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+        reason: 'Thinking cannot be disabled for this model and effort.',
+      });
+    }
+  } else if (typedEffort !== undefined) {
+    body.thinking = { type: 'adaptive' };
+  }
+  if (model === FABLE_5_1_MODEL) {
+    if (request.output?.strategy === 'finalizer_tool') {
+      throw new UnsupportedCapabilityError(provider, 'output.finalizer_tool', {
+        reason: FABLE_TOOL_CHOICE_REASON,
+      });
+    }
+    const choice = body.tool_choice;
+    const choiceType = isRecord(choice) ? choice.type : choice;
+    if (
+      choiceType !== undefined &&
+      choiceType !== null &&
+      choiceType !== 'auto' &&
+      choiceType !== 'none'
+    ) {
+      throw new UnsupportedCapabilityError(provider, 'controls.tool_choice', {
+        reason: FABLE_TOOL_CHOICE_REASON,
+      });
+    }
+  }
+  // Scanned on the built body: the hosted-tool capability gate misses web_fetch
+  // payloads that arrive as a passthrough `raw` hosted tool or as extra.tools.
+  if (model === OPUS_5_MODEL && hasWebFetchTool(body.tools)) {
+    throw new UnsupportedCapabilityError(provider, 'hosted_tools.web_fetch', {
+      reason: 'Claude Opus 5 does not support WebFetch.',
+    });
+  }
+}
+
+function hasWebFetchTool(tools: unknown): boolean {
+  if (!Array.isArray(tools)) return false;
+  const entries: readonly unknown[] = tools;
+  return entries.some(
+    (tool) => isRecord(tool) && typeof tool.type === 'string' && tool.type.startsWith('web_fetch'),
+  );
+}
+
+/**
+ * Refuse provider state whose Fable 5.1 prefix provenance no longer matches the
+ * request about to be dispatched.
+ *
+ * The guard binds the dispatched `system` and `tools` plus the first
+ * `message_count` messages of the body — the recorded assistant prefix — so a
+ * changed system prompt, changed tools, or a mutated recorded prefix are caught
+ * before the network call. Imported thinking blocks without provenance are
+ * refused outright. State fields are read defensively: callers hand back plain
+ * objects, and a missing `tool_state` or `native_history` must not crash.
+ */
+function validateAnthropicReplay(
+  provider: string,
+  state: ProviderState | undefined,
+  body: Readonly<Record<string, unknown>>,
+): void {
+  if (state === undefined) return;
+  const guard = (state.tool_state ?? {})[FABLE_REPLAY_KEY] ?? undefined;
+  if (guard !== undefined) {
+    if (!isRecord(guard) || body.model !== FABLE_5_1_MODEL) {
+      throw new UnsupportedCapabilityError(provider, REPLAY_CAPABILITY, {
+        reason: 'Fable 5.1 thinking state cannot be replayed to another model.',
+      });
+    }
+    const count = guard.message_count;
+    const messages = body.messages;
+    const prefix: readonly unknown[] | undefined =
+      typeof count === 'number' &&
+      Number.isInteger(count) &&
+      Array.isArray(messages) &&
+      (messages as readonly unknown[]).length >= count
+        ? (messages as readonly unknown[]).slice(0, count)
+        : undefined;
+    if (
+      prefix === undefined ||
+      anthropicFingerprint(provider, replayPrefix(body, prefix)) !== guard.digest
+    ) {
+      throw new UnsupportedCapabilityError(provider, REPLAY_CAPABILITY, {
+        reason: 'Fable 5.1 replay requires unchanged system, tools, and prior messages.',
+      });
+    }
+    return;
+  }
+  if (body.model === FABLE_5_1_MODEL && hasImportedThinking(state.native_history ?? [])) {
+    throw new UnsupportedCapabilityError(provider, REPLAY_CAPABILITY, {
+      reason: 'Imported thinking history lacks Fable 5.1 prefix provenance.',
+    });
+  }
+}
+
+/**
+ * Attach Fable 5.1 replay provenance to freshly built provider state.
+ *
+ * The digest covers the dispatched `system` and `tools` plus this turn's native
+ * history, which the next turn re-sends as its message prefix; `message_count`
+ * is that history's length. Only `tool_state` gains a key — `native_history` is
+ * left as built.
+ */
+function recordReplayPrefix(
+  state: ProviderState,
+  body: Readonly<Record<string, unknown>>,
+): ProviderState {
+  if (body.model !== FABLE_5_1_MODEL) return state;
+  return {
+    ...state,
+    tool_state: {
+      ...state.tool_state,
+      [FABLE_REPLAY_KEY]: {
+        model: FABLE_5_1_MODEL,
+        message_count: state.native_history.length,
+        digest: anthropicFingerprint('anthropic', replayPrefix(body, state.native_history)),
+      },
+    },
+  };
+}
+
+function replayPrefix(
+  body: Readonly<Record<string, unknown>>,
+  messages: readonly unknown[],
+): readonly unknown[] {
+  return [body.system, body.tools, messages];
+}
+
+function hasImportedThinking(history: readonly unknown[]): boolean {
+  return history.some((message) => {
+    if (!isRecord(message) || !Array.isArray(message.content)) return false;
+    const blocks: readonly unknown[] = message.content;
+    return blocks.some(
+      (block) =>
+        isRecord(block) && (block.type === 'thinking' || block.type === 'redacted_thinking'),
+    );
+  });
+}
+
+/**
+ * Digest the replay prefix.
+ *
+ * `stableJson` is duplicated from the MCP client (src/mcp/client.ts:386-396)
+ * rather than shared because the two digests have different jobs: the MCP copy
+ * is an in-process cache identity, while this one is persisted in provider state
+ * and re-verified in a later process, so it must be host-independent and must
+ * fail closed on anything JSON cannot represent. Such values (a bigint, a cycle,
+ * a Date or class instance) arrive from caller-supplied provider extra, provider
+ * state, tool `input_schema`, or hosted-tool `config`, and are reported here
+ * instead of crashing the dispatch.
+ */
+function anthropicFingerprint(provider: string, value: unknown): string {
+  try {
+    return createHash('sha256').update(stableJson(value)).digest('hex');
+  } catch {
+    throw new UnsupportedCapabilityError(provider, REPLAY_CAPABILITY, {
+      reason: 'Fable 5.1 replay requires JSON-native prefix data.',
+    });
+  }
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    const items: readonly unknown[] = value;
+    return `[${items.map(stableJson).join(',')}]`;
+  }
+  if (typeof value === 'object' && value !== null) {
+    const prototype: unknown = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      // A Date, Map, Set, or class instance has no plain-object entries and would
+      // otherwise digest as '{}', collapsing distinct bodies onto one digest.
+      throw new TypeError('Replay prefix values must be plain JSON data.');
+    }
+    return `{${Object.entries(value)
+      .filter(([, child]) => child !== undefined)
+      // Codepoint order, not locale order: the digest is compared across hosts.
+      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+      .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sameJsonValue(left: unknown, right: unknown): boolean {
+  return stableJson(left) === stableJson(right);
+}
+
+/**
+ * Render a rejected control value for an error message; unstringifiable values
+ * degrade to 'unknown'. Mirrors the OpenAI adapter's `describeEffort`
+ * (src/providers/openai/responses-provider.ts:739-746); duplicated rather than
+ * shared to keep the two adapters' error text independent.
+ */
+function describeValue(value: unknown): string {
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value) ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
 
 function mapAnthropicBlock(value: unknown, provider: string): RunItem | undefined {

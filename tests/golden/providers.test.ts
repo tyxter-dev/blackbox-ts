@@ -5,6 +5,7 @@ import {
   createProviderState,
   createSSEFetchFixture,
   mediaFromBase64,
+  structuredOutput,
   type TurnRequest,
 } from '../../src/index.js';
 import { createAnthropicProvider } from '../../src/providers/anthropic/index.js';
@@ -272,6 +273,108 @@ describe('provider golden mappings', () => {
           cache_control: { type: 'ephemeral' },
         },
       ],
+    });
+  });
+
+  it('maps adaptive Claude effort onto output_config with bare adaptive thinking', async () => {
+    const fixture = createJsonFetchFixture({
+      model: 'claude-opus-4-8',
+      content: [{ type: 'text', text: 'adaptive answer' }],
+      usage: { input_tokens: 2, output_tokens: 3 },
+    });
+    const provider = createAnthropicProvider({
+      apiKey: 'key',
+      model: 'claude-opus-4-8',
+      apiBase: 'https://anthropic.test',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({
+      model: 'claude-opus-4-8',
+      input: 'hi',
+      trace_id: 'trace_adaptive',
+      reasoning_effort: 'max',
+      output: structuredOutput({ type: 'object', properties: {} }),
+      hosted_tools: [{ type: 'web_search' }],
+    });
+
+    expect(result.output_text).toBe('adaptive answer');
+    expect(fixture.calls[0]?.body).toMatchObject({
+      model: 'claude-opus-4-8',
+      thinking: { type: 'adaptive' },
+      output_config: {
+        effort: 'max',
+        format: { type: 'json_schema', schema: { type: 'object', properties: {} } },
+      },
+      tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+    });
+    expect(fixture.calls[0]?.body).not.toHaveProperty('thinking.effort');
+  });
+
+  it('pins hosted web search versions per Claude model and keeps caller spec versions', async () => {
+    const cases: readonly [string, string][] = [
+      ['claude-fable-5-1', 'web_search_20260209'],
+      ['claude-sonnet-4-6', 'web_search_20260209'],
+      ['claude-opus-4.6-preview', 'web_search_20260209'],
+      ['claude-haiku-4-5-20251001', 'web_search_20250305'],
+      ['claude-fable-99', 'web_search_20250305'],
+    ];
+
+    for (const [model, version] of cases) {
+      const fixture = createJsonFetchFixture({
+        model,
+        content: [{ type: 'text', text: 'ok' }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      });
+      await createAnthropicProvider({
+        apiKey: 'key',
+        model,
+        apiBase: 'https://anthropic.test',
+        fetchImpl: fixture.fetchImpl,
+      }).turn({
+        model,
+        input: 'hi',
+        trace_id: 'trace_hosted',
+        hosted_tools: [
+          { type: 'web_search' },
+          { type: 'web_search', name: 'pinned', config: { type: 'web_search_20990101' } },
+        ],
+      });
+
+      expect(fixture.calls[0]?.body, model).toMatchObject({
+        tools: [
+          { type: version, name: 'web_search' },
+          { type: 'web_search_20990101', name: 'pinned' },
+        ],
+      });
+    }
+  });
+
+  it('keeps the legacy thinking mapping and raw top_k for non-adaptive Claude models', async () => {
+    const fixture = createJsonFetchFixture({
+      model: 'claude-haiku-4-5-20251001',
+      content: [{ type: 'text', text: 'legacy answer' }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    });
+
+    await createAnthropicProvider({
+      apiKey: 'key',
+      model: 'claude-haiku-4-5-20251001',
+      apiBase: 'https://anthropic.test',
+      fetchImpl: fixture.fetchImpl,
+    }).turn({
+      model: 'claude-haiku-4-5-20251001',
+      input: 'hi',
+      trace_id: 'trace_legacy',
+      temperature: 0.2,
+      reasoning_effort: 'high',
+      extra: { top_k: 5 },
+    });
+
+    expect(fixture.calls[0]?.body).toMatchObject({
+      temperature: 0.2,
+      thinking: { type: 'adaptive', effort: 'high' },
+      top_k: 5,
     });
   });
 
