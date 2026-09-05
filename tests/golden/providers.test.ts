@@ -401,6 +401,123 @@ describe('provider golden mappings', () => {
     });
   });
 
+  it('keeps Gemini terminal finish metadata when a usage-only chunk ends the stream', async () => {
+    const terminal = {
+      candidates: [{ content: { role: 'model', parts: [{ text: 'done' }] }, finishReason: 'STOP' }],
+      usageMetadata: { promptTokenCount: 2, candidatesTokenCount: 1, totalTokenCount: 3 },
+    };
+    const usageOnly = {
+      candidates: [],
+      usageMetadata: { promptTokenCount: 2, candidatesTokenCount: 1, totalTokenCount: 3 },
+    };
+    const fixture = createSSEFetchFixture(
+      [terminal, usageOnly].map((payload) => `data: ${JSON.stringify(payload)}\n\n`),
+    );
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBe('STOP');
+    expect(completed?.raw).toEqual(terminal);
+    expect(result.raw_response).toEqual(terminal);
+  });
+
+  it('keeps Gemini terminal finish metadata when a later candidate carries no reason', async () => {
+    const terminal = {
+      candidates: [{ content: { role: 'model', parts: [{ text: 'done' }] }, finishReason: 'STOP' }],
+    };
+    const trailing = {
+      candidates: [{ content: { role: 'model', parts: [{ text: ' more' }] } }],
+    };
+    const fixture = createSSEFetchFixture(
+      [terminal, trailing].map((payload) => `data: ${JSON.stringify(payload)}\n\n`),
+    );
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBe('STOP');
+    expect(completed?.raw).toEqual(terminal);
+    expect(result.output_text).toBe('done more');
+  });
+
+  it('reads the Gemini finish reason from candidate zero only', async () => {
+    const chunk = {
+      candidates: [
+        { index: 0, content: { role: 'model', parts: [{ text: 'done' }] } },
+        { index: 1, content: { role: 'model', parts: [] }, finishReason: 'SAFETY' },
+      ],
+    };
+    const fixture = createSSEFetchFixture([`data: ${JSON.stringify(chunk)}\n\n`]);
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBeNull();
+    expect(completed?.raw).toEqual(chunk);
+  });
+
+  it('normalizes Gemini candidate-zero finish reasons and reports null when absent', async () => {
+    const cases: readonly (readonly [unknown, string | null])[] = [
+      ['STOP', 'STOP'],
+      ['MAX_TOKENS', 'MAX_TOKENS'],
+      ['safety', 'SAFETY'],
+      [undefined, null],
+      [{ name: 'SAFETY' }, 'SAFETY'],
+      [{ value: 'RECITATION' }, 'RECITATION'],
+    ];
+
+    for (const [reason, expected] of cases) {
+      const chunk = {
+        candidates: [
+          {
+            content: { role: 'model', parts: [{ text: 'done' }] },
+            ...(reason === undefined ? {} : { finishReason: reason }),
+          },
+        ],
+      };
+      const fixture = createSSEFetchFixture([`data: ${JSON.stringify(chunk)}\n\n`]);
+      const provider = createGeminiProvider({
+        apiKey: 'key',
+        model: 'gemini-2.5-flash',
+        apiBase: 'https://gemini.test/v1beta',
+        fetchImpl: fixture.fetchImpl,
+      });
+
+      const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+      const completed = result.events?.find(
+        (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+      );
+      expect(completed?.data.finish_reason, JSON.stringify(reason ?? null)).toBe(expected);
+      expect(completed?.raw).toEqual(chunk);
+    }
+  });
+
   it('reuses Responses mechanics for xAI without inheriting OpenAI identity', async () => {
     const fixture = createJsonFetchFixture({
       id: 'resp_xai',

@@ -7,6 +7,7 @@ import type { AgentContentPart, AgentMessage } from '../../core/content.js';
 import {
   ConfigurationError,
   ProviderExecutionError,
+  UnsupportedCapabilityError,
   UnsupportedFeatureError,
 } from '../../core/errors.js';
 import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../../core/events.js';
@@ -35,6 +36,27 @@ import {
   timeoutSignal,
 } from '../http.js';
 import type { ProviderToolDefinition } from '../../tools/types.js';
+
+/**
+ * Reasoning-effort tables for the OpenAI models that ship the current control set.
+ *
+ * Models listed here also map cache TTL to `prompt_cache_options.ttl` instead of
+ * the legacy `prompt_cache_retention` field.
+ */
+const CURRENT_OPENAI_EFFORTS: Readonly<Record<string, readonly string[]>> = {
+  'gpt-6-astra': ['low', 'medium', 'high', 'xhigh', 'max'],
+  'gpt-5.6-sol': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  'gpt-5.6': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  'gpt-5.6-terra': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  'gpt-5.6-luna': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+};
+
+/** Efforts advertised for OpenAI Responses models outside {@link CURRENT_OPENAI_EFFORTS}. */
+const LEGACY_OPENAI_EFFORTS: readonly string[] = ['minimal', 'low', 'medium', 'high'];
+
+const ASTRA_MODEL = 'gpt-6-astra';
+const ASTRA_LOGPROBS_INCLUDE = 'message.output_text.logprobs';
+const CURRENT_CACHE_TTL = '30m';
 
 export interface OpenAIResponsesProviderConfig {
   readonly apiKey: string;
@@ -114,9 +136,12 @@ export class OpenAIResponsesProvider implements AgentModelProvider {
       truncation: mapCompaction(request.compaction),
       stream: true,
     };
-    mapCache(body, request.cache);
+    mapCache(body, request.cache, request.model);
     mergeExtra(body, request.extra);
     removeUndefined(body);
+    // Current-model controls run last so they see extra-injected fields too.
+    applyCurrentOpenAIControls(this.id, body, request.cache);
+    validateModelEffort(this.id, body, CURRENT_OPENAI_EFFORTS);
     return {
       url: `${this.apiBase}/responses`,
       body,
@@ -306,6 +331,8 @@ export function openAIResponsesCapabilityProfile(
   provider = 'openai',
   model?: string,
 ): CapabilityProfile {
+  const astra = model === ASTRA_MODEL;
+  const currentEfforts = currentOpenAIEfforts(model);
   return {
     provider,
     model,
@@ -349,20 +376,35 @@ export function openAIResponsesCapabilityProfile(
     controls: {
       instructions: capability('supported'),
       max_output_tokens: capability('supported'),
-      temperature: capability('supported'),
-      top_p: capability('supported'),
+      temperature: astra
+        ? capability('unsupported', { reason: 'GPT-6 Astra does not support temperature.' })
+        : capability('supported'),
+      top_p: astra
+        ? capability('unsupported', { reason: 'GPT-6 Astra does not support top_p.' })
+        : capability('supported'),
+      top_logprobs: astra
+        ? capability('unsupported', { reason: 'GPT-6 Astra does not support top_logprobs.' })
+        : capability('passthrough'),
       tool_choice: capability('supported'),
       parallel_tool_calls: capability('supported'),
       reasoning_effort: capability('supported', {
-        supported_values: ['minimal', 'low', 'medium', 'high'],
+        native_name: 'reasoning.effort',
+        supported_values: currentEfforts ?? LEGACY_OPENAI_EFFORTS,
       }),
       verbosity: capability('supported', { supported_values: ['low', 'medium', 'high'] }),
       tool_search: capability('supported'),
       compaction: capability('supported'),
       cache: capability('supported'),
+      cache_ttl: capability('supported', {
+        native_name:
+          currentEfforts === undefined ? 'prompt_cache_retention' : 'prompt_cache_options.ttl',
+        supported_values: currentEfforts === undefined ? [] : [CURRENT_CACHE_TTL],
+      }),
       background: capability('supported'),
       store: capability('supported'),
-      include: capability('supported'),
+      include: astra
+        ? capability('supported', { reason: `Astra rejects ${ASTRA_LOGPROBS_INCLUDE}.` })
+        : capability('supported'),
       modalities: capability('unsupported'),
       extra: capability('passthrough'),
     },
@@ -576,10 +618,131 @@ function extractResponseText(response: Readonly<Record<string, unknown>>): strin
     .join('');
 }
 
-function mapCache(body: Record<string, unknown>, cache: unknown): void {
+function mapCache(body: Record<string, unknown>, cache: unknown, model: string): void {
   if (!isRecord(cache)) return;
   if (typeof cache.key === 'string') body.prompt_cache_key = cache.key;
-  if (typeof cache.retention === 'string') body.prompt_cache_retention = cache.retention;
+  // Models in CURRENT_OPENAI_EFFORTS map the TTL onto prompt_cache_options.ttl
+  // in applyCurrentOpenAIControls, after provider extra has been merged.
+  if (currentOpenAIEfforts(model) !== undefined) return;
+  const ttl = cacheTtl(cache);
+  if (ttl !== undefined) body.prompt_cache_retention = ttl;
+}
+
+/**
+ * Read the requested cache TTL, preferring the `ttl` field over the `retention` alias.
+ *
+ * Any present value is returned, not just strings: the parent passes whatever
+ * the control carries to the provider and lets the per-model TTL check reject it.
+ */
+function cacheTtl(cache: unknown): unknown {
+  if (!isRecord(cache)) return undefined;
+  if (cache.ttl !== undefined && cache.ttl !== null) return cache.ttl;
+  return cache.retention === null ? undefined : cache.retention;
+}
+
+function currentOpenAIEfforts(model: string | undefined): readonly string[] | undefined {
+  return model !== undefined && Object.hasOwn(CURRENT_OPENAI_EFFORTS, model)
+    ? CURRENT_OPENAI_EFFORTS[model]
+    : undefined;
+}
+
+/**
+ * Enforce the control restrictions of the current OpenAI Responses models.
+ *
+ * GPT-6 Astra rejects sampling and logprobs surfaces; every current model
+ * rejects the legacy `prompt_cache_retention` key and accepts only
+ * `prompt_cache_options.ttl='30m'`, with natively supplied options winning over
+ * the typed cache control.
+ */
+function applyCurrentOpenAIControls(
+  provider: string,
+  body: Record<string, unknown>,
+  cache: unknown,
+): void {
+  const model = typeof body.model === 'string' ? body.model : undefined;
+  if (model === ASTRA_MODEL) {
+    for (const parameter of ['temperature', 'top_p', 'top_logprobs'] as const) {
+      if (parameter in body) {
+        throw new UnsupportedCapabilityError(provider, `controls.${parameter}`, {
+          reason: `GPT-6 Astra does not support ${parameter}.`,
+        });
+      }
+    }
+    const include = body.include;
+    // Parent membership test also matches a bare string include value.
+    const logprobs =
+      Array.isArray(include) || typeof include === 'string'
+        ? include.includes(ASTRA_LOGPROBS_INCLUDE)
+        : false;
+    if (logprobs) {
+      throw new UnsupportedCapabilityError(provider, 'controls.include', {
+        reason: 'GPT-6 Astra does not support output text logprobs.',
+      });
+    }
+  }
+  if (currentOpenAIEfforts(model) === undefined) return;
+  if ('prompt_cache_retention' in body) {
+    throw new UnsupportedCapabilityError(provider, 'controls.cache_ttl', {
+      reason: 'This model uses prompt_cache_options.ttl, not prompt_cache_retention.',
+    });
+  }
+  const requested = body.prompt_cache_options;
+  const native = isRecord(requested) ? requested : undefined;
+  if (requested !== undefined && native === undefined) {
+    throw new UnsupportedCapabilityError(provider, 'controls.cache_ttl', {
+      reason: 'prompt_cache_options must be an object.',
+    });
+  }
+  const options: Record<string, unknown> = { ...native };
+  const ttl = cacheTtl(cache);
+  if (ttl !== undefined && !('ttl' in options)) options.ttl = ttl;
+  if ('ttl' in options && options.ttl !== CURRENT_CACHE_TTL) {
+    throw new UnsupportedCapabilityError(provider, 'controls.cache_ttl', {
+      reason: `This model supports only prompt_cache_options.ttl='${CURRENT_CACHE_TTL}'.`,
+    });
+  }
+  if (Object.keys(options).length > 0 || requested !== undefined) {
+    body.prompt_cache_options = options;
+  }
+}
+
+/**
+ * Reject reasoning efforts the requested model does not accept.
+ *
+ * Runs on the built body so typed `reasoning_effort` and provider extra that
+ * injects `reasoning` are both validated before dispatch.
+ */
+export function validateModelEffort(
+  provider: string,
+  body: Readonly<Record<string, unknown>>,
+  efforts: Readonly<Record<string, readonly string[]>>,
+): void {
+  const model = typeof body.model === 'string' ? body.model : undefined;
+  const allowed = model !== undefined && Object.hasOwn(efforts, model) ? efforts[model] : undefined;
+  const reasoning = body.reasoning;
+  if (allowed === undefined || reasoning === undefined || reasoning === null) return;
+  if (!isRecord(reasoning)) {
+    throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+      reason: 'reasoning must be an object.',
+    });
+  }
+  const effort = reasoning.effort;
+  if (effort === undefined || effort === null) return;
+  if (typeof effort !== 'string' || !allowed.includes(effort)) {
+    throw new UnsupportedCapabilityError(provider, 'controls.reasoning_effort', {
+      reason: `Value '${describeEffort(effort)}' is not supported. Supported values: ${allowed.join(', ')}.`,
+    });
+  }
+}
+
+/** Render a rejected effort for the error message; unstringifiable values degrade to 'unknown'. */
+function describeEffort(effort: unknown): string {
+  if (typeof effort === 'string') return effort;
+  try {
+    return JSON.stringify(effort) ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
 
 function mapCompaction(value: unknown): unknown {
