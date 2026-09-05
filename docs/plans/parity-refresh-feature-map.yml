@@ -1,0 +1,12 @@
+scout_version: 1
+root: '/srv/projects/repos/blackbox-ts'
+generated_at: '2026-09-05T19:00:27Z'
+summary:
+  apps: 0
+  features: 0
+  shared_kernels: 0
+  total_files: 178
+  total_chars: 1558878
+apps: []
+features: []
+shared_kernels: []
