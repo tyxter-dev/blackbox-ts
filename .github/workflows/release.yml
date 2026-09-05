@@ -1,5 +1,14 @@
 name: Release
 
+# Publishes blackbox-ts through npm Trusted Publishing. The npm package must
+# be configured with this exact workflow filename and the npm-publish
+# environment. No NPM_TOKEN is required; GitHub issues an OIDC token for
+# `npm publish`.
+#
+# Tag pushes derive the npm dist-tag from the version: a prerelease version
+# (contains "-", e.g. 0.1.0-alpha.1) publishes to `alpha`; a stable version
+# publishes to `latest`. Prereleases are never allowed on `latest`.
+
 on:
   push:
     tags: ['v*']
@@ -19,9 +28,49 @@ jobs:
           version: 10.29.3
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.11.0'
+          # npm >=11.10 (trusted publishing) requires Node >=20.17; the 20.11
+          # engines floor is still exercised by ci.yml.
+          node-version: '22'
           cache: pnpm
           registry-url: https://registry.npmjs.org
+      - name: Install npm with trusted-publishing support
+        run: npm install -g 'npm@^11.10.0'
+      - name: Validate release target
+        id: release
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p "require('./package.json').version")"
+          expected_version="${GITHUB_REF_NAME#v}"
+
+          if [[ "$expected_version" != "$package_version" ]]; then
+            echo "::error::Tag version $expected_version does not match package.json version $package_version."
+            exit 1
+          fi
+
+          if [[ "$package_version" == *-* ]]; then
+            npm_tag="alpha"
+          else
+            npm_tag="latest"
+          fi
+
+          set +e
+          npm_view_output="$(npm view "blackbox-ts@${package_version}" version 2>&1)"
+          npm_view_status=$?
+          set -e
+
+          if [[ "$npm_view_status" -eq 0 ]]; then
+            echo "::error::blackbox-ts@${package_version} is already published. Bump package.json first."
+            exit 1
+          fi
+
+          if [[ "$npm_view_output" != *"E404"* ]]; then
+            echo "::error::Could not confirm that blackbox-ts@${package_version} is unpublished."
+            printf '%s\n' "$npm_view_output"
+            exit 1
+          fi
+
+          echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - uses: actions/checkout@v4
@@ -33,4 +82,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pnpm parity:python -- --parent .parent-blackbox
-      - run: pnpm publish --provenance --access public --no-git-checks
+      - name: Publish
+        env:
+          NPM_TAG: ${{ steps.release.outputs.npm_tag }}
+        run: npm publish --access public --tag "$NPM_TAG"
