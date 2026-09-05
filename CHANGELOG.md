@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.1
+
+- Automated releases through npm trusted publishing (OIDC): tag pushes now
+  validate the tag against the package version, pick the dist-tag
+  (prerelease → `alpha`, stable → `latest`), and publish from CI without
+  registry tokens.
+
 ## 0.1.0-alpha.0
 
 - Ported the Python Blackbox provider/runtime contracts against commit
