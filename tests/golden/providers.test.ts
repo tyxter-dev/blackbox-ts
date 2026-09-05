@@ -254,7 +254,7 @@ describe('provider golden mappings', () => {
       arguments: '{"id":"42"}',
     });
     expect(result.usage).toMatchObject({
-      input_tokens: 10,
+      input_tokens: 16,
       output_tokens: 3,
       cached_input_tokens: 6,
       cache_read_input_tokens: 4,

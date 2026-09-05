@@ -27,6 +27,8 @@ import {
   serializeDurable,
   sessionRef,
   transitionAgentSession,
+  usageFromAnthropic,
+  usageFromOpenAI,
 } from '../../src/index.js';
 
 describe('provider-neutral core contracts', () => {
@@ -161,6 +163,52 @@ describe('provider-neutral core contracts', () => {
     expect(requireApproval('sensitive')).toMatchObject({
       verdict: 'require_approval',
       reason: 'sensitive',
+    });
+  });
+
+  it('normalizes Anthropic input inclusive of cache reads and writes', () => {
+    const usage = usageFromAnthropic({
+      input_tokens: 100,
+      output_tokens: 25,
+      cache_read_input_tokens: 10,
+      cache_creation_input_tokens: 5,
+    });
+
+    expect(usage).toMatchObject({
+      input_tokens: 115,
+      output_tokens: 25,
+      total_tokens: 140,
+      cached_input_tokens: 15,
+      cache_read_input_tokens: 10,
+      cache_creation_input_tokens: 5,
+    });
+    // The native exclusive count survives untouched for provider-level reporting.
+    expect(usage.provider_details).toMatchObject({ input_tokens: 100 });
+  });
+
+  it('splits OpenAI cache reads and writes without changing reported input', () => {
+    const usage = usageFromOpenAI({
+      input_tokens: 1000,
+      output_tokens: 100,
+      total_tokens: 1100,
+      input_tokens_details: { cached_tokens: 200, cache_write_tokens: 300 },
+    });
+
+    expect(usage).toMatchObject({
+      input_tokens: 1000,
+      total_tokens: 1100,
+      cached_input_tokens: 500,
+      cache_read_input_tokens: 200,
+      cache_creation_input_tokens: 300,
+    });
+    // Responses payloads without cache writes keep the pre-split accounting.
+    expect(
+      usageFromOpenAI({ input_tokens: 1000, input_tokens_details: { cached_tokens: 200 } }),
+    ).toMatchObject({
+      input_tokens: 1000,
+      cached_input_tokens: 200,
+      cache_read_input_tokens: 200,
+      cache_creation_input_tokens: 0,
     });
   });
 

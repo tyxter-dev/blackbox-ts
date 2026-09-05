@@ -67,16 +67,27 @@ export function addUsage(left?: ModelUsage, right?: ModelUsage): ModelUsage | un
 
 export function usageFromOpenAI(value: unknown): TokenUsage {
   const usage = isRecord(value) ? value : {};
+  const hasInputDetails = isRecord(usage['input_tokens_details']);
   const inputDetails = childRecord(usage, 'input_tokens_details');
   const outputDetails = childRecord(usage, 'output_tokens_details');
-  const cached = readNumber(inputDetails, 'cached_tokens') || readNumber(usage, 'cached_tokens');
+  // Responses payloads nest the cache counters under `input_tokens_details`;
+  // the top-level `cached_tokens` fallback serves chat-completions shapes that
+  // have no details record at all, and never mixes with nested counters.
+  const cacheRead = hasInputDetails
+    ? readNumber(inputDetails, 'cached_tokens')
+    : readNumber(usage, 'cached_tokens');
+  const cacheCreation = readNumber(inputDetails, 'cache_write_tokens');
 
+  // OpenAI's `input_tokens` already counts cached prompt tokens, so the split
+  // counters only partition it and `cached_input_tokens` is their total; see
+  // the uncached-input subtraction in PricingCatalog.estimate.
   return modelUsage({
     input_tokens: readNumber(usage, 'input_tokens') || readNumber(usage, 'prompt_tokens'),
     output_tokens: readNumber(usage, 'output_tokens') || readNumber(usage, 'completion_tokens'),
     total_tokens: readNumber(usage, 'total_tokens') || undefined,
-    cached_input_tokens: cached,
-    cache_read_input_tokens: cached,
+    cached_input_tokens: cacheRead + cacheCreation,
+    cache_read_input_tokens: cacheRead,
+    cache_creation_input_tokens: cacheCreation,
     reasoning_tokens: readNumber(outputDetails, 'reasoning_tokens'),
     provider_details: usage,
   });
@@ -87,8 +98,13 @@ export function usageFromAnthropic(value: unknown): TokenUsage {
   const cacheRead = readNumber(usage, 'cache_read_input_tokens');
   const cacheCreation = readNumber(usage, 'cache_creation_input_tokens');
 
+  // Anthropic reports `input_tokens` exclusive of cache reads and writes; the
+  // normalized input (and therefore the total) counts them once, while the raw
+  // exclusive counts stay available in `provider_details`.
+  const inputTokens = readNumber(usage, 'input_tokens') + cacheRead + cacheCreation;
+
   return modelUsage({
-    input_tokens: readNumber(usage, 'input_tokens'),
+    input_tokens: inputTokens,
     output_tokens: readNumber(usage, 'output_tokens'),
     cache_read_input_tokens: cacheRead,
     cache_creation_input_tokens: cacheCreation,
