@@ -102,56 +102,180 @@ export class PricingCatalog {
   }
 }
 
-export const BUNDLED_PRICING_VERSION = '2026-05-06';
+export const BUNDLED_PRICING_VERSION = '2026-09-05';
+
+const BUNDLED_PRICING_RETRIEVED_AT = '2026-09-05';
+/**
+ * Retrieval date for rows the 2026-09-05 refresh did not revisit. Refreshed
+ * rows carry `BUNDLED_PRICING_RETRIEVED_AT` instead.
+ */
+const PRIOR_PRICING_RETRIEVED_AT = '2026-05-06';
+
 export const BUNDLED_PRICING = new PricingCatalog([
-  pricing('openai', 'gpt-5.5', 5, 30, 0.5),
-  pricing('openai', 'gpt-5.4', 2.5, 15, 0.25),
-  pricing('openai', 'gpt-5.4-mini', 0.75, 4.5, 0.075),
-  ...anthropicPricing(['claude-opus-4-1', 'claude-opus-4-1-20250805'], 15, 75),
-  ...anthropicPricing(['claude-opus-4', 'claude-opus-4-20250514'], 15, 75),
-  ...anthropicPricing(['claude-sonnet-4-5', 'claude-sonnet-4-5-20250929'], 3, 15),
-  ...anthropicPricing(['claude-sonnet-4', 'claude-sonnet-4-20250514'], 3, 15),
-  ...anthropicPricing(['claude-haiku-4-5', 'claude-haiku-4-5-20251001'], 1, 5),
-  ...anthropicPricing(['claude-haiku-3-5', 'claude-3-5-haiku-20241022'], 0.8, 4),
-  pricing('google', 'gemini-3-flash-preview', 0.5, 3, 0.05),
-  pricing('google', 'gemini-2.5-pro', 1.25, 10, 0.125),
-  pricing('google', 'gemini-2.5-flash', 0.3, 2.5, 0.03),
-  pricing('google', 'gemini-2.5-flash-lite', 0.1, 0.4, 0.01),
-  pricing('xai', 'grok-4-1-fast-reasoning', 0.2, 0.5),
-  pricing('xai', 'grok-4-1-fast-non-reasoning', 0.2, 0.5),
+  ...openaiPricing(),
+  ...anthropicPricing(),
+  ...googlePricing(),
+  ...xaiPricing(),
 ]);
 
-function anthropicPricing(
+function openaiPricing(): readonly PricingEntry[] {
+  const current: readonly (readonly [string, number, number])[] = [
+    ['gpt-6-astra', 10, 50],
+    ['gpt-5.6-sol', 4, 20],
+    ['gpt-5.6-terra', 2, 12],
+    ['gpt-5.6-luna', 0.2, 1.2],
+  ];
+  return [
+    ...current.map(([model, input, output]) =>
+      pricing({
+        provider: 'openai',
+        model,
+        input,
+        output,
+        cacheRead: input * 0.1,
+        cacheCreation: input * 1.25,
+        retrievedAt: BUNDLED_PRICING_RETRIEVED_AT,
+      }),
+    ),
+    pricing({ provider: 'openai', model: 'gpt-5.5', input: 5, output: 30, cacheRead: 0.5 }),
+    pricing({ provider: 'openai', model: 'gpt-5.4', input: 2.5, output: 15, cacheRead: 0.25 }),
+    pricing({
+      provider: 'openai',
+      model: 'gpt-5.4-mini',
+      input: 0.75,
+      output: 4.5,
+      cacheRead: 0.075,
+    }),
+  ];
+}
+
+function anthropicPricing(): readonly PricingEntry[] {
+  const current: readonly (readonly [string, number, number, number])[] = [
+    ['claude-fable-5-1', 10, 50, 0.25],
+    ['claude-fable-5', 10, 50, 1],
+    ['claude-opus-5', 5, 25, 0.5],
+    ['claude-sonnet-5', 2, 10, 0.2],
+    ['claude-opus-4-8', 5, 25, 0.5],
+    ['claude-opus-4-7', 5, 25, 0.5],
+    ['claude-opus-4-6', 5, 25, 0.5],
+    ['claude-opus-4-5', 5, 25, 0.5],
+    ['claude-sonnet-4-6', 3, 15, 0.3],
+  ];
+  return [
+    ...current.map(([model, input, output, cacheRead]) =>
+      pricing({
+        provider: 'anthropic',
+        model,
+        input,
+        output,
+        cacheRead,
+        cacheCreation: input * 1.25,
+        retrievedAt: BUNDLED_PRICING_RETRIEVED_AT,
+      }),
+    ),
+    ...anthropicAliasPricing(['claude-opus-4-1', 'claude-opus-4-1-20250805'], 15, 75),
+    ...anthropicAliasPricing(['claude-opus-4', 'claude-opus-4-20250514'], 15, 75),
+    ...anthropicAliasPricing(['claude-sonnet-4-5', 'claude-sonnet-4-5-20250929'], 3, 15),
+    ...anthropicAliasPricing(['claude-sonnet-4', 'claude-sonnet-4-20250514'], 3, 15),
+    ...anthropicAliasPricing(['claude-haiku-4-5', 'claude-haiku-4-5-20251001'], 1, 5),
+    ...anthropicAliasPricing(['claude-haiku-3-5', 'claude-3-5-haiku-20241022'], 0.8, 4),
+  ];
+}
+
+function googlePricing(): readonly PricingEntry[] {
+  return [
+    pricing({
+      provider: 'google',
+      model: 'gemini-3-flash-preview',
+      input: 0.5,
+      output: 3,
+      cacheRead: 0.05,
+    }),
+    pricing({
+      provider: 'google',
+      model: 'gemini-2.5-pro',
+      input: 1.25,
+      output: 10,
+      cacheRead: 0.125,
+    }),
+    pricing({
+      provider: 'google',
+      model: 'gemini-2.5-flash',
+      input: 0.3,
+      output: 2.5,
+      cacheRead: 0.03,
+    }),
+    pricing({
+      provider: 'google',
+      model: 'gemini-2.5-flash-lite',
+      input: 0.1,
+      output: 0.4,
+      cacheRead: 0.01,
+    }),
+  ];
+}
+
+function xaiPricing(): readonly PricingEntry[] {
+  const rows: readonly (readonly [string, number, number, number])[] = [
+    ['grok-4.6', 2, 0.5, 6],
+    ['grok-4.3', 1.25, 0.2, 2.5],
+    // Retired in favour of grok-4.3; the redirect bills at the grok-4.3 rates.
+    ['grok-4-1-fast-reasoning', 1.25, 0.2, 2.5],
+    ['grok-4-1-fast-non-reasoning', 1.25, 0.2, 2.5],
+  ];
+  return rows.map(([model, input, cacheRead, output]) =>
+    pricing({
+      provider: 'xai',
+      model,
+      input,
+      output,
+      cacheRead,
+      retrievedAt: BUNDLED_PRICING_RETRIEVED_AT,
+    }),
+  );
+}
+
+function anthropicAliasPricing(
   models: readonly string[],
   input: number,
   output: number,
 ): readonly PricingEntry[] {
   return models.map((model) =>
-    pricing('anthropic', model, input, output, input * 0.1, input * 1.25),
+    pricing({
+      provider: 'anthropic',
+      model,
+      input,
+      output,
+      cacheRead: input * 0.1,
+      cacheCreation: input * 1.25,
+    }),
   );
 }
 
-function pricing(
-  provider: string,
-  model: string,
-  input: number,
-  output: number,
-  cacheRead?: number,
-  cacheCreation = input,
-): PricingEntry {
+interface PricingRow {
+  readonly provider: string;
+  readonly model: string;
+  readonly input: number;
+  readonly output: number;
+  readonly cacheRead: number;
+  readonly cacheCreation?: number;
+  readonly retrievedAt?: string;
+}
+
+function pricing(row: PricingRow): PricingEntry {
   return {
-    provider,
-    model,
+    provider: row.provider,
+    model: row.model,
     currency: 'USD',
     rates: {
-      input_per_million: input,
-      output_per_million: output,
-      ...(cacheRead === undefined ? {} : { cache_read_per_million: cacheRead }),
-      cache_creation_per_million: cacheCreation,
+      input_per_million: row.input,
+      output_per_million: row.output,
+      cache_read_per_million: row.cacheRead,
+      cache_creation_per_million: row.cacheCreation ?? row.input,
     },
     source: 'blackbox-bundled',
     version: BUNDLED_PRICING_VERSION,
-    effective_at: '2026-05-06T00:00:00.000Z',
+    effective_at: `${row.retrievedAt ?? PRIOR_PRICING_RETRIEVED_AT}T00:00:00.000Z`,
     metadata: { replaceable: true },
   };
 }

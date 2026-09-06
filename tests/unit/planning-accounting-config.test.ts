@@ -69,7 +69,50 @@ describe('planning, accounting, cache, and config', () => {
 
     expect(estimate.provider_cost).toBeCloseTo(3.55);
     expect(estimate.user_billable).toBeCloseTo(3.906);
-    expect(estimate).toMatchObject({ source: 'blackbox-bundled', version: '2026-05-06' });
+    expect(estimate).toMatchObject({ source: 'blackbox-bundled', version: '2026-09-05' });
+  });
+
+  it('ships the refreshed standard rates, cache semantics, and per-row provenance', () => {
+    for (const [provider, model, input, output] of [
+      ['openai', 'gpt-6-astra', 10, 50],
+      ['openai', 'gpt-5.6-sol', 4, 20],
+      ['openai', 'gpt-5.6-terra', 2, 12],
+      ['openai', 'gpt-5.6-luna', 0.2, 1.2],
+      ['anthropic', 'claude-fable-5-1', 10, 50],
+      ['anthropic', 'claude-fable-5', 10, 50],
+      ['anthropic', 'claude-opus-5', 5, 25],
+      ['anthropic', 'claude-sonnet-5', 2, 10],
+      ['anthropic', 'claude-opus-4-8', 5, 25],
+      ['xai', 'grok-4.6', 2, 6],
+      ['xai', 'grok-4.3', 1.25, 2.5],
+      ['xai', 'grok-4-1-fast-reasoning', 1.25, 2.5],
+      ['xai', 'grok-4-1-fast-non-reasoning', 1.25, 2.5],
+    ] as const) {
+      const entry = BUNDLED_PRICING.get(provider, model);
+      expect(entry?.rates.input_per_million).toBe(input);
+      expect(entry?.rates.output_per_million).toBe(output);
+      expect(entry?.effective_at).toBe('2026-09-05T00:00:00.000Z');
+    }
+
+    const fable = BUNDLED_PRICING.get('anthropic', 'claude-fable-5-1');
+    expect(fable?.rates.cache_read_per_million).toBe(0.25);
+    expect(fable?.rates.cache_creation_per_million).toBe(12.5);
+    expect(
+      BUNDLED_PRICING.estimate(
+        'anthropic',
+        'claude-fable-5-1',
+        modelUsage({ input_tokens: 1_000_000, cache_read_input_tokens: 1_000_000 }),
+      ).provider_cost,
+    ).toBeCloseTo(0.25, 9);
+    expect(BUNDLED_PRICING.get('anthropic', 'claude-fable-5')?.rates.cache_read_per_million).toBe(
+      1,
+    );
+    expect(BUNDLED_PRICING.get('xai', 'grok-4.6')?.rates.cache_read_per_million).toBe(0.5);
+    // xAI publishes no cache-write rate, so cache creation bills at the input rate.
+    expect(BUNDLED_PRICING.get('xai', 'grok-4.6')?.rates.cache_creation_per_million).toBe(2);
+    expect(BUNDLED_PRICING.get('google', 'gemini-2.5-flash')?.effective_at).toBe(
+      '2026-05-06T00:00:00.000Z',
+    );
   });
 
   it('charges inclusive Anthropic input, cache reads, and cache writes exactly once each', () => {
