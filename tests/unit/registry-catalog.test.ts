@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AgentProviderRegistry,
+  CodexAgentProvider,
   FakeModelProvider,
   FakeAgentProvider,
   FakeRealtimeProvider,
@@ -9,6 +10,7 @@ import {
   ProviderRegistry,
   bundledProviderModelCatalog,
 } from '../../src/index.js';
+import { FakeCodexAppServerClient } from '../fixtures/fake-codex-app-server-client.js';
 
 describe('provider registry', () => {
   it('registers providers, aliases, and resolves provider:model refs', () => {
@@ -23,6 +25,24 @@ describe('provider registry', () => {
       model: 'gpt-4.1-mini',
     });
     expect(registry.knownModelProviders()).toEqual(['oa', 'openai']);
+  });
+
+  it('registers the Codex agent provider under its compat aliases', () => {
+    const registry = new ProviderRegistry();
+    const provider = new CodexAgentProvider(new FakeCodexAppServerClient());
+    registry.registerAgentProvider(provider, ['codex-app-server', 'codex_app_server']);
+
+    expect(CodexAgentProvider.aliases).toEqual(['codex-app-server', 'codex_app_server']);
+    expect(registry.getAgentProvider('codex')).toBe(provider);
+    expect(registry.getAgentProvider('codex-app-server')).toBe(provider);
+    expect(registry.getAgentProvider('codex_app_server')).toBe(provider);
+    expect(registry.knownAgentProviders()).toEqual([
+      'codex',
+      'codex-app-server',
+      'codex_app_server',
+    ]);
+    expect(registry.listAgentProviders()).toEqual([provider]);
+    expect(() => registry.getAgentProvider('codex-exec')).toThrow(ProviderNotRegisteredError);
   });
 
   it('keeps the legacy AgentProviderRegistry constructor export', () => {

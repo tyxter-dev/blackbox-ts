@@ -4,6 +4,7 @@ export type ArtifactType =
   | 'file'
   | 'patch'
   | 'diff'
+  | 'file_change'
   | 'log'
   | 'report'
   | 'command_output'
