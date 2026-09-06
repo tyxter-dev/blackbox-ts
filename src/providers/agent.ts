@@ -10,6 +10,14 @@ export interface AgentCapabilities {
   readonly supports_cancellation: boolean;
   readonly supports_artifacts: boolean;
   readonly supports_approvals: boolean;
+  /**
+   * Whether this adapter enforces an active package permission boundary on
+   * the calls it makes. Absent means no, so an adapter that has not been
+   * audited for it cannot be handed a restricted package by accident; the
+   * runtime refuses to create or start an agent on an adapter that does not
+   * advertise it while a boundary is active.
+   */
+  readonly supports_package_permissions?: boolean;
   readonly metadata: Readonly<Record<string, unknown>>;
 }
 

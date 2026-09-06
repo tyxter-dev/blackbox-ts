@@ -13,11 +13,20 @@ abstract class InjectedCloudAgentProvider implements AgentProvider {
     private readonly configuredCapabilities: AgentCapabilities,
   ) {}
 
+  /**
+   * The injected client cannot advertise package enforcement.
+   *
+   * This adapter forwards calls to a client it does not control, so it has no
+   * way to hold a boundary across them; the flag is forced false whatever the
+   * configured capabilities say ((parent) src/blackbox/providers/agent_adapters/
+   * claude_code.py L152-157, openai_cloud.py L94-99).
+   */
   capabilities(): AgentCapabilities {
     return {
       ...this.configuredCapabilities,
       supports_resume:
         this.configuredCapabilities.supports_resume && this.client.resume !== undefined,
+      supports_package_permissions: false,
     };
   }
 
@@ -69,6 +78,7 @@ const CLOUD_CAPABILITIES: AgentCapabilities = {
   supports_cancellation: true,
   supports_artifacts: true,
   supports_approvals: true,
+  supports_package_permissions: false,
   metadata: { adapter: 'injected_client' },
 };
 
@@ -135,6 +145,7 @@ export class VertexAIAgentEngineProvider implements AgentProvider {
       supports_cancellation: false,
       supports_artifacts: false,
       supports_approvals: false,
+      supports_package_permissions: false,
       metadata: { status: 'partial_stub' },
     };
   }

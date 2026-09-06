@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  compilePackagePermissions,
   MCPAuthenticationError,
   MCPClient,
   FetchMCPTransport,
@@ -13,6 +14,7 @@ import {
   toolResult,
   type MCPRequestContext,
 } from '../../src/index.js';
+import { permissionBoundary } from '../../src/core/tool-permissions.js';
 
 describe('MCP boundary', () => {
   it('negotiates, filters, caches, invalidates, and bridges namespaced tools', async () => {
@@ -196,6 +198,75 @@ describe('MCP boundary', () => {
     expect(first).not.toBe(second);
     expect(first).toHaveLength(64);
     expect(JSON.stringify(client)).not.toMatch(/password|url-secret|tenant-secret|bearer-secret/);
+  });
+
+  it('derives permission scopes from the descriptor ladder and copies its metadata', async () => {
+    const descriptors = [
+      { name: 'explicit', metadata: { permission_scopes: ['admin'], destructive: true } },
+      { name: 'destructive', metadata: { destructive: true } },
+      { name: 'read_only', metadata: { read_only: true } },
+      { name: 'plain' },
+      { name: 'declared', scopes: ['write'], metadata: { destructive: true } },
+      {
+        name: 'connected',
+        metadata: { connector: 'tickets', required_scopes: ['tickets.read'], vendor: 'acme' },
+      },
+    ];
+    const client = new MCPClient(
+      { name: 'ladder', transport: 'stdio', trusted: true },
+      {
+        request: (method: string) =>
+          Promise.resolve(
+            method === 'initialize'
+              ? { protocolVersion: '2025-06-18', capabilities: {} }
+              : { tools: descriptors },
+          ),
+      },
+    );
+
+    const definitions = await mcpToolDefinitions(client);
+
+    expect(definitions.map((tool) => tool.scopes)).toEqual([
+      ['admin'],
+      ['delete'],
+      ['read'],
+      ['execute'],
+      ['write'],
+      ['execute'],
+    ]);
+    expect(definitions.at(-1)?.metadata).toMatchObject({
+      vendor: 'acme',
+      connector: 'tickets',
+      connector_scopes: ['tickets.read'],
+      mcp: true,
+      server: 'ladder',
+      tool: 'connected',
+      ref: 'mcp:ladder.connected',
+    });
+  });
+
+  it('gates an in-process tools/call on the package grant for its MCP ref', async () => {
+    const effects: string[] = [];
+    const server = new MCPServer('local', [
+      { name: 'echo', scopes: ['read'], handler: () => effects.push('echo') && 'ok' },
+    ]);
+    const call = () => server.handle('tools/call', { name: 'echo', arguments: {} });
+    const boundary = (refs: readonly string[]) => [
+      compilePackagePermissions(
+        refs.map((ref) => ({ ref })),
+        [],
+      ),
+    ];
+
+    // No boundary: untouched.
+    await expect(call()).resolves.toMatchObject({ content: [{ type: 'text', text: 'ok' }] });
+    await expect(permissionBoundary(boundary(['mcp:local.other']), call)).rejects.toThrow(
+      'Package permission denied',
+    );
+    await expect(permissionBoundary(boundary(['mcp:local.echo']), call)).resolves.toMatchObject({
+      content: [{ type: 'text', text: 'ok' }],
+    });
+    expect(effects).toEqual(['echo', 'echo']);
   });
 
   it('maps JSON and SSE HTTP responses and rejects mismatched JSON-RPC ids', async () => {

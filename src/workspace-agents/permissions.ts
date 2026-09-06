@@ -2,6 +2,7 @@ import { ConfigurationError } from '../core/errors.js';
 import type { PolicyCheckpoint, PolicyRequest } from '../core/policy.js';
 import { PackagePermissions, canonicalRef, type ToolGrant } from '../core/tool-permissions.js';
 import type { AgentSpec } from '../providers/agent.js';
+import { lowerWorkspaceAgentSpec } from './lowering.js';
 import type {
   WorkspaceAgentConnector,
   WorkspaceAgentSpec,
@@ -116,15 +117,5 @@ export function toAgentSpec(spec: WorkspaceAgentSpec): AgentSpec {
       'An allowlist_v1 package must run inside a permission boundary; AgentSpec alone cannot carry it.',
     );
   }
-  return {
-    name: spec.name,
-    instructions: spec.instructions,
-    model: spec.model,
-    metadata: {
-      workspace_agent_id: spec.id,
-      version: spec.version,
-      skills: spec.skills.map((skill) => skill.name),
-      ...spec.metadata,
-    },
-  };
+  return lowerWorkspaceAgentSpec(spec);
 }

@@ -703,6 +703,14 @@ describe('permission spine boundary lifetime', () => {
   it('keeps the boundary on an agent session stream consumed outside it', async () => {
     const seen: number[] = [];
     class BoundaryAgentProvider extends FakeAgentProvider {
+      // A7's facade gate refuses an adapter that does not advertise package
+      // enforcement while a boundary is active, so this fake has to claim it
+      // to be streamed at all; the wrap under test is what makes the claim
+      // true for it.
+      override capabilities() {
+        return { ...super.capabilities(), supports_package_permissions: true };
+      }
+
       override async *streamEvents(
         session: SessionRef,
         options: { readonly after_event_id?: string } = {},
