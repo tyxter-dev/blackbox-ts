@@ -1,5 +1,13 @@
 import { ToolExecutionError } from '../core/errors.js';
 import {
+  activePermissions,
+  approvalKey,
+  approvedPackageCall,
+  internalDiscoveryTool,
+  packageDecision,
+  toolRequest,
+} from '../core/tool-permissions.js';
+import {
   isToolResult,
   toolResult,
   type ToolCallOptions,
@@ -16,6 +24,7 @@ export interface ToolRuntimeOptions {
   readonly context?: Readonly<Record<string, unknown>>;
   readonly blocking_executor?: BlockingToolExecutor;
   readonly signal?: AbortSignal;
+  readonly package_approvals?: ReadonlySet<string>;
 }
 
 export interface BlockingToolExecutor {
@@ -33,6 +42,12 @@ export class ToolRuntime {
   private readonly blockingExecutor?: BlockingToolExecutor;
   private readonly signal?: AbortSignal;
 
+  /**
+   * Approval keys ({@link approvalKey}) already granted for this run. A grant
+   * that requires approval only dispatches while its key is present here.
+   */
+  package_approvals: ReadonlySet<string>;
+
   constructor(
     readonly registry: ToolRegistry,
     options: ToolRuntimeOptions = {},
@@ -42,6 +57,7 @@ export class ToolRuntime {
     this.semaphore = new Semaphore(options.max_concurrency ?? 8);
     this.blockingExecutor = options.blocking_executor;
     this.signal = options.signal;
+    this.package_approvals = options.package_approvals ?? new Set();
   }
 
   async call(
@@ -51,53 +67,90 @@ export class ToolRuntime {
   ): Promise<ToolResult> {
     const release = await this.semaphore.acquire(this.signal, name);
     try {
-      const definition = this.registry.get(name);
+      const registered = this.registry.get(name);
+      // Nothing constrains this call: keep the pre-package dispatch path exactly
+      // as it was, with no descriptor copy, policy request, or approval key.
+      const enforced = activePermissions().length > 0 || this.package_approvals.size > 0;
+      // Copy the registered entry at dispatch: the permission decision and the
+      // execution below must describe the same tool even if the registry entry
+      // is edited while this call is in flight.
+      const definition = enforced ? dispatchCopy(registered) : registered;
+      if (enforced && !internalDiscoveryTool(definition)) {
+        const decision = packageDecision(
+          toolRequest(definition, { checkpoint: 'before_tool_call', arguments: arguments_ }),
+        );
+        if (
+          decision.verdict === 'deny' ||
+          (decision.verdict === 'require_approval' &&
+            !this.package_approvals.has(approvalKey(definition)))
+        ) {
+          return toolResult(decision.reason ?? 'Package permission denied.', {
+            is_error: true,
+            payload: { error: 'denied_by_policy', reason: decision.reason },
+            metadata: {
+              error: 'denied_by_policy',
+              tool: name,
+              checkpoint: 'before_tool_call',
+              reason: decision.reason,
+            },
+          });
+        }
+      }
       if (options.mock === true) {
         return toolResult(`[mock:${name}]`, {
           payload: { tool: name, arguments: arguments_ },
           metadata: { mock: true },
         });
       }
-      if (definition.handler === undefined) {
+      const handler = definition.handler;
+      if (handler === undefined) {
         throw new ToolExecutionError(`Tool '${name}' has no local handler.`, {
           code: 'tool_handler_missing',
         });
       }
-
-      const controller = new AbortController();
-      const timeoutMs = options.timeout_ms ?? this.timeoutMs;
-      const cancel = () => controller.abort(this.signal?.reason ?? new Error('Tool cancelled.'));
-      if (this.signal?.aborted === true) cancel();
-      else this.signal?.addEventListener('abort', cancel, { once: true });
-      const timeout = setTimeout(
-        () =>
-          controller.abort(
-            new ToolExecutionError(`Tool '${name}' timed out after ${timeoutMs}ms.`, {
-              code: 'tool_timeout',
-            }),
-          ),
-        timeoutMs,
-      );
-      try {
-        const context = { ...this.context, ...options.context };
-        const injected = injectContext(arguments_, definition.context_parameters ?? [], context);
-        const handlerContext = { signal: controller.signal, values: context };
-        const pending =
-          definition.blocking === true
-            ? this.executeBlocking(definition, injected, handlerContext)
-            : Promise.resolve(definition.handler(injected, handlerContext));
-        const value = await raceAbort(pending, controller.signal, name, timeoutMs);
-        return coerceToolResult(value);
-      } catch (cause) {
-        if (cause instanceof ToolExecutionError) throw cause;
-        throw new ToolExecutionError(`Tool '${name}' failed.`, {
-          code: 'tool_execution_failed',
-          cause,
-        });
-      } finally {
-        clearTimeout(timeout);
-        this.signal?.removeEventListener('abort', cancel);
-      }
+      // An approval already granted for this exact call travels with the
+      // dispatch so a nested checkpoint (consumed by A6/A7) does not ask for it
+      // a second time.
+      const approvedRequest =
+        enforced && this.package_approvals.has(approvalKey(definition))
+          ? toolRequest(definition)
+          : undefined;
+      return await approvedPackageCall(approvedRequest, async () => {
+        const controller = new AbortController();
+        const timeoutMs = options.timeout_ms ?? this.timeoutMs;
+        const cancel = () => controller.abort(this.signal?.reason ?? new Error('Tool cancelled.'));
+        if (this.signal?.aborted === true) cancel();
+        else this.signal?.addEventListener('abort', cancel, { once: true });
+        const timeout = setTimeout(
+          () =>
+            controller.abort(
+              new ToolExecutionError(`Tool '${name}' timed out after ${timeoutMs}ms.`, {
+                code: 'tool_timeout',
+              }),
+            ),
+          timeoutMs,
+        );
+        try {
+          const context = { ...this.context, ...options.context };
+          const injected = injectContext(arguments_, definition.context_parameters ?? [], context);
+          const handlerContext = { signal: controller.signal, values: context };
+          const pending =
+            definition.blocking === true
+              ? this.executeBlocking(definition, injected, handlerContext)
+              : Promise.resolve(handler(injected, handlerContext));
+          const value = await raceAbort(pending, controller.signal, name, timeoutMs);
+          return coerceToolResult(value);
+        } catch (cause) {
+          if (cause instanceof ToolExecutionError) throw cause;
+          throw new ToolExecutionError(`Tool '${name}' failed.`, {
+            code: 'tool_execution_failed',
+            cause,
+          });
+        } finally {
+          clearTimeout(timeout);
+          this.signal?.removeEventListener('abort', cancel);
+        }
+      });
     } finally {
       release();
     }
@@ -124,6 +177,36 @@ export class ToolRuntime {
       });
     });
   }
+}
+
+/**
+ * Snapshot one registered definition for the duration of a dispatch.
+ *
+ * Every declared field is read explicitly rather than spread: a definition may
+ * be a class instance whose fields (a `handler` getter, say) live on the
+ * prototype, which an own-property spread would silently drop.
+ */
+function dispatchCopy(definition: ToolDefinition): ToolDefinition {
+  return {
+    name: definition.name,
+    description: definition.description,
+    input_schema: definition.input_schema,
+    handler: definition.handler,
+    category: definition.category,
+    tags: definition.tags === undefined ? undefined : [...definition.tags],
+    risk: definition.risk,
+    scopes: definition.scopes === undefined ? undefined : [...definition.scopes],
+    latency: definition.latency,
+    cost: definition.cost,
+    side_effects: definition.side_effects,
+    examples: definition.examples === undefined ? undefined : [...definition.examples],
+    negative_examples:
+      definition.negative_examples === undefined ? undefined : [...definition.negative_examples],
+    context_parameters:
+      definition.context_parameters === undefined ? undefined : [...definition.context_parameters],
+    blocking: definition.blocking,
+    metadata: definition.metadata === undefined ? undefined : { ...definition.metadata },
+  };
 }
 
 export function coerceToolResult(value: unknown): ToolResult {

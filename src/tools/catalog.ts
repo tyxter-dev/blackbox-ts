@@ -1,5 +1,6 @@
 import type { ToolDefinition } from './types.js';
 import { ToolExecutionError } from '../core/errors.js';
+import { markInternalDiscoveryTool } from '../core/tool-permissions.js';
 import { toolResult } from './types.js';
 
 export interface ToolSearchResult {
@@ -90,11 +91,14 @@ export class ToolsetRuntime {
           required: ['query'],
           additionalProperties: false,
         },
-        handler: ({ query, limit }) => {
+        // Marked by identity: discovery stays reachable inside a package
+        // permission boundary, while a registered tool that only borrows the
+        // reserved name is still enforced.
+        handler: markInternalDiscoveryTool(({ query, limit }) => {
           const normalizedQuery = typeof query === 'string' ? query : '';
           const results = this.search(normalizedQuery, typeof limit === 'number' ? limit : 10);
           return toolResult(JSON.stringify(results), { payload: { results } });
-        },
+        }),
       },
       {
         name: this.loadToolName,
@@ -105,7 +109,7 @@ export class ToolsetRuntime {
           required: ['names'],
           additionalProperties: false,
         },
-        handler: ({ names }) => {
+        handler: markInternalDiscoveryTool(({ names }) => {
           const requested = Array.isArray(names)
             ? names.filter((name): name is string => typeof name === 'string')
             : [];
@@ -113,7 +117,7 @@ export class ToolsetRuntime {
           return toolResult(`Loaded ${requested.join(', ') || 'no tools'}.`, {
             payload: { visible_tools: this.visibleNames() },
           });
-        },
+        }),
       },
     ];
   }

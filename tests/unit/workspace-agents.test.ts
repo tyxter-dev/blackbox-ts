@@ -217,6 +217,46 @@ describe('skills and workspace agents', () => {
     );
   });
 
+  it('round-trips allowlist_v1 grants and reports invalid ones fail-closed', () => {
+    const inherited = fixtureAgent();
+    expect(validateWorkspaceAgent(inherited)).toEqual([]);
+    expect(inherited.permission_mode).toBeUndefined();
+
+    const restricted: WorkspaceAgentSpec = {
+      ...inherited,
+      permission_mode: 'allowlist_v1',
+      connectors: [{ name: 'crm', type: 'test', auth: 'api_key', tool_refs: ['search'] }],
+      grants: [{ ref: 'search', scopes: ['execute'], connector: 'crm' }],
+    };
+    expect(validateWorkspaceAgent(restricted)).toEqual([]);
+    expect(unpackWorkspaceAgent(packWorkspaceAgent(restricted)).agent).toEqual(restricted);
+
+    expect(
+      validateWorkspaceAgent({
+        ...restricted,
+        grants: [{ ref: 'search' }, { ref: 'local:search' }],
+      }),
+    ).toEqual([
+      {
+        path: 'grants',
+        code: 'invalid_permission_grants',
+        message: 'Duplicate package permission: local:search.',
+      },
+    ]);
+    expect(
+      validateWorkspaceAgent({
+        ...inherited,
+        permission_mode: 'allow' as WorkspaceAgentSpec['permission_mode'],
+      }).map((finding) => finding.code),
+    ).toEqual(['invalid_permission_mode']);
+    expect(() =>
+      new InMemoryWorkspaceAgentRegistry().publish({
+        ...restricted,
+        grants: [{ ref: 'search', connector: 'unknown' }],
+      }),
+    ).toThrowError(expect.objectContaining({ code: 'invalid_workspace_agent' }));
+  });
+
   it('persists versioned workspace agents in a real SQLite registry', async () => {
     let DatabaseSync: (new (path: string) => SQLiteDatabase & { close(): void }) | undefined;
     try {

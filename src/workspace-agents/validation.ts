@@ -1,5 +1,6 @@
-import { AgentRuntimeError } from '../core/errors.js';
+import { AgentRuntimeError, ConfigurationError } from '../core/errors.js';
 import { parseSchedule } from '../schedules/index.js';
+import { compilePackagePermissions } from './permissions.js';
 import type {
   WorkspaceAgentSpec,
   WorkspaceAgentValidationContext,
@@ -11,6 +12,23 @@ export function validateWorkspaceAgent(
   context: WorkspaceAgentValidationContext = {},
 ): readonly WorkspaceAgentValidationIssue[] {
   const issues: WorkspaceAgentValidationIssue[] = [];
+  const permissionMode = spec.permission_mode ?? 'inherit';
+  if (permissionMode !== 'inherit' && permissionMode !== 'allowlist_v1') {
+    issues.push(
+      issue(
+        'permission_mode',
+        `Unknown package permission mode '${String(permissionMode)}'.`,
+        'invalid_permission_mode',
+      ),
+    );
+  } else if (permissionMode === 'allowlist_v1') {
+    try {
+      compilePackagePermissions(spec.grants, spec.connectors);
+    } catch (cause) {
+      if (!(cause instanceof ConfigurationError)) throw cause;
+      issues.push(issue('grants', cause.message, 'invalid_permission_grants'));
+    }
+  }
   if (!spec.id.trim()) issues.push(issue('id', 'Agent id is empty.', 'missing_id'));
   if (!spec.name.trim()) issues.push(issue('name', 'Agent name is empty.', 'missing_name'));
   if (!spec.version.trim())

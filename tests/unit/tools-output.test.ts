@@ -5,10 +5,12 @@ import {
   ToolCatalog,
   ToolRegistry,
   ToolRuntime,
+  compilePackagePermissions,
   outputSchema,
   toolResult,
   validateOutputText,
 } from '../../src/index.js';
+import { permissionBoundary } from '../../src/core/tool-permissions.js';
 
 describe('local tools', () => {
   it('registers, exports schemas, injects private context, and separates payloads', async () => {
@@ -67,6 +69,24 @@ describe('local tools', () => {
       handler: () => new Promise(() => undefined),
     });
     await expect(runtime.call('slow', {})).rejects.toMatchObject({ code: 'tool_timeout' });
+  });
+
+  it('returns a policy denial without consuming the concurrency slot', async () => {
+    const calls: string[] = [];
+    const registry = new ToolRegistry([
+      { name: 'read', scopes: ['read'], handler: () => calls.push('read') && 'ok' },
+    ]);
+    const runtime = new ToolRuntime(registry, { max_concurrency: 1 });
+
+    const denied = await permissionBoundary([compilePackagePermissions([], [])], async () =>
+      runtime.call('read', {}),
+    );
+    expect(denied).toMatchObject({ is_error: true, metadata: { error: 'denied_by_policy' } });
+    expect(calls).toEqual([]);
+
+    // The denial returned instead of throwing, so the slot must be free again.
+    await expect(runtime.call('read', {})).resolves.toMatchObject({ is_error: false });
+    expect(calls).toEqual(['read']);
   });
 
   it('routes blocking handlers through an injectable offload executor', async () => {
