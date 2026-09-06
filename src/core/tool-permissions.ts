@@ -256,7 +256,7 @@ const CLIENT_EXECUTED_HOSTED_KINDS: ReadonlySet<string> = new Set([
  * with one allowance for the versioned web search (`web_search_<version>`),
  * which stays the same kind.
  */
-function hostedKind(spec: HostedToolSpec): string {
+export function hostedToolKind(spec: HostedToolSpec): string {
   const declared = canonicalRef(`hosted:${spec.type}`).slice('hosted:'.length);
   const override = spec.config?.type;
   if (typeof override !== 'string' || override === spec.type) return declared;
@@ -288,7 +288,7 @@ export function validatePackageModelConfig(
   }
   const allowed: HostedToolSpec[] = [];
   for (const spec of hostedTools) {
-    const kind = hostedKind(spec);
+    const kind = hostedToolKind(spec);
     if (kind === 'web_search') {
       const decision = packageDecision(
         hostedRequest('web_search', { checkpoint: 'before_hosted_tool_config' }),

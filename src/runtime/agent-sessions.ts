@@ -11,6 +11,7 @@ import {
   type InvocationRef,
   type SessionRef,
 } from '../core/sessions.js';
+import { activePermissions, permissionBoundaryIterator } from '../core/tool-permissions.js';
 import type { SessionSnapshot, SessionStore } from '../persistence/stores.js';
 import { createSessionSnapshot, InMemorySessionStore } from '../persistence/stores.js';
 import type { AgentSpec, TaskSpec } from '../providers/agent.js';
@@ -34,10 +35,30 @@ export class AgentSessionsRuntime {
     return session;
   }
 
-  async *stream(
+  /**
+   * Stream one agent session, keeping the caller's package permission boundary
+   * attached to the returned iterator.
+   *
+   * This is the single boundary layer for agent-session streams: every agent
+   * provider's `streamEvents` is pulled from inside this generator, so its
+   * steps resume inside the re-entered boundary too. With no boundary active
+   * the inner generator is returned untouched.
+   */
+  stream(
     session: SessionRef | AgentSession,
     options: { readonly after_event_id?: string } = {},
   ): AsyncIterable<AgentEvent> {
+    const permissions = activePermissions();
+    const source = this.streamSession(session, options);
+    return permissions.length === 0
+      ? source
+      : permissionBoundaryIterator(permissions, source[Symbol.asyncIterator]());
+  }
+
+  private async *streamSession(
+    session: SessionRef | AgentSession,
+    options: { readonly after_event_id?: string } = {},
+  ): AsyncGenerator<AgentEvent> {
     let snapshot = await this.requireSnapshot(session.id);
     const stored = eventsAfter(snapshot.events, options.after_event_id);
     for (const event of stored) yield event;

@@ -80,14 +80,22 @@ export class AgentRuntime {
     this.runStore = options.run_store;
   }
 
-  async *stream<T = string>(request: AgentRuntimeRequest<T>): AsyncIterable<AgentEvent> {
-    yield* this.streamResolved(this.resolveRequest(request));
+  /**
+   * Stream a run through the observability hop.
+   *
+   * `AgentLoop.stream` is called here, in the caller's context, because that
+   * is where it captures the active package permission boundary; an async
+   * generator body would not reach the call until the first pull, by which
+   * time the consumer's context is current instead.
+   */
+  stream<T = string>(request: AgentRuntimeRequest<T>): AsyncIterable<AgentEvent> {
+    return this.observe(this.loop.stream(this.resolveRequest(request)));
   }
 
-  private async *streamResolved<T = string>(
-    request: AgentRunRequest<T>,
-  ): AsyncIterable<AgentEvent> {
-    for await (const event of this.loop.stream(request)) {
+  private async *observe(source: AsyncIterable<AgentEvent>): AsyncIterable<AgentEvent> {
+    // No boundary work here: the loop stream carries its own, and persisting
+    // an event needs no permission of its own.
+    for await (const event of source) {
       await this.eventStore?.append(event);
       await this.eventSink?.emit(event);
       yield event;
@@ -96,7 +104,7 @@ export class AgentRuntime {
 
   async run<T = string>(request: AgentRuntimeRequest<T>) {
     const resolved = this.resolveRequest(request);
-    const result = await collectAgentResult<T>(this.streamResolved(resolved));
+    const result = await collectAgentResult<T>(this.observe(this.loop.stream(resolved)));
     if (resolved.session_id !== undefined) {
       await this.runStore?.save(
         createRunState({

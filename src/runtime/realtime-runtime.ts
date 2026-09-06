@@ -1,7 +1,19 @@
-import { RealtimeSessionError, RealtimeUnsupportedFeatureError } from '../core/errors.js';
+import {
+  RealtimeSessionError,
+  RealtimeUnsupportedFeatureError,
+  ToolExecutionError,
+} from '../core/errors.js';
 import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../core/events.js';
 import { ApprovalManager, type ApprovalDecision } from '../core/approvals.js';
-import { allow, AllowAllPolicy, type Policy } from '../core/policy.js';
+import { allow, AllowAllPolicy, type Policy, type PolicyRequest } from '../core/policy.js';
+import {
+  activePermissions,
+  approvalKey,
+  internalDiscoveryTool,
+  packageDecision,
+  permissionBoundaryIterator,
+  toolRequest,
+} from '../core/tool-permissions.js';
 import { parseProviderModelRef } from '../core/refs.js';
 import type { InvocationRef } from '../core/sessions.js';
 import type {
@@ -14,7 +26,7 @@ import type {
 import { ProviderRegistry } from '../providers/registry.js';
 import { ToolRegistry } from '../tools/registry.js';
 import { ToolRuntime } from '../tools/runtime.js';
-import type { ToolDefinition } from '../tools/types.js';
+import type { ToolDefinition, ToolResult } from '../tools/types.js';
 import type { EventStore } from '../persistence/stores.js';
 import type { EventSink } from '../observability/sinks.js';
 
@@ -190,7 +202,24 @@ export class ManagedRealtimeSession {
     this.approvals = options.approvals ?? new ApprovalManager();
   }
 
-  async *events(): AsyncIterable<AgentEvent> {
+  /**
+   * Stream session events, keeping the caller's package permission boundary
+   * attached to the returned iterator.
+   *
+   * Tool calls are dispatched from inside this generator, and an async
+   * generator body resumes in the async context of whoever pulls it, so the
+   * boundary is captured here and re-entered around every step. With no
+   * boundary active the inner generator is returned untouched.
+   */
+  events(): AsyncIterable<AgentEvent> {
+    const permissions = activePermissions();
+    const source = this.streamSessionEvents();
+    return permissions.length === 0
+      ? source
+      : permissionBoundaryIterator(permissions, source[Symbol.asyncIterator]());
+  }
+
+  private async *streamSessionEvents(): AsyncGenerator<AgentEvent> {
     this.assertOpen();
     for await (const event of this.provider.streamEvents(this.ref, {
       after_event_id: this.lastEventId,
@@ -315,19 +344,58 @@ export class ManagedRealtimeSession {
       return;
     }
     const originalArguments = readEventRecord(event, 'arguments');
-    const policy =
-      (await this.policy.check({
-        checkpoint: 'before_tool_call',
-        action: name,
-        arguments: originalArguments,
-        metadata: { realtime: true, session_id: this.ref.id },
-      })) ?? allow();
+    // Second independent dispatch entry, gated exactly like the agent loop:
+    // the package boundary decides first on the canonical request built from
+    // the registered definition, then the user policy may only tighten it. A
+    // package denial is left to the tool runtime, which refuses the call with
+    // the `denied_by_policy` result reported below.
+    const enforced = activePermissions().length > 0;
+    const realtimeMetadata = { realtime: true, session_id: this.ref.id };
+    let definition: ToolDefinition | undefined;
+    let policyRequest: PolicyRequest = {
+      checkpoint: 'before_tool_call',
+      action: name,
+      arguments: originalArguments,
+      metadata: realtimeMetadata,
+    };
+    let internal = false;
+    if (enforced) {
+      try {
+        definition = this.toolRuntime.registry.get(name);
+        const canonical = toolRequest(definition, {
+          checkpoint: 'before_tool_call',
+          arguments: originalArguments,
+        });
+        policyRequest = {
+          ...canonical,
+          metadata: { ...canonical.metadata, ...realtimeMetadata },
+        };
+        internal = internalDiscoveryTool(definition);
+      } catch (cause) {
+        // An unregistered name has no definition to describe; the minimal
+        // request above stands in, and dispatch reports the missing tool.
+        if (!(cause instanceof ToolExecutionError)) throw cause;
+      }
+    }
+    let policy = enforced && !internal ? packageDecision(policyRequest) : allow();
+    if (policy.verdict === 'deny') {
+      policy = allow();
+    } else {
+      const userDecision = (await this.policy.check(policyRequest)) ?? allow();
+      if (userDecision.verdict !== 'allow') policy = userDecision;
+    }
     if (policy.verdict === 'deny') {
       yield* this.denyTool(callId, name, 'denied_by_policy', policy.reason);
       return;
     }
     let arguments_ = originalArguments;
+    let approvedKey: string | undefined;
     if (policy.verdict === 'require_approval') {
+      // Computed before the ticket is awaited, from the definition the
+      // decision was made on: a registry entry swapped while the approval is
+      // pending produces a different key at dispatch and is refused there.
+      // Recorded for any approval this call waited on, whoever asked for it.
+      const pendingKey = enforced && definition !== undefined ? approvalKey(definition) : undefined;
       const ticket = this.approvals.request(name, {
         reason: policy.reason,
         data: { checkpoint: 'before_tool_call', arguments: arguments_, realtime: true },
@@ -357,6 +425,7 @@ export class ManagedRealtimeSession {
         yield* this.denyTool(callId, name, 'denied_by_approval', decision.reason);
         return;
       }
+      approvedKey = pendingKey;
       arguments_ = decision.modified_arguments ?? arguments_;
     }
     yield await this.stamp(
@@ -369,7 +438,7 @@ export class ManagedRealtimeSession {
       }),
     );
     try {
-      const result = await this.toolRuntime.call(name, arguments_);
+      const result = await dispatchApproved(this.toolRuntime, name, arguments_, approvedKey);
       yield await this.stamp(
         createAgentEvent({
           type: result.is_error
@@ -387,6 +456,22 @@ export class ManagedRealtimeSession {
           },
         }),
       );
+      if (enforced && result.metadata.error === 'denied_by_policy') {
+        yield await this.stamp(
+          createAgentEvent({
+            type: AgentEventTypes.TOOL_CHOICE_REJECTED,
+            provider: this.ref.provider,
+            session_id: this.ref.id,
+            item_id: callId,
+            data: {
+              call_id: callId,
+              name,
+              reason: result.metadata.reason ?? 'denied_by_policy',
+              checkpoint: 'before_tool_call',
+            },
+          }),
+        );
+      }
       await this.sendToolResult(callId, result.content, { is_error: result.is_error });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : 'Tool execution failed.';
@@ -458,6 +543,28 @@ function deleteRuntimeFields(request: MutableRealtimeConnectRequest): void {
   delete request.tool_max_concurrent;
   delete request.approval_manager;
   delete request.policy;
+}
+
+/**
+ * Dispatch one call with an approval key granted for exactly that dispatch.
+ *
+ * The key is removed again as soon as the call settles, so a second call of
+ * the same tool later in the session asks for its own approval.
+ */
+async function dispatchApproved(
+  runtime: ToolRuntime,
+  name: string,
+  arguments_: Readonly<Record<string, unknown>>,
+  approvedKey: string | undefined,
+): Promise<ToolResult> {
+  if (approvedKey === undefined) return runtime.call(name, arguments_);
+  const previous = runtime.package_approvals;
+  runtime.package_approvals = new Set([...previous, approvedKey]);
+  try {
+    return await runtime.call(name, arguments_);
+  } finally {
+    runtime.package_approvals = previous;
+  }
 }
 
 function readEventString(event: AgentEvent, key: string): string | undefined {
