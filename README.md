@@ -90,7 +90,7 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
   transports are injected.
 
-The pinned score covers 143 Python catalog features, with 26 verification supplements and
+The pinned score covers 144 Python catalog features, with 26 verification supplements and
 TypeScript extensions reported separately. Scoped evidence is in
 [the parity matrix](docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
 update workflow is in [parity maintenance](docs/PARITY_MAINTENANCE.md). See

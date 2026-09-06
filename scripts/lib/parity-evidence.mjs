@@ -81,7 +81,7 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Accounting and Cache': evidence(
     ['src/blackbox/core/accounting.py', 'src/blackbox/core/cache.py'],
-    ['tests/unit/core/test_model_accounting.py', 'tests/unit/core/test_provider_cache.py'],
+    ['tests/unit/core/test_model_accounting.py', 'tests/unit/core/test_provider_cache.py', 'tests/runtime/test_cache_metadata.py'],
     ['ModelUsage', 'ProviderCache'],
     ['src/core/usage.ts', 'src/pricing/index.ts', 'src/cache/index.ts'],
     ['tests/unit/planning-accounting-config.test.ts'],
@@ -104,8 +104,8 @@ export const DOMAIN_EVIDENCE = {
     ['ModelProvider', 'ModelRuntime'],
   ),
   'Native Model Providers': evidence(
-    ['src/blackbox/providers/model_adapters/openai_responses/provider.py', 'src/blackbox/providers/model_adapters/anthropic_messages/provider.py', 'src/blackbox/providers/model_adapters/gemini_generate_content/provider.py', 'src/blackbox/providers/model_adapters/xai_responses/provider.py'],
-    ['tests/golden/openai/test_responses_event_mapping.py', 'tests/golden/anthropic/test_messages_event_mapping.py', 'tests/golden/gemini/test_generate_content_event_mapping.py'],
+    ['src/blackbox/providers/model_adapters/openai_responses/provider.py', 'src/blackbox/providers/model_adapters/anthropic_messages/provider.py', 'src/blackbox/providers/model_adapters/anthropic_messages/controls.py', 'src/blackbox/providers/model_adapters/gemini_generate_content/provider.py', 'src/blackbox/providers/model_adapters/xai_responses/provider.py'],
+    ['tests/golden/openai/test_responses_event_mapping.py', 'tests/golden/anthropic/test_messages_event_mapping.py', 'tests/golden/gemini/test_generate_content_event_mapping.py', 'tests/unit/providers/model_adapters/test_current_model_controls.py'],
     ['OpenAIResponsesProvider', 'AnthropicMessagesProvider', 'GeminiGenerateContentProvider', 'XAIResponsesProvider'],
     ['src/providers/openai/responses-provider.ts', 'src/providers/anthropic/index.ts', 'src/providers/gemini/index.ts', 'src/providers/xai/index.ts'],
     ['tests/golden/providers.test.ts', 'tests/unit/provider-contracts.test.ts'],
@@ -233,6 +233,8 @@ export const FEATURE_EVIDENCE = {
   'JSONL/SQLite stores': 'persistent-stores',
   'Resume run from persisted state': 'resume-run-state',
   'Anthropic Managed Agents work source': 'anthropic-work-source',
+  'Workspace agent runtime grants': 'workspace-agent-runtime-grants',
+  'Cloud agent providers': 'cloud-agent-providers',
 };
 
 export const SPECIAL_EVIDENCE = {
@@ -291,6 +293,63 @@ export const SPECIAL_EVIDENCE = {
     ['src/workers/index.ts'],
     ['tests/unit/workers-observability.test.ts'],
     ['AnthropicEnvironmentWorkSource'],
+  ),
+  'workspace-agent-runtime-grants': evidence(
+    [
+      'src/blackbox/core/tool_permissions.py',
+      'src/blackbox/workspace_agents/permissions.py',
+      'src/blackbox/workspace_agents/runtime.py',
+      'src/blackbox/tools/runtime.py',
+      'src/blackbox/mcp/connector.py',
+      'src/blackbox/workspaces/tools.py',
+      'src/blackbox/providers/agent_adapters/local.py',
+    ],
+    [
+      'tests/runtime/test_package_permissions.py',
+      'tests/runtime/test_package_permission_regressions.py',
+      'tests/unit/workspace_agents/test_permission_enforcement.py',
+      'tests/contracts/test_package_permission_capabilities.py',
+      'tests/e2e/test_permissioned_package.py',
+    ],
+    ['PackagePermissions', 'compile_package_permissions', 'run_workspace_agent'],
+    [
+      'src/core/tool-permissions.ts',
+      'src/workspace-agents/permissions.ts',
+      'src/workspace-agents/runtime.ts',
+      'src/tools/runtime.ts',
+      'src/mcp/client.ts',
+      'src/workspaces/tools.ts',
+      'src/providers/local-agent.ts',
+    ],
+    [
+      'tests/unit/tool-permissions.test.ts',
+      'tests/unit/permission-spine.test.ts',
+      'tests/unit/workspace-agent-runtime.test.ts',
+      'tests/unit/mcp.test.ts',
+    ],
+    ['PackagePermissions', 'compilePackagePermissions', 'runWorkspaceAgent'],
+  ),
+  'cloud-agent-providers': evidence(
+    [
+      'src/blackbox/providers/agent_adapters/openai_cloud.py',
+      'src/blackbox/providers/agent_adapters/claude_code.py',
+      'src/blackbox/providers/agent_adapters/codex.py',
+    ],
+    [
+      'tests/runtime/test_agent_session_run.py',
+      'tests/runtime/test_claude_code_agent_provider.py',
+      'tests/runtime/test_codex_agent_provider.py',
+      'tests/golden/codex/test_app_server_event_mapping.py',
+      'tests/integration/codex/test_codex_subscription.py',
+    ],
+    ['OpenAICloudAgentProvider', 'ClaudeCodeAgentProvider', 'CodexAgentProvider'],
+    ['src/providers/cloud-agents.ts', 'src/providers/codex-agent.ts', 'src/providers/codex-app-server.ts'],
+    [
+      'tests/unit/agent-sessions.test.ts',
+      'tests/unit/codex-agent-provider.test.ts',
+      'tests/golden/codex-app-server-events.test.ts',
+    ],
+    ['OpenAICloudAgentProvider', 'ClaudeCodeAgentProvider', 'CodexAgentProvider'],
   ),
   openrouter: evidence(
     [],

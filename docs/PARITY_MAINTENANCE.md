@@ -2,12 +2,12 @@
 
 `blackbox-ts` measures parent parity against an immutable checkout of
 `tyxter-dev/blackbox`. The current baseline is
-`f27decbc9aeaae972c5bbeb256c70450b7fe393a` on the Python repository's `master`
+`d5be68e03ca7750920569578710a2ee25d25530c` on the Python repository's `master`
 branch.
 
 The score has three deliberately separate sets:
 
-- 143 features from the Python `FEATURES.md` catalog;
+- 144 features from the Python `FEATURES.md` catalog;
 - 26 verification supplements for shipped Python behavior outside that catalog;
 - TypeScript extensions, currently OpenRouter, which run shared contracts but never count
   toward the Python score.
@@ -15,7 +15,7 @@ The score has three deliberately separate sets:
 ## Automated checks
 
 `pnpm check:parity` is offline. It validates the inventory schema and stable IDs, TypeScript
-evidence paths and symbols, the generated matrix, and the committed 108-module test
+evidence paths and symbols, the generated matrix, and the committed 118-module test
 crosswalk.
 
 The pinned-parent suite requires an explicit Python checkout:
@@ -35,8 +35,8 @@ That command builds TypeScript and then proves all of the following:
 6. every Python test module remains represented in the crosswalk.
 
 The normal TypeScript tests replay the Python provider protocol fixtures through the
-fetch-first OpenAI, Anthropic, Gemini, and xAI adapters. They also compare all 19 bundled
-models and 21 bundled price entries to Python-generated data.
+fetch-first OpenAI, Anthropic, Gemini, and xAI adapters. They also compare all 29 bundled
+models and 36 bundled price entries to Python-generated data.
 
 ## Drift detection
 

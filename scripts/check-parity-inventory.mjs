@@ -23,8 +23,8 @@ const parentRows = rows.filter((row) => row.group.classification === 'parent');
 const supplements = rows.filter((row) => row.group.classification === 'supplement');
 const ids = new Set(rows.map((row) => row.id));
 if (ids.size !== rows.length) throw new Error('Parity inventory contains duplicate feature ids.');
-if (parentRows.length !== inventory.catalog_unique_feature_count || parentRows.length !== 143) {
-  throw new Error(`Parity inventory expected 143 parent features, found ${parentRows.length}.`);
+if (parentRows.length !== inventory.catalog_unique_feature_count || parentRows.length !== 144) {
+  throw new Error(`Parity inventory expected 144 parent features, found ${parentRows.length}.`);
 }
 if (supplements.length !== 26) {
   throw new Error(
@@ -32,11 +32,21 @@ if (supplements.length !== 26) {
   );
 }
 
+// Direction lock: the TypeScript target status may equal or exceed the pinned
+// parent status but never fall below it. Equal statuses stay valid.
+const STATUS_RANK = {
+  'Not supported yet': 0,
+  'Contract only': 1,
+  Partial: 2,
+  'Supported where advertised': 3,
+  Supported: 4,
+};
+
 const expectedParentStatuses = {
   'Contract only': 2,
   'Not supported yet': 1,
   Partial: 3,
-  Supported: 136,
+  Supported: 137,
   'Supported where advertised': 1,
 };
 const parentStatuses = orderedCounts(parentRows.map((row) => row.group.parent_status));
@@ -53,8 +63,15 @@ for (const group of inventory.groups) {
   if (!Number.isInteger(group.owner_phase) || group.owner_phase < 0 || group.owner_phase > 12) {
     throw new Error(`Invalid owner phase for '${group.domain}'.`);
   }
-  if (group.target_status !== group.parent_status) {
-    throw new Error(`Target status for '${group.domain}' must match the pinned parent status.`);
+  for (const field of ['parent_status', 'target_status']) {
+    if (!(group[field] in STATUS_RANK)) {
+      throw new Error(`Unknown ${field} '${String(group[field])}' for '${group.domain}'.`);
+    }
+  }
+  if (STATUS_RANK[group.target_status] < STATUS_RANK[group.parent_status]) {
+    throw new Error(
+      `Target status '${group.target_status}' for '${group.domain}' regresses below the pinned parent status '${group.parent_status}'.`,
+    );
   }
   for (const feature of group.features) {
     const expectedPrefix = `${group.classification}.${group.id}.`;

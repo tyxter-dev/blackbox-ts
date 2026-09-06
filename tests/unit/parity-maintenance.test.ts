@@ -61,8 +61,8 @@ describe('Python parity maintenance artifacts', () => {
     const parentFeatures = parentGroups.flatMap((group) => group.features);
     const supplementFeatures = supplements.flatMap((group) => group.features);
 
-    expect(parentFeatures).toHaveLength(143);
-    expect(new Set(parentFeatures.map((feature) => feature.id)).size).toBe(143);
+    expect(parentFeatures).toHaveLength(144);
+    expect(new Set(parentFeatures.map((feature) => feature.id)).size).toBe(144);
     expect(supplementFeatures).toHaveLength(26);
     expect(inventory.extensions).toHaveLength(1);
     expect(inventory.extensions[0]).toMatchObject({
@@ -75,13 +75,13 @@ describe('Python parity maintenance artifacts', () => {
   it('pins the evidence baseline and crosswalk to the same parent commit', () => {
     expect(baseline.parent_commit).toBe(inventory.parent.commit);
     expect(baseline.feature_catalog.path).toBe(inventory.parent.feature_catalog);
-    expect(baseline.evidence_files).toHaveLength(109);
-    expect(baseline.test_files).toHaveLength(108);
+    expect(baseline.evidence_files).toHaveLength(129);
+    expect(baseline.test_files).toHaveLength(118);
     expect(crosswalk.parent_commit).toBe(inventory.parent.commit);
     expect(crosswalk.entries.map((entry) => entry.python_test).sort()).toEqual(
       baseline.test_files.map((entry) => entry.path).sort(),
     );
-    expect(crosswalk.feature_coverage).toHaveLength(143);
+    expect(crosswalk.feature_coverage).toHaveLength(144);
   });
 
   it('keeps both fixture directions and provider/catalog differentials synchronized', () => {
@@ -95,8 +95,8 @@ describe('Python parity maintenance artifacts', () => {
       'openai',
       'xai',
     ]);
-    expect(pythonCatalogs.models).toHaveLength(19);
-    expect(pythonCatalogs.pricing).toHaveLength(21);
+    expect(pythonCatalogs.models).toHaveLength(29);
+    expect(pythonCatalogs.pricing).toHaveLength(36);
     expect(typescriptCore).toMatchObject({
       generated_by: 'blackbox-ts',
       target_parent_commit: inventory.parent.commit,

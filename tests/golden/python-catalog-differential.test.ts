@@ -19,12 +19,12 @@ describe('Python catalog differential fixtures', () => {
   it('keeps every bundled model identical to the pinned parent', () => {
     expect(fixture.parent_commit).toBe(inventory.parent.commit);
     expect(bundledProviderModels().map(normalizeModel)).toEqual(fixture.models);
-    expect(fixture.models).toHaveLength(19);
+    expect(fixture.models).toHaveLength(29);
   });
 
   it('keeps every bundled price and provenance field identical to the pinned parent', () => {
     expect(BUNDLED_PRICING.list().map(jsonValue)).toEqual(fixture.pricing);
-    expect(fixture.pricing).toHaveLength(21);
+    expect(fixture.pricing).toHaveLength(36);
   });
 });
 
