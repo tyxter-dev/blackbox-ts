@@ -211,6 +211,15 @@ describe('MCP boundary', () => {
         name: 'connected',
         metadata: { connector: 'tickets', required_scopes: ['tickets.read'], vendor: 'acme' },
       },
+      // Standard MCP annotations reach the ladder ((parent) connector.py L534-540).
+      { name: 'hinted_read', annotations: { readOnlyHint: true } },
+      { name: 'hinted_destructive', annotations: { destructiveHint: true }, metadata: { v: 1 } },
+      {
+        name: 'explicit_wins',
+        annotations: { readOnlyHint: true },
+        metadata: { read_only: false },
+      },
+      { name: 'non_boolean_hint', annotations: { readOnlyHint: 'yes', destructiveHint: 1 } },
     ];
     const client = new MCPClient(
       { name: 'ladder', transport: 'stdio', trusted: true },
@@ -233,8 +242,25 @@ describe('MCP boundary', () => {
       ['execute'],
       ['write'],
       ['execute'],
+      ['read'],
+      ['delete'],
+      ['execute'],
+      ['execute'],
     ]);
-    expect(definitions.at(-1)?.metadata).toMatchObject({
+    const tools = await client.listTools();
+    expect(tools.map((tool) => tool.metadata)).toEqual([
+      { permission_scopes: ['admin'], destructive: true },
+      { destructive: true },
+      { read_only: true },
+      undefined,
+      { destructive: true },
+      { connector: 'tickets', required_scopes: ['tickets.read'], vendor: 'acme' },
+      { read_only: true },
+      { v: 1, destructive: true },
+      { read_only: false },
+      undefined,
+    ]);
+    expect(definitions[5]?.metadata).toMatchObject({
       vendor: 'acme',
       connector: 'tickets',
       connector_scopes: ['tickets.read'],
@@ -242,6 +268,37 @@ describe('MCP boundary', () => {
       server: 'ladder',
       tool: 'connected',
       ref: 'mcp:ladder.connected',
+    });
+  });
+
+  it('identifies itself as blackbox-ts 0.2.0 on both ends of initialize', async () => {
+    const seen: unknown[] = [];
+    const client = new MCPClient(
+      { name: 'ident', transport: 'stdio', trusted: true },
+      {
+        request: (method: string, params: unknown) => {
+          if (method === 'initialize') seen.push(params);
+          return Promise.resolve(
+            method === 'initialize' ? { protocolVersion: '2025-06-18', capabilities: {} } : {},
+          );
+        },
+      },
+    );
+    await client.initialize();
+    expect(seen).toEqual([
+      {
+        protocolVersion: '2025-06-18',
+        capabilities: {},
+        clientInfo: { name: 'blackbox-ts', version: '0.2.0' },
+      },
+    ]);
+
+    await expect(
+      new MCPServer('local').handle('initialize', { protocolVersion: '2025-06-18' }),
+    ).resolves.toEqual({
+      protocolVersion: '2025-06-18',
+      capabilities: { tools: { listChanged: true } },
+      serverInfo: { name: 'local', version: '0.2.0' },
     });
   });
 

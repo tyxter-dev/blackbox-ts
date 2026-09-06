@@ -90,7 +90,7 @@ export class MCPClient {
         {
           protocolVersion: requested,
           capabilities: {},
-          clientInfo: { name: 'blackbox-ts', version: '0.1.0' },
+          clientInfo: { name: 'blackbox-ts', version: '0.2.0' },
         },
         options.signal,
       ),
@@ -499,8 +499,33 @@ function readTool(value: unknown): MCPTool {
     scopes: Array.isArray(record.scopes)
       ? record.scopes.filter((scope): scope is string => typeof scope === 'string')
       : undefined,
-    metadata: asOptionalRecord(record.metadata),
+    metadata: withAnnotationHints(asOptionalRecord(record.metadata), record.annotations),
   };
+}
+
+/**
+ * Standard MCP tool annotations feed the scope ladder ((parent)
+ * src/blackbox/mcp/connector.py L534-540): `readOnlyHint` -> `read_only`,
+ * `destructiveHint` -> `destructive`. Only a boolean hint is mapped and an
+ * explicit `metadata` key wins over it; a descriptor without annotations is
+ * returned as-is. The parent lets any hint value overwrite the metadata key
+ * and copies the whole `annotations` object into it -- neither is ported.
+ */
+function withAnnotationHints(
+  metadata: Readonly<Record<string, unknown>> | undefined,
+  annotations: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  const hints = asOptionalRecord(annotations);
+  if (hints === undefined) return metadata;
+  const mapped: Record<string, unknown> = {};
+  for (const [hint, key] of [
+    ['readOnlyHint', 'read_only'],
+    ['destructiveHint', 'destructive'],
+  ] as const) {
+    if (typeof hints[hint] === 'boolean' && !(metadata !== undefined && key in metadata))
+      mapped[key] = hints[hint];
+  }
+  return Object.keys(mapped).length === 0 ? metadata : { ...metadata, ...mapped };
 }
 
 function normalizeResult(value: unknown): MCPToolResult {

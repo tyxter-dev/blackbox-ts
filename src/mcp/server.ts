@@ -56,7 +56,7 @@ export class MCPServer {
       return {
         protocolVersion: requested,
         capabilities: { tools: { listChanged: true } },
-        serverInfo: { name: this.name, version: '0.1.0' },
+        serverInfo: { name: this.name, version: '0.2.0' },
       };
     }
     if (method === 'tools/list') {

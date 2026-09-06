@@ -29,7 +29,7 @@ export interface CompiledSkill {
 }
 
 export function parseSkillMarkdown(markdown: string): SkillSpec {
-  const normalized = markdown.replaceAll('\r\n', '\n');
+  const normalized = markdown.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   if (!normalized.startsWith('---\n')) {
     throw new AgentRuntimeError('Skill Markdown must start with frontmatter.', {
       code: 'invalid_skill_frontmatter',
@@ -145,20 +145,149 @@ export async function stageClaudeCodeSkills(
   );
 }
 
+/**
+ * The parent's YAML-subset fallback ((parent) src/blackbox/skills/frontmatter.py
+ * L63-158, `_load_simple_yaml`): a top-level mapping whose values are inline
+ * scalars, or -- when nothing follows the colon -- an indented block that is
+ * either a nested mapping or a list. List items are `-` / `- ...` lines
+ * (`_is_list_item`, L322-323): a bare `-` holds a nested block (or `null`
+ * when nothing follows), `- key: value` opens a map whose further keys are
+ * the continuation lines indented two deeper, and anything else is a scalar.
+ * Like the parent, a map item's values are inline scalars only, indentation
+ * steps by exactly two spaces, and a list item before any key or a block
+ * under a key that already had an inline value fails closed.
+ */
 function parseFrontmatter(value: string): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const line of value.split('\n')) {
-    if (!line.trim() || line.trimStart().startsWith('#')) continue;
-    const separator = line.indexOf(':');
-    if (separator < 1)
-      throw new AgentRuntimeError(`Malformed skill frontmatter line '${line}'.`, {
-        code: 'invalid_skill_frontmatter',
-      });
-    const key = line.slice(0, separator).trim();
-    const raw = line.slice(separator + 1).trim();
-    result[key] = parseScalar(raw);
+  const lines = value.split('\n').map((line) => line.trimEnd());
+  const [result, end] = parseMapping(lines, 0, 0);
+  for (let index = end; index < lines.length; index += 1) {
+    if (!isBlankOrComment(lines[index] ?? '')) throw malformedLine(lines[index] ?? '');
   }
   return result;
+}
+
+function parseMapping(
+  lines: readonly string[],
+  start: number,
+  indent: number,
+): [Record<string, unknown>, number] {
+  const result: Record<string, unknown> = {};
+  let index = start;
+  while (index < lines.length) {
+    const line = lines[index] ?? '';
+    if (isBlankOrComment(line)) {
+      index += 1;
+      continue;
+    }
+    const current = indentOf(line);
+    if (current < indent) break;
+    if (current > indent) {
+      throw new AgentRuntimeError(`Unexpected indentation in skill frontmatter line '${line}'.`, {
+        code: 'invalid_skill_frontmatter',
+      });
+    }
+    const stripped = line.trim();
+    if (isListItem(stripped)) break;
+    const separator = stripped.indexOf(':');
+    if (separator < 1) throw malformedLine(line);
+    const key = stripped.slice(0, separator).trim();
+    const raw = stripped.slice(separator + 1).trim();
+    if (raw) {
+      result[key] = parseScalar(raw);
+      index += 1;
+      continue;
+    }
+    const [nested, next] = parseNested(lines, index + 1, indent + 2);
+    result[key] = nested;
+    index = next;
+  }
+  return [result, index];
+}
+
+function parseNested(lines: readonly string[], start: number, indent: number): [unknown, number] {
+  let index = start;
+  while (index < lines.length && isBlankOrComment(lines[index] ?? '')) index += 1;
+  if (index >= lines.length || indentOf(lines[index] ?? '') < indent) return [null, index];
+  return isListItem((lines[index] ?? '').trim())
+    ? parseList(lines, index, indent)
+    : parseMapping(lines, index, indent);
+}
+
+function parseList(lines: readonly string[], start: number, indent: number): [unknown[], number] {
+  const values: unknown[] = [];
+  let index = start;
+  while (index < lines.length) {
+    const line = lines[index] ?? '';
+    if (isBlankOrComment(line)) {
+      index += 1;
+      continue;
+    }
+    const current = indentOf(line);
+    if (current < indent) break;
+    const stripped = line.trim();
+    if (current !== indent || !isListItem(stripped)) break;
+    const itemText = stripped.slice(2).trim();
+    index += 1;
+    if (!itemText) {
+      const [nested, next] = parseNested(lines, index, indent + 2);
+      values.push(nested);
+      index = next;
+      continue;
+    }
+    if (looksLikeMappingItem(itemText)) {
+      const separator = itemText.indexOf(':');
+      const item: Record<string, unknown> = {
+        [itemText.slice(0, separator).trim()]: parseScalar(itemText.slice(separator + 1).trim()),
+      };
+      while (index < lines.length) {
+        const child = lines[index] ?? '';
+        if (isBlankOrComment(child)) {
+          index += 1;
+          continue;
+        }
+        const childIndent = indentOf(child);
+        const childText = child.trim();
+        if (childIndent < indent + 2) break;
+        if (childIndent !== indent + 2 || isListItem(childText)) break;
+        const childSeparator = childText.indexOf(':');
+        if (childSeparator < 0) throw malformedLine(child);
+        item[childText.slice(0, childSeparator).trim()] = parseScalar(
+          childText.slice(childSeparator + 1).trim(),
+        );
+        index += 1;
+      }
+      values.push(item);
+      continue;
+    }
+    values.push(parseScalar(itemText));
+  }
+  return [values, index];
+}
+
+function isListItem(text: string): boolean {
+  return text === '-' || text.startsWith('- ');
+}
+
+/** `- key: value` opens a map item unless the key is quoted or inline JSON. */
+function looksLikeMappingItem(text: string): boolean {
+  const separator = text.indexOf(':');
+  if (separator < 0) return false;
+  const key = text.slice(0, separator).trim();
+  return key.length > 0 && !/^["'[{]/.test(key);
+}
+
+function isBlankOrComment(line: string): boolean {
+  return !line.trim() || line.trimStart().startsWith('#');
+}
+
+function indentOf(line: string): number {
+  return line.length - line.replace(/^ +/, '').length;
+}
+
+function malformedLine(line: string): AgentRuntimeError {
+  return new AgentRuntimeError(`Malformed skill frontmatter line '${line}'.`, {
+    code: 'invalid_skill_frontmatter',
+  });
 }
 
 function parseScalar(value: string): unknown {
