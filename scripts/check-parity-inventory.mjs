@@ -64,7 +64,7 @@ for (const group of inventory.groups) {
     throw new Error(`Invalid owner phase for '${group.domain}'.`);
   }
   for (const field of ['parent_status', 'target_status']) {
-    if (!(group[field] in STATUS_RANK)) {
+    if (!Object.hasOwn(STATUS_RANK, group[field])) {
       throw new Error(`Unknown ${field} '${String(group[field])}' for '${group.domain}'.`);
     }
   }
@@ -117,36 +117,60 @@ if (unusedEvidence.length > 0) {
   throw new Error(`Unused parity evidence records: ${unusedEvidence.join(', ')}.`);
 }
 
-const baseline = await readFile(baselineUrl, 'utf8')
-  .then((value) => JSON.parse(value))
-  .catch(() => undefined);
-if (baseline !== undefined) {
-  if (baseline.parent_commit !== inventory.parent.commit) {
-    throw new Error('Parent baseline and parity inventory commits do not match.');
-  }
-  const parentPaths = new Set(baseline.evidence_files.map((entry) => entry.path));
-  for (const ref of evidenceRefs) {
-    for (const path of [
-      ...inventory.evidence[ref].parent.sources,
-      ...inventory.evidence[ref].parent.tests,
-    ]) {
-      if (!parentPaths.has(path)) {
-        throw new Error(`Parent evidence '${path}' from '${ref}' is absent from the baseline.`);
-      }
+// Pin guard: workflows no longer check out Python. The inventory supplies the
+// reference pin to generators; enforce it on the current machine-readable
+// carriers below. Historical prose retains its original baselines. Missing or
+// unreadable carriers fail closed.
+const baseline = await readJson(baselineUrl, 'docs/parent-baseline.json');
+if (baseline.parent_commit !== inventory.parent.commit) {
+  throw new Error('Parent baseline and parity inventory commits do not match.');
+}
+if (baseline.parent_repository !== inventory.parent.repository) {
+  throw new Error('Parent baseline and parity inventory repositories do not match.');
+}
+const parentPaths = new Set(baseline.evidence_files.map((entry) => entry.path));
+for (const ref of evidenceRefs) {
+  for (const path of [
+    ...inventory.evidence[ref].parent.sources,
+    ...inventory.evidence[ref].parent.tests,
+  ]) {
+    if (!parentPaths.has(path)) {
+      throw new Error(`Parent evidence '${path}' from '${ref}' is absent from the baseline.`);
     }
   }
 }
 
-for (const workflow of ['.github/workflows/ci.yml', '.github/workflows/release.yml']) {
-  const contents = await readFile(new URL(`../${workflow}`, import.meta.url), 'utf8');
-  if (!contents.includes(inventory.parent.commit)) {
-    throw new Error(`${workflow} does not check out the pinned parent commit.`);
+const PIN_CARRIERS = [
+  ['docs/parity-test-crosswalk.json', 'parent_commit'],
+  ['docs/catalog-snapshot.json', 'parent_commit'],
+  ['tests/fixtures/python/core-contracts.json', 'parent_commit'],
+  ['tests/fixtures/python/catalogs.json', 'parent_commit'],
+  ['tests/fixtures/python/provider-differential.json', 'parent_commit'],
+  ['tests/fixtures/typescript/core-contracts.json', 'target_parent_commit'],
+];
+for (const [path, field] of PIN_CARRIERS) {
+  const carrier = await readJson(new URL(`../${path}`, import.meta.url), path);
+  if (carrier[field] !== inventory.parent.commit) {
+    throw new Error(
+      `${path} records ${field} '${String(carrier[field])}', expected the pinned parent commit ${inventory.parent.commit}.`,
+    );
   }
 }
 
 console.log(
-  `Parity inventory OK: ${parentRows.length} parent features (${parentStatuses.Supported} supported, 1 conditional, 6 honest non-full statuses), ${supplements.length} supplements, ${inventory.extensions.length} excluded extension.`,
+  `Parity inventory OK: ${parentRows.length} parent features (${parentStatuses.Supported} supported, 1 conditional, 6 honest non-full statuses), ${supplements.length} supplements, ${inventory.extensions.length} excluded extension; pin ${inventory.parent.commit.slice(0, 12)} enforced on the baseline and ${PIN_CARRIERS.length} fixture/artifact headers.`,
 );
+
+async function readJson(url, label) {
+  const contents = await readFile(url, 'utf8').catch((cause) => {
+    throw new Error(`Required parity pin carrier '${label}' is missing or unreadable.`, { cause });
+  });
+  try {
+    return JSON.parse(contents);
+  } catch (cause) {
+    throw new Error(`Parity pin carrier '${label}' is not valid JSON.`, { cause });
+  }
+}
 
 async function validateEvidence(ref, record, extensionOnly) {
   for (const side of ['parent', 'typescript']) {

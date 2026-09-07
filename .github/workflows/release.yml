@@ -73,15 +73,6 @@ jobs:
           echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      - uses: actions/checkout@v4
-        with:
-          repository: tyxter-dev/blackbox
-          ref: d5be68e03ca7750920569578710a2ee25d25530c
-          path: .parent-blackbox
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pnpm parity:python -- --parent .parent-blackbox
       - name: Publish
         env:
           NPM_TAG: ${{ steps.release.outputs.npm_tag }}

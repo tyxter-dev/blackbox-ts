@@ -3,7 +3,7 @@ gdi_schema: 2
 gdi_version: 0.4.0
 status: executing
 approval: approved 2026-09-05 — floor rulings F1/F3/F4/F6 answered by the user via in-session question (F3 ruled stronger than recommendation); F2/F5 defaults not vetoed; evidence: AskUserQuestion answers recorded in session transcript
-harness: claude
+harness: codex
 ---
 
 # blackbox-ts 0.2 parity refresh, canonical flip, and packaging — Goal-Driven Implementation Plan
@@ -45,6 +45,32 @@ Harness: `claude` — see `references/routing-claude.md`.
 Session 2 (2026-09-06, resumed at A4): the `gdi-implementer`, `gdi-mapper`, `gdi-reviewer`, and `gdi-convention-reviewer` types resolve in the harness agent list, so from A4 onward every role is `requested = confirmed` (model/effort from the definition frontmatter); ledger rows from A4 record `routing: requested=gdi-*; confirmed`. The A4 implementer dispatched in session 1 was lost with the session (its diff survived uncommitted; its report did not) — per the lost-agent rule a new implementer resumed A4 from the surviving diff, recorded on the A4 ledger row.
 
 From 2026-09-06 12:15 UTC the Opus session limit (HTTP 429, resets 07:30 UTC) terminated every `gdi-reviewer`/`gdi-implementer` start; per the Known blockers precedent the affected roles fell back to `general-purpose` with `model: fable` (fresh context; a tier at or above the pinned Opus, so not an effort reduction). Rows from A7 onward record `fallback=general-purpose+fable` where used; `gdi-mapper` (Sonnet) stayed on its pin.
+
+### Session 4 resume — Codex, 2026-09-07
+
+The user requested completion of this plan and parity-documentation cleanup. Existing
+F1–F6 rulings remain authorized, including the branch push and PR; no release/tag is requested.
+The six surviving C1 changes are unfinished section work and are preserved for completion.
+Baseline: `50f6a9a` on `parity-0.2`; fetched `origin/main` remains `f7286fa`, already an
+ancestor. Node 24.20.0, pnpm 10.29.3, npm 12.0.2, Python 3.13.5; parent checkout is
+`d5be68e03ca7750920569578710a2ee25d25530c`. Plan validation passes.
+
+Current routing supersedes only unchecked assignments; historical routing above is retained.
+The tool schema has no custom-role selector, so direct pinned generic agents are used.
+
+| Role | Requested | Role-confirmed | Model/effort-confirmed | Fallback used |
+| --- | --- | --- | --- | --- |
+| Implementer | goal-implementer-terra / gpt-6-astra / low | generic scope confirmed by read-only preflight; attestation=none | explicit model/effort accepted by spawn; effective runtime metadata unavailable | direct pinned generic agent |
+| Reviewer | goal-reviewer / gpt-5.6-terra / high | generic read-only preflight confirmed; attestation=none | explicit model/effort accepted by spawn; effective runtime metadata unavailable | direct pinned generic agent |
+| Mapper | goal-explorer / gpt-5.6-luna / max | not dispatched | not applicable | orchestrator reads the small remaining scope and verifies anchors |
+
+⇢ Resume scope: C3 includes parity-doc cleanup explicitly requested by the user, including
+historical banners per R19, current maintenance/capability/migration prose, and broken packed
+README links. Preserve dated historical facts and generated evidence rather than deleting it.
+⇢ Deferral tracking: filed the follow-ups already required by this approved plan: D1/D3–D8
+in https://github.com/tyxter-dev/blackbox-ts/issues/2; D2 in
+https://github.com/tyxter-dev/blackbox/issues/22. No deferred behavior or parent settings changed.
+Token usage is unavailable in this harness; report unavailable rather than estimate it.
 
 ### Global gate
 
@@ -132,6 +158,7 @@ Execution realm: local Linux host, direct pnpm/node/python
 | R18a | A9      | ⇢ Added at A7 review (capacity lens): A9 also maps standard MCP descriptor `annotations.readOnlyHint` → `metadata.read_only` and `annotations.destructiveHint` → `metadata.destructive` in `readTool` (only when the annotation is present and boolean; explicit metadata keys win), so the parent's scope ladder is reachable against real MCP servers ((parent) src/blackbox/mcp/connector.py L533-541). R2: descriptors without annotations are byte-identical; a descriptor with annotations gains two metadata keys, which no in-repo consumer reads except the ladder | Without it every real read-only MCP tool registers as execute and the parent's natural read grant is refused here — a false denial the parity goal exists to prevent |
 | R14a | A8      | ⇢ Recorded at A8 review (contract lens): besides `CodexAgentProvider` and the ruled `CodexAppServerClient` interface, six type-only shapes are root-exported (`CodexAppServerConnection`, `CodexAppServerConnectOptions`, `CodexAppServerMessage`, `CodexAppServerRequest`, `CodexAppServerNotification`, `CodexAppServerResponse`) — the structural minimum an implementer needs to type `connect()`'s parameter/return and to construct messages without casts; zero runtime surface; the fixture uses all seven. The parent protocol NAME is kept while its methods differ (parent: session-level create_agent/start_session/stream_events/…; TS: connection-level connect → send/messages/close with the provider owning thread/turn requests) — a faithful reading of R14 because the behaviours F4 names (param pinning, −32601, approval pause) live beneath the parent's session protocol in its SDK client. `metadata.codex_sdk_version: '0.147.0'` on capabilities names the pinned PROTOCOL version (no SDK is installed) — C3 documents it that way. `cancel_grace_ms` constructor option replaces the parent constant. Metadata conventions for C3: `AgentSpec.metadata.id`/`.sandbox`, `TaskSpec.metadata.ephemeral`/`.sandbox`, `WorkspaceSpec.metadata.root` | Types needed to implement a ruled interface are part of that interface, not new surface; user-vetoable |
 | R19 | B1      | ⇢ Unenumerated old-pin sites found by B1's defining search: docs/adr/0001–0003 "Parent baseline" headers, docs/PARITY_PLAN.md:6 and its 143/136 counts, and CHANGELOG.md's historical 0.1.0-alpha.0 entry keep `f27decb` — they are dated decision/analysis/release records that were true when written (the alpha.0 release WAS ported against f27decb); rewriting them would make history false. The offline parity check reads none of them. C3's staleness pass MUST add a one-line "superseded by the 0.2 refresh (pin d5be68e0, 144 features)" banner at the top of docs/PARITY_PLAN.md (the B1 doc-truth lens found present-tense sentences at docs/PARITY_PLAN.md:8, :48, :206) and a "(historical)" qualifier on the three undated ADR "Parent baseline" headers; the values themselves stay | Historical records are evidence, not claims about the present |
+| R20 | C1 | ⇢ Replace prototype-inclusive `in STATUS_RANK` with own-property membership and a focused inherited-name rejection test. | Enforces R3's already documented rejection of unknown statuses; no new contract or error code. |
 
 ### Base drift policy
 
@@ -208,7 +235,7 @@ flowchart LR
   end
 
   subgraph PC["Phase C — canonical + packaging + docs"]
-    C1["C1 — canonical gate flip ⚠"]
+    C1["C1 — canonical gate flip ✅ 🔁×1 ⚠→F3"]
     C2["C2 — lean packaging ⚠"]
     C3["C3 — docs truth + version"]
   end
@@ -1001,7 +1028,7 @@ Flat repository — .github/workflows/release.yml, .github/workflows/parity-drif
 
 DEPENDS ON: B1.
 
-IMPLEMENTER PROFILE: general-purpose+opus (fallback).
+IMPLEMENTER PROFILE: goal-implementer-terra / gpt-6-astra / low (direct pinned fallback).
 
 CONTEXT TO AGGREGATE:
 
@@ -1058,7 +1085,7 @@ Flat repository — package.json, scripts/package-smoke.mjs, tsconfig.json (sour
 
 DEPENDS ON: B1 (soft: C1, review batching only).
 
-IMPLEMENTER PROFILE: general-purpose+opus (fallback).
+IMPLEMENTER PROFILE: goal-implementer-terra / gpt-6-astra / low (direct pinned fallback).
 
 CONTEXT TO AGGREGATE:
 
@@ -1117,7 +1144,7 @@ Flat repository — AGENTS.md, README.md, docs/SPEC.md, CHANGELOG.md, package.js
 
 DEPENDS ON: C2.
 
-IMPLEMENTER PROFILE: general-purpose+opus (fallback).
+IMPLEMENTER PROFILE: goal-implementer-terra / gpt-6-astra / low (direct pinned fallback).
 
 CONTEXT TO AGGREGATE:
 
@@ -1207,7 +1234,8 @@ Record schema for a checked row (one line per rejection round):
 
 ## Phase C — canonical + packaging + docs
 
-- [ ] C1 canonical gate flip — release provable from this repo alone per F3
+- [x] C1 canonical gate flip — Goal 2 clauses 1–3 pass — accepted 2026-09-07 (this commit) — rounds: 1 — review: independent ×3 (contract, convention/scope, doc-truth) — routing: direct pinned Astra low implementer / Terra high reviewers; attestation=none, effective runtime unknown — cost: unavailable (harness exposes no token usage) — env-retries: 0 — gates: check:parity, 20 parity-maintenance tests, workflow YAML parse, focused lint/format all pass; surviving C1 diff resumed and completed
+  - R1 doc-truth: future-sync procedure omitted inventory.catalog_unique_feature_count; update it alongside the feature set before generators that enforce agreement.
 - [ ] C2 lean packaging — ruled tarball shape asserted and passing
 - [ ] C3 docs truth + version — doc-truth clean, version 0.2.0-alpha.0
 
@@ -1229,11 +1257,11 @@ Record schema for a checked row (one line per rejection round):
 
 | ID  | Class         | Remaining work and risk                                                                                                                                                                                               | Owner / issue    | Re-entry gate                                                            | Blocks | Status |
 | --- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ | ------ | ------ |
-| D1  | product-scope | Full parity-scoring inversion (crosswalk direction, fixture goldenness swap, extension→declined-parent-feature semantics, TS-owned single score). Risk: the inventory vocabulary still reads Python-first until done. | file issue at C1 | issue filed and linked here before plan completion                       | none   | open   |
-| D2  | product-scope | Python parent repo's own freeze/archive posture (README banner, archival) — lives in tyxter-dev/blackbox, outside this repository.                                                                                    | file issue at C1 | issue filed in the parent repo (or user declines in the F3 ruling notes) | none   | open   |
-| D3  | product-scope | Estimator legacy-combined handling: parent subtracts the combined cached counter from input and charges the legacy remainder (combined − read − creation) at the read rate; TS subtracts split counters only. Diverges solely for usage reporting a combined counter with no split counters; every in-repo extraction sets read whenever it sets combined. Pre-existing drift predating the 0.2.0 delta. | file issue at C1 | issue filed and linked here before plan completion | none   | open   |
-| D4  | product-scope | Pricing alias resolution: parent copies model aliases into the pricing catalog so `openai:gpt-5.6` prices as `gpt-5.6-sol`; TS `PricingCatalog.get` (src/pricing/index.ts:52-54) is exact-key, so alias ids (gpt-5.6, grok-4.20-non-reasoning, gpt-5.4-mini-2026-03-17) raise `pricing_not_found`. Public-surface change (ruling floor); found at A4, pre-existing. | file issue at C1 | issue filed and linked here before plan completion | none | open |
-| D5  | product-scope | `PricingEntry` cannot carry the parent's `source_url` or `reasoning_output_per_million`, and folds `cached_input`/`cache_read_input` into one `cache_read_per_million`; lossless today (the B1 normalizer applies the same mapping) but a future parent row setting both read rates or a meaningful pricing `source_url` could not be represented. Public exported type (ruling floor); found at A4, pre-existing. | file issue at C1 | issue filed and linked here before plan completion | none | open |
-| D6  | product-scope | Cross-language portable-package interchange for allowlist_v1: the parent serializes grants under `permissions` while TS uses `grants` (R15, because TS `permissions` already carries membership lists), so a parent-written allowlist_v1 package read by TS fails closed (manifest guard rejects the array field; otherwise deny-all). Either a manifest-time translation or a shared field name is needed before packages cross implementations. Found at A5 (contract lens). Extended at A7: a parent package's `agent_provider`/`agent_id`/`model_provider`/`hosted_tools`/`extra` ride through import as ignored stray fields (`agent_provider` must be re-supplied as a run option; `agent_id` is inexpressible), and parent workspace grant refs (`workspace:read_file` …) do not match TS workspace tools (`workspace:read` …). | file issue at C1 | issue filed and linked here before plan completion; C3 documents the divergence | none | open |
-| D7  | product-defect | Pre-existing: cancelling a local agent session that a consumer streams through `AgentSessionsRuntime.run/stream` throws SessionTerminalError ("cannot transition from 'cancelled' to 'failed'") because the loop yields RUN_FAILED after SESSION_CANCELLED (src/runtime/agent-sessions.ts:264; src/providers/local-agent.ts:193-205; src/runtime/agent-loop.ts:139-146). Reproduced boundary-free by two A7 reviewers; not caused by this plan. | file issue at C1 | issue filed and linked here before plan completion | none | open |
-| D8  | product-scope | Spoofable `blackbox/*` wire methods: the Codex normalization table maps method names verbatim, so a hostile app-server can emit `blackbox/approval/requested` (pauses the facade; `approve` then rejects with no wire answer) or `blackbox/session/cancelled|failed` (projected as events; stream continues) — parent-identical by the F4 table ruling; a deviation needs a new ruling. Found at A8 (security lens, probe-confirmed). | file issue at C1 | issue filed and linked here before plan completion | none | open |
+| D1  | product-scope | Full parity-scoring inversion (crosswalk direction, fixture goldenness swap, extension→declined-parent-feature semantics, TS-owned single score). Risk: the inventory vocabulary still reads Python-first until done. | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist                       | none   | open   |
+| D2  | product-scope | Python parent repo's own freeze/archive posture (README banner, archival) — lives in tyxter-dev/blackbox, outside this repository.                                                                                    | maintainers / https://github.com/tyxter-dev/blackbox/issues/22 | maintainer decision and README posture implemented under linked issue | none   | open   |
+| D3  | product-scope | Estimator legacy-combined handling: parent subtracts the combined cached counter from input and charges the legacy remainder (combined − read − creation) at the read rate; TS subtracts split counters only. Diverges solely for usage reporting a combined counter with no split counters; every in-repo extraction sets read whenever it sets combined. Pre-existing drift predating the 0.2.0 delta. | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist | none   | open   |
+| D4  | product-scope | Pricing alias resolution: parent copies model aliases into the pricing catalog so `openai:gpt-5.6` prices as `gpt-5.6-sol`; TS `PricingCatalog.get` (src/pricing/index.ts:52-54) is exact-key, so alias ids (gpt-5.6, grok-4.20-non-reasoning, gpt-5.4-mini-2026-03-17) raise `pricing_not_found`. Public-surface change (ruling floor); found at A4, pre-existing. | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist | none | open |
+| D5  | product-scope | `PricingEntry` cannot carry the parent's `source_url` or `reasoning_output_per_million`, and folds `cached_input`/`cache_read_input` into one `cache_read_per_million`; lossless today (the B1 normalizer applies the same mapping) but a future parent row setting both read rates or a meaningful pricing `source_url` could not be represented. Public exported type (ruling floor); found at A4, pre-existing. | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist | none | open |
+| D6  | product-scope | Cross-language portable-package interchange for allowlist_v1: the parent serializes grants under `permissions` while TS uses `grants` (R15, because TS `permissions` already carries membership lists), so a parent-written allowlist_v1 package read by TS fails closed (manifest guard rejects the array field; otherwise deny-all). Either a manifest-time translation or a shared field name is needed before packages cross implementations. Found at A5 (contract lens). Extended at A7: a parent package's `agent_provider`/`agent_id`/`model_provider`/`hosted_tools`/`extra` ride through import as ignored stray fields (`agent_provider` must be re-supplied as a run option; `agent_id` is inexpressible), and parent workspace grant refs (`workspace:read_file` …) do not match TS workspace tools (`workspace:read` …). | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist; C3 documents the divergence | none | open |
+| D7  | product-defect | Pre-existing: cancelling a local agent session that a consumer streams through `AgentSessionsRuntime.run/stream` throws SessionTerminalError ("cannot transition from 'cancelled' to 'failed'") because the loop yields RUN_FAILED after SESSION_CANCELLED (src/runtime/agent-sessions.ts:264; src/providers/local-agent.ts:193-205; src/runtime/agent-loop.ts:139-146). Reproduced boundary-free by two A7 reviewers; not caused by this plan. | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist | none | open |
+| D8  | product-scope | Spoofable `blackbox/*` wire methods: the Codex normalization table maps method names verbatim, so a hostile app-server can emit `blackbox/approval/requested` (pauses the facade; `approve` then rejects with no wire answer) or `blackbox/session/cancelled|failed` (projected as events; stream continues) — parent-identical by the F4 table ruling; a deviation needs a new ruling. Found at A8 (security lens, probe-confirmed). | maintainers / https://github.com/tyxter-dev/blackbox-ts/issues/2 | linked issue acceptance checklist | none | open |
