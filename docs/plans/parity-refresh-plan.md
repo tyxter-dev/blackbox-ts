@@ -17,7 +17,7 @@ Feature map: docs/plans/parity-refresh-feature-map.yml — flat repository (0 ap
 - "24 subpath exports" (orchestrator's initial read) — the exports map has **26** subpaths (package.json:19-124).
 - Catalog delta initially inferred as 19→22 models — verified by importing the parent catalog at `d5be68e`: bundled models **19 → 29**, bundled pricing rows **21 → 36**.
 - AGENTS.md is not a reliable instruction file for this plan: it declares the agent loop, durable memory, workspaces, and billing out of scope (AGENTS.md:9-10, AGENTS.md:30-31) while all shipped (src/runtime/agent-loop.ts:71, src/persistence/index.ts:1-3, src/workspaces/index.ts:1-6, src/pricing/index.ts:106). Sections follow the tree, not AGENTS.md; C3 repairs it.
-- Local baseline is red for an environment reason, not a product defect at the pinned behavior: npm 12.0.2's `pack --json` emits an object keyed by package name; scripts/package-smoke.mjs:35-38 indexes `report[0]` and throws `npm pack produced no report`. CI (npm 10/11) is green (release run 33983963862 passed `pnpm check`). A0 fixes this first.
+- Local baseline was red for an environment reason, not a product defect at the pinned behavior: npm 12.0.2's `pack --json` emits an object keyed by package name; scripts/package-smoke.mjs:35-38 indexes `report[0]` and throws `npm pack produced no report`. CI (npm 10/11) is green (release run 33983963862 passed `pnpm check`). A0 fixes this first.
 - The parent CHANGELOG's 0.1.1 text says Codex SDK `0.144.4`; the code pins `0.147.0` (parent `pyproject.toml` L46 and `providers/agent_adapters/codex.py` L35). The code is authoritative.
 
 Out of scope (named so every input clause is dispositioned): physical file-tree restructuring (moving src/ or tests/ directories) — the parity inventory pins 177 repo paths and scripts/lib/parity-evidence.mjs hard-codes 142 of them, so a move is pure churn against the evidence registry; "organize the repo" is served by C2 (packaging), C3 (docs truth), and A0 (portable gates). Release/tag cutting stays a user action (F6/R5).
@@ -70,6 +70,8 @@ README links. Preserve dated historical facts and generated evidence rather than
 ⇢ Deferral tracking: filed the follow-ups already required by this approved plan: D1/D3–D8
 in https://github.com/tyxter-dev/blackbox-ts/issues/2; D2 in
 https://github.com/tyxter-dev/blackbox/issues/22. No deferred behavior or parent settings changed.
+C3 stale-anchor aggregation uses a read-only direct pinned Luna max mapper (generic role;
+attestation=none; spawn accepts model/effort, effective runtime unavailable).
 Token usage is unavailable in this harness; report unavailable rather than estimate it.
 
 ### Global gate
@@ -159,6 +161,7 @@ Execution realm: local Linux host, direct pnpm/node/python
 | R14a | A8      | ⇢ Recorded at A8 review (contract lens): besides `CodexAgentProvider` and the ruled `CodexAppServerClient` interface, six type-only shapes are root-exported (`CodexAppServerConnection`, `CodexAppServerConnectOptions`, `CodexAppServerMessage`, `CodexAppServerRequest`, `CodexAppServerNotification`, `CodexAppServerResponse`) — the structural minimum an implementer needs to type `connect()`'s parameter/return and to construct messages without casts; zero runtime surface; the fixture uses all seven. The parent protocol NAME is kept while its methods differ (parent: session-level create_agent/start_session/stream_events/…; TS: connection-level connect → send/messages/close with the provider owning thread/turn requests) — a faithful reading of R14 because the behaviours F4 names (param pinning, −32601, approval pause) live beneath the parent's session protocol in its SDK client. `metadata.codex_sdk_version: '0.147.0'` on capabilities names the pinned PROTOCOL version (no SDK is installed) — C3 documents it that way. `cancel_grace_ms` constructor option replaces the parent constant. Metadata conventions for C3: `AgentSpec.metadata.id`/`.sandbox`, `TaskSpec.metadata.ephemeral`/`.sandbox`, `WorkspaceSpec.metadata.root` | Types needed to implement a ruled interface are part of that interface, not new surface; user-vetoable |
 | R19 | B1      | ⇢ Unenumerated old-pin sites found by B1's defining search: docs/adr/0001–0003 "Parent baseline" headers, docs/PARITY_PLAN.md:6 and its 143/136 counts, and CHANGELOG.md's historical 0.1.0-alpha.0 entry keep `f27decb` — they are dated decision/analysis/release records that were true when written (the alpha.0 release WAS ported against f27decb); rewriting them would make history false. The offline parity check reads none of them. C3's staleness pass MUST add a one-line "superseded by the 0.2 refresh (pin d5be68e0, 144 features)" banner at the top of docs/PARITY_PLAN.md (the B1 doc-truth lens found present-tense sentences at docs/PARITY_PLAN.md:8, :48, :206) and a "(historical)" qualifier on the three undated ADR "Parent baseline" headers; the values themselves stay | Historical records are evidence, not claims about the present |
 | R20 | C1 | ⇢ Replace prototype-inclusive `in STATUS_RANK` with own-property membership and a focused inherited-name rejection test. | Enforces R3's already documented rejection of unknown statuses; no new contract or error code. |
+| R21 | C2 | ⇢ Add real Echo model-turn execution to the package consumer smoke; update CHANGELOG's migration link as well as README links when docs leave the tarball. | The existing smoke only imported modules, contrary to Goal 3's premise; the change supplies its required real-client proof and prevents newly broken package documentation links. |
 
 ### Base drift policy
 
@@ -236,7 +239,7 @@ flowchart LR
 
   subgraph PC["Phase C — canonical + packaging + docs"]
     C1["C1 — canonical gate flip ✅ 🔁×1 ⚠→F3"]
-    C2["C2 — lean packaging ⚠"]
+    C2["C2 — lean packaging ✅ ⚠→F1/F2"]
     C3["C3 — docs truth + version"]
   end
 
@@ -1236,7 +1239,7 @@ Record schema for a checked row (one line per rejection round):
 
 - [x] C1 canonical gate flip — Goal 2 clauses 1–3 pass — accepted 2026-09-07 (this commit) — rounds: 1 — review: independent ×3 (contract, convention/scope, doc-truth) — routing: direct pinned Astra low implementer / Terra high reviewers; attestation=none, effective runtime unknown — cost: unavailable (harness exposes no token usage) — env-retries: 0 — gates: check:parity, 20 parity-maintenance tests, workflow YAML parse, focused lint/format all pass; surviving C1 diff resumed and completed
   - R1 doc-truth: future-sync procedure omitted inventory.catalog_unique_feature_count; update it alongside the feature set before generators that enforce agreement.
-- [ ] C2 lean packaging — ruled tarball shape asserted and passing
+- [x] C2 lean packaging — Goal 3 clauses 1/3 pass — accepted 2026-09-07 (this commit) — rounds: 0 — review: independent ×4 (contract, failure-mode, convention/scope, doc-truth) — routing: direct pinned Astra low implementer / Terra high reviewers; attestation=none, effective runtime unknown — cost: unavailable — env-retries: 0 — gates: test:package (209 files, 779343 B, 57.2% below baseline; clean install and Echo turn), npm dry-run, check:api (514 symbols, 27 subpaths), examples typecheck, focused format all pass
 - [ ] C3 docs truth + version — doc-truth clean, version 0.2.0-alpha.0
 
 ## Completion

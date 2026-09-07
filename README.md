@@ -92,7 +92,7 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
 
 The pinned score covers 144 Python catalog features, with 26 verification supplements and
 TypeScript extensions reported separately. Scoped evidence is in
-[the parity matrix](docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
-update workflow is in [parity maintenance](docs/PARITY_MAINTENANCE.md). See
-[features](FEATURES.md), [capabilities](docs/CAPABILITIES.md),
-[migration](docs/MIGRATION.md), and [examples](examples/).
+[the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
+update workflow is in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
+[features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),
+[migration](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).

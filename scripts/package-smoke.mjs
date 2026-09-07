@@ -78,7 +78,10 @@ function verifyPackReportParsing() {
   for (const [label, run] of [
     ['an empty report object', () => selectPackageReport({}, entry.name)],
     ['an empty report array', () => selectPackageReport([], entry.name)],
-    ['a report naming other packages only', () => selectPackageReport({ a: {}, b: {} }, entry.name)],
+    [
+      'a report naming other packages only',
+      () => selectPackageReport({ a: {}, b: {} }, entry.name),
+    ],
     ['non-JSON stdout', () => parsePackReport('npm error code ENOENT')],
   ]) {
     let rejected = false;
@@ -111,16 +114,38 @@ try {
   const packageReport = selectPackageReport(parsePackReport(packed.stdout.trim()), packageName);
   if (!Array.isArray(packageReport.files)) throw new Error('npm pack report lists no files');
   const files = new Set(packageReport.files.map((entry) => entry.path));
-  for (const required of [
-    'dist/index.js',
-    'dist/index.d.ts',
-    'docs/PARITY_MATRIX.md',
-    'examples/model-turn.ts',
-  ]) {
-    if (!files.has(required)) throw new Error(`packed package is missing ${required}`);
+  const tracked = new Set(
+    (await execFileAsync('git', ['ls-files', '-z'], { cwd: root, windowsHide: true })).stdout
+      .split('\0')
+      .filter(Boolean),
+  );
+  const expected = new Set(['package.json', 'README.md', 'CHANGELOG.md', 'FEATURES.md', 'LICENSE']);
+  for (const path of tracked) {
+    if (path.startsWith('src/') && path.endsWith('.ts')) {
+      // A deleted source must not authorize a stale generated module.
+      await readFile(join(root, path));
+      const stem = `dist/${path.slice(4, -3)}`;
+      expected.add(`${stem}.js`);
+      expected.add(`${stem}.d.ts`);
+    } else if (/^examples\/[^/]+\.ts$/.test(path)) {
+      expected.add(path);
+    }
   }
-  if ([...files].some((path) => path.startsWith('src/'))) {
-    throw new Error('packed package unexpectedly contains TypeScript source');
+  assertTarballShape(files, expected);
+  // Exercise the leak guard independently of what this checkout happens to pack.
+  for (const rogue of [
+    'docs/local.md',
+    'dist/index.js.map',
+    'dist/untracked.js',
+    'examples/untracked.ts',
+  ]) {
+    let rejected = false;
+    try {
+      assertTarballShape(new Set([...files, rogue]), expected);
+    } catch {
+      rejected = true;
+    }
+    if (!rejected) throw new Error(`tarball guard accepted ${rogue}`);
   }
 
   await writeFile(
@@ -149,11 +174,23 @@ try {
 
   await writeFile(
     join(directory, 'smoke.mjs'),
-    `import { EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
+    `import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { AgentRuntime, EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
 import { MCPServer } from 'blackbox-ts/mcp';
 import { InMemoryWorkSource } from 'blackbox-ts/workers';
 const registry = new ProviderRegistry();
 registry.registerModelProvider(new EchoModelProvider());
+const runtime = new AgentRuntime({ registry });
+const turn = await runtime.models.run({ model: 'echo:echo', input: 'package smoke' });
+assert.equal(turn.output_text, 'package smoke');
+assert.equal(turn.provider, 'echo');
+assert.equal(turn.model, 'echo');
+assert.deepEqual(turn.raw_response, { echo: 'package smoke' });
+const metadata = JSON.parse(await readFile(new URL(import.meta.resolve('blackbox-ts/package.json')), 'utf8'));
+assert.equal(metadata.name, 'blackbox-ts');
+assert.equal(metadata.sideEffects, false);
+assert.equal(metadata.publishConfig.provenance, true);
 if (!(new MCPServer('smoke')) || !(new InMemoryWorkSource())) throw new Error('subpath smoke failed');
 console.log('clean package consumer smoke passed');
 `,
@@ -163,7 +200,29 @@ console.log('clean package consumer smoke passed');
     cwd: directory,
     windowsHide: true,
   });
-  console.log(`Package smoke OK: ${files.size} files, clean install, root and subpath imports.`);
+  console.log(
+    `Package smoke OK: ${files.size} files, ${packageReport.unpackedSize} unpacked bytes, clean install, imports and Echo model turn.`,
+  );
 } finally {
   await rm(directory, { recursive: true, force: true });
+}
+
+function assertTarballShape(files, expected) {
+  const topLevel = new Set([
+    'dist',
+    'examples',
+    'package.json',
+    'README.md',
+    'CHANGELOG.md',
+    'FEATURES.md',
+    'LICENSE',
+  ]);
+  for (const path of files) {
+    if (!topLevel.has(path.split('/')[0]) || path.endsWith('.map') || !expected.has(path)) {
+      throw new Error(`packed package contains unexpected or untracked file ${path}`);
+    }
+  }
+  for (const path of expected) {
+    if (!files.has(path)) throw new Error(`packed package is missing ${path}`);
+  }
 }

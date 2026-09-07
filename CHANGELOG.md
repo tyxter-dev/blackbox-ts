@@ -69,4 +69,4 @@ Parity refresh to the Python Blackbox 0.2.0 baseline.
 - Added Windows/Linux Node 20.11/22 CI, package-consumer checks, and network-gated smoke tests.
 
 The alpha API was substantially expanded during parity work; see
-[docs/MIGRATION.md](docs/MIGRATION.md).
+[docs/MIGRATION.md](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md).
