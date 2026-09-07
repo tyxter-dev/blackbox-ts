@@ -1,7 +1,7 @@
 {
   "name": "blackbox-ts",
-  "version": "0.1.0-alpha.1",
-  "description": "Fetch-first TypeScript provider runtime adapter layer for agent and LLM applications.",
+  "version": "0.2.0-alpha.0",
+  "description": "Zero-dependency TypeScript runtime for model turns, agent sessions, tools, workspaces and LLM applications.",
   "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@10.29.3",

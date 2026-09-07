@@ -1,24 +1,54 @@
 # Provider Capability Matrix
 
-The adapter profile is authoritative at runtime; this table summarizes the bundled posture.
-Model-specific constraints may be stricter and are checked before dispatch.
+The adapter profile is authoritative at runtime. This table summarizes default model
+profiles; model-specific constraints and explicitly supplied profiles can differ.
 
-| Provider   | Native protocol             | Function tools | Hosted tools         | Structured output                 | Provider state            | MCP/workspace               |
-| ---------- | --------------------------- | -------------- | -------------------- | --------------------------------- | ------------------------- | --------------------------- |
-| OpenAI     | Responses                   | Yes            | Model-gated          | Yes                               | Yes                       | Model-gated/provider-native |
-| xAI        | Responses-compatible        | Conservative   | No unless advertised | Model-gated                       | Model-gated               | No unless advertised        |
-| Anthropic  | Messages                    | Yes            | Model-gated          | Native/model-gated plus fallbacks | Native history            | Model-gated                 |
-| Google     | GenerateContent             | Yes            | Search/model-gated   | Yes                               | Native history/signatures | Model-gated                 |
-| OpenRouter | Chat Completions aggregator | Conservative   | No                   | Text/post-hoc                     | No                        | No                          |
-| Echo       | Offline deterministic       | No             | No                   | Text/post-hoc                     | No                        | No                          |
+| Provider   | Native protocol             | Function tools | Hosted tools                             | Structured output                          | Provider state            | MCP / workspace                                    |
+| ---------- | --------------------------- | -------------- | ---------------------------------------- | ------------------------------------------ | ------------------------- | -------------------------------------------------- |
+| OpenAI     | Responses                   | Yes            | Supported kinds; raw passthrough         | Native and runtime fallbacks               | Yes                       | MCP supported / workspace unsupported              |
+| xAI        | Responses-compatible        | Yes            | Typed kinds unsupported; raw passthrough | Native and runtime fallbacks               | Yes                       | Both unsupported                                   |
+| Anthropic  | Messages                    | Yes            | Web search, remote MCP; raw passthrough  | Native model-gated; runtime fallbacks      | Native history            | Use remote_mcp hosted tool / workspace unsupported |
+| Google     | GenerateContent             | Yes            | Web search; raw passthrough              | Native; tool combination requires Gemini 3 | Native history/signatures | Both unsupported                                   |
+| OpenRouter | Chat Completions aggregator | No             | No                                       | Text/post-hoc                              | No                        | Both unsupported                                   |
+| Echo       | Offline deterministic       | No             | No                                       | Text/post-hoc                              | No                        | Both unsupported                                   |
 
-Agent providers, realtime providers, workspaces, and MCP servers have separate capability
-contracts; they are never represented as model tools merely for convenience.
+A model adapter's lack of workspace support does not prevent the host agent loop from using
+local workspace tools. Function-tool support also differs from support for the explicit
+`parallel_tool_calls` control: Anthropic and Gemini reject that control. Anthropic Fable 5.1
+permits only `auto`/`none` tool choice and does not support the finalizer-tool output strategy.
 
-Partial/contract-only parity is intentionally unchanged:
+Agent providers, realtime providers, workspaces and MCP servers use separate capability
+contracts. Partial integrations remain explicit:
 
 - Vertex AI Agent Engine throws an unsupported-feature error.
-- Anthropic Managed Agents requires `acknowledge_live_beta: true` and an injected client.
-- OpenAI Agents, Claude Code, OpenAI Realtime, Gemini Live, sandbox, Docker, and cloud
-  integrations accept injected clients/transports so the core package remains dependency-free.
+- `AnthropicEnvironmentWorkSource` is a worker integration requiring
+  `acknowledge_live_beta: true` and an injected client.
+- OpenAI Agents, Claude Code, OpenAI Realtime and Gemini Live use injected clients/transports.
+  Workspace sandbox/Docker/cloud integrations also use injected clients.
 - Webhook ingress remains a contract for product-owned verification and persistence.
+
+## Codex agent provider
+
+`CodexAgentProvider` is a contract port over an injected `CodexAppServerClient`:
+`connect()` yields a connection with `send()`, `messages` and `close()`. The provider owns
+thread/turn requests, event normalization, approval pauses and file-change artifacts.
+There is no bundled Codex SDK, process launcher or SDK version check. The default
+`metadata.codex_sdk_version: '0.147.0'` records the protocol baseline used for this port,
+not an installed dependency.
+
+Authentication is subscription-only at the provider boundary: `AgentSpec.environment` rejects
+`OPENAI_API_KEY`, and the adapter does not read the host environment. The injected transport
+must maintain subscription authentication and must not add an inherited API key itself.
+Blackbox local tools, hosted tools and MCP server specifications are rejected before opening
+transport. Native Codex workspace tooling stays with the injected app-server.
+
+`supports_resume` and `supports_package_permissions` are forced to `false`, including when
+a client advertises them. Restricted `allowlist_v1` package runs therefore reject Codex.
+Follow-ups, cancellation and native approvals are separate session operations. Consume streamed
+events for text: the current `runtime.agents.run` collector does not derive Codex response text
+from delta-only events, so its collected output may be empty.
+
+The adapter reads `AgentSpec.metadata.id` and `.sandbox`, `TaskSpec.metadata.ephemeral`
+(default `true`) and `.sandbox`, and `WorkspaceSpec.metadata.root` (or a local workspace's
+`ref`). Task sandbox settings override the agent setting. These conventions and package
+portability limitations are recorded in [migration](MIGRATION.md).

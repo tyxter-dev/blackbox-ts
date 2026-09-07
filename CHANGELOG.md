@@ -1,8 +1,19 @@
 # Changelog
 
-## Unreleased
+## 0.2.0-alpha.0
 
-Parity refresh to the Python Blackbox 0.2.0 baseline.
+Canonical TypeScript runtime with compatibility refreshed to the pinned Python Blackbox
+0.2.0 baseline. This version heading describes the source candidate, not a published tag.
+
+- CI and release verification no longer check out Python or run bidirectional parity;
+  offline parity checks remain in `pnpm check`. Automated drift checks are removed;
+  manual sync/drift tools remain available.
+- Published package contents are limited to compiled JavaScript/declarations,
+  README/CHANGELOG/FEATURES/LICENSE and examples. Sourcemaps and repository docs are
+  excluded; package metadata is available through `blackbox-ts/package.json`,
+  `sideEffects: false` is declared, and npm provenance is configured.
+- Package verification checks the exact tracked-source-derived file set and runs a real
+  offline Echo model turn from a clean tarball install.
 
 - Bumped the pinned parent baseline from `f27decbc9aeaae972c5bbeb256c70450b7fe393a` to
   `d5be68e03ca7750920569578710a2ee25d25530c` (Python Blackbox 0.2.0) and regenerated every

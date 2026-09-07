@@ -1,7 +1,7 @@
 # ADR 0002: Event-First Wire State and Compatibility
 
 **Status:** Accepted
-**Parent baseline:** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
+**Parent baseline (historical):** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
 
 Canonical events and run items are the source of runtime state. Durable public values use
 snake_case keys and versioned JSON envelopes so Python and TypeScript values can round-trip.

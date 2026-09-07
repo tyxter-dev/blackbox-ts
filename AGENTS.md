@@ -1,115 +1,109 @@
 # AGENTS.md
 
 Guidance for Codex when working in this repo. Keep changes small, dependency-light,
-and aligned with Python Blackbox concepts.
+and aligned with the public Blackbox contracts.
 
-## Project
+## Project and scope
 
-**blackbox-ts** is a public MIT licensed TypeScript provider-runtime adapter
-library. It is the TypeScript port of Python Blackbox's provider/runtime layer,
-not the full first-release port of the agent loop.
+**blackbox-ts** is the public MIT-licensed, canonical TypeScript Blackbox runtime.
+Python Blackbox is a historical compatibility reference pinned in
+`docs/parity-inventory.json`; it is not a runtime or release dependency.
+[FEATURES.md](FEATURES.md) is the current feature catalog.
 
-The package should stay usable by product repositories that do not want provider
-SDKs or product-owned LLM contracts in their runtime graph.
+The library ships provider registries/catalogs, normalized model turns, the agent loop,
+agent sessions, tools, structured output, policy/approvals, persistence, workspaces, MCP,
+realtime protocols, workers, skills/workspace-agent packages, schedules, pricing/cache,
+prompt planning, configuration and observability. Fetch-first model adapters cover OpenAI,
+Anthropic, Google Gemini, xAI and OpenRouter. Cloud-agent/realtime integrations use injected
+clients or transports; capability profiles distinguish supported and partial surfaces.
 
-## Scope
+Product-owned tenant identity, BYOK storage/encryption, compliance retention, billing
+collection, cost caps, channel rules and handoff webhooks remain outside this library.
+Generic pricing estimates, policies, event sinks and workspace controls belong here.
 
-First release scope:
+## Non-negotiable rules
 
-- Provider registry and model catalog.
-- `provider:model` references.
-- Capability profiles.
-- Normalized model-turn requests, results, and events.
-- Provider state types.
-- Completion compatibility helper.
-- Fetch-first adapters for OpenAI, Anthropic, Gemini, xAI, and OpenRouter.
-- Test fakes and fixture helpers.
-
-Out of scope for v0.1:
-
-- Full `runtime.run` agent loop.
-- Durable memory, workspace orchestration, or billing.
-- Product-specific BYOK storage, tenant scoping, compliance logs, cost caps, or
-  channel guardrails.
-- Official provider SDK dependencies.
-
-## Non-negotiable Rules
-
-1. **No runtime dependencies.** Use built-in `fetch` and platform APIs. New
-   dependencies must be dev-only unless the user explicitly changes the policy.
-2. **Capability honesty is mandatory.** Unsupported tools, hosted tools, MCP,
-   workspaces, provider state, and structured output must throw typed errors
-   before network dispatch.
-3. **Preserve raw provider payloads** on normalized turn results and events.
+1. **No runtime dependencies.** Use built-in `fetch` and platform APIs. New dependencies
+   must be dev-only unless the user explicitly changes the policy. Provider SDKs remain
+   behind injected interfaces.
+2. **Capability honesty is mandatory.** Unsupported tools, hosted tools, MCP, workspaces,
+   provider state, controls and structured output must fail with typed errors before dispatch.
+3. **Preserve raw provider payloads** on normalized results and events; storage/telemetry
+   redaction must be explicit.
 4. **OpenRouter is an aggregator provider**, not an OpenAI alias.
-5. **Keep product behavior out of this library.** Tyxter-specific billing,
-   environment scoping, encryption, logs, WhatsApp rules, and handoff webhooks
-   belong in Tyxter.
-6. **Prefer stable public contracts over convenience shortcuts.** Public type
-   changes affect Tyxter API stabilization and downstream docs.
-7. **Provider adapters must be testable offline.** Accept `fetchImpl` and cover
-   request/response mapping with fixtures.
+5. **Keep product behavior out.** Tenant policies, secret stores, billing enforcement and
+   channel-specific integrations belong in the host product.
+6. **Prefer stable public contracts.** Exported types affect downstream integrations and docs.
+7. **Test adapters offline.** Fetch adapters accept `fetchImpl`; injected clients/transports
+   need offline fixtures. Do not weaken tests to make provider behavior pass.
 
-## Repo Shape
+## Repository shape
 
 ```text
-src/core/                      shared contracts, refs, state, events, errors
-src/providers/                 provider protocol, registry, catalog
-src/providers/openai-compatible shared chat-completions adapter
-src/providers/openai           OpenAI adapter
-src/providers/anthropic        Anthropic adapter
-src/providers/gemini           Gemini adapter
-src/providers/xai              xAI adapter
-src/providers/openrouter       OpenRouter adapter
-src/testing/                   fake providers and fetch fixtures
-tests/unit/                    pure contract/unit tests
-tests/golden/                  offline provider mapping tests
-tests/smoke/                   env-gated real provider smoke tests
-docs/                          public specs
+src/core/                      shared values, errors, events, policy and permission core
+src/providers/                 protocols, registry/catalog, model and agent adapters
+src/runtime/                   model execution, agent loop and agent-session facade
+src/tools/                     registry, dispatch and dynamic toolsets
+src/output/                    validation and structured-output strategies
+src/persistence/               memory, JSONL and injected SQLite stores
+src/workspaces/                workspace protocols, providers and tool bridge
+src/mcp/                       client/server, transports and toolsets
+src/realtime/                  sessions and injected duplex adapters
+src/workers/                   leased environment workers
+src/workspace-agents/           governed packages, registry and execution
+src/skills/                    SKILL.md parsing and staging
+src/schedules/                 package schedules
+src/pricing/                   price catalog and estimates
+src/cache/                     cache helpers and metrics
+src/planning/                  prompt planning
+src/config/                    workflow profiles and runtime configuration
+src/observability/             sinks, traces, metrics and evaluators
+src/testing/                   offline providers and fixture helpers
+scripts/                       parity/API/catalog generators and package verification
+tests/                        unit, golden, journey, security, perf and smoke suites;
+                               shared fixtures under tests/fixtures/
+docs/                          current specs, parity evidence and historical plans/ADRs
+examples/                      runnable TypeScript integration examples
 ```
 
-## Commands
+The package exposes the root, specialized subpaths and `blackbox-ts/package.json`.
+The tarball contains JavaScript/declarations, README/CHANGELOG/FEATURES/LICENSE and examples;
+repository `docs/`, source files and sourcemaps are excluded. Package verification requires
+Git and checks generated paths against tracked source/examples; stage new files before it.
 
-```bash
+## Commands and checks
+
+```sh
 pnpm install
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm build
+pnpm check
 pnpm pack --dry-run
 ```
 
-Network smoke tests are skipped unless provider API keys are present:
+`pnpm check` runs formatting, offline parity checks, source/example typechecks, the public API
+snapshot, ESLint, Vitest, build/catalog verification and a clean package consumer install
+with an Echo model turn. Focused commands include `pnpm typecheck`, `pnpm lint`, `pnpm test`,
+`pnpm build` and `pnpm test:package`. Update generated artifacts through their scripts.
 
-```bash
-OPENAI_API_KEY=... pnpm test:smoke
-ANTHROPIC_API_KEY=... pnpm test:smoke
-GOOGLE_API_KEY=... pnpm test:smoke
-XAI_API_KEY=... pnpm test:smoke
-OPENROUTER_API_KEY=... pnpm test:smoke
+Smoke suites are network-gated and skipped without provider keys. Run only the intended
+provider suite with its key; never commit credentials. For example:
+
+```sh
+OPENAI_API_KEY=... pnpm exec vitest run tests/smoke/providers-smoke.test.ts -t OpenAI
 ```
 
-## Testing Expectations
+The other gates use `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `XAI_API_KEY` and
+`OPENROUTER_API_KEY`; `pnpm test:smoke` runs the enabled cases. Manual Python
+sync tools and exact checkout requirements are documented in
+[parity maintenance](docs/PARITY_MAINTENANCE.md). CI and releases retain offline parity
+checks and do not require a Python checkout.
 
-- Unit tests cover refs, registry, catalog, capability assertions, completion
-  compatibility, and fake providers.
-- Golden tests cover offline request/response mapping, usage extraction, and raw
-  payload preservation for every provider adapter.
-- Smoke tests must be network-gated and skipped by default.
-- Do not weaken tests to make provider behavior pass. Fix the adapter or update
-  the spec when the provider contract has truly changed.
+## TypeScript and release posture
 
-## TypeScript Style
-
-- ESM only.
-- Node 20.11+ target.
-- Keep exported types explicit and stable.
-- Use typed errors from `src/core/errors.ts`.
-- Avoid ad hoc string parsing when a structured helper belongs in `src/core`.
-- Add comments only where they clarify non-obvious provider protocol behavior.
-
-## Release Posture
-
-The package is publishable as `blackbox-ts@0.1.0-alpha.x`. Before release, run
-`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and
-`pnpm pack --dry-run`.
+- ESM only; Node 20.11+.
+- Keep exported types explicit and stable; use errors from `src/core/errors.ts`.
+- Prefer structured core helpers over ad hoc parsing. Comment non-obvious protocol behavior.
+- Before release, run `pnpm check` and `pnpm pack --dry-run`.
+- The current candidate is `blackbox-ts@0.2.0-alpha.0`. Publishing is a separate action:
+  `v*` tag pushes invoke the release workflow, which validates the package version,
+  runs `pnpm check` and uses npm trusted publishing (OIDC). Prereleases use `alpha`;
+  stable versions use `latest`. A version edit alone does not publish.

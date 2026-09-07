@@ -1,7 +1,7 @@
 # ADR 0003: Zero-Dependency Core and Optional Integrations
 
 **Status:** Accepted
-**Parent baseline:** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
+**Parent baseline (historical):** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
 
 The root package keeps zero runtime dependencies and supports Node.js 20.11 and later. Core
 providers use built-in `fetch`; JSONL, local workspace, stdio/HTTP MCP, and observability

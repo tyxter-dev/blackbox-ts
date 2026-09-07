@@ -1,7 +1,7 @@
 # ADR 0001: Separate Provider Protocol Families
 
 **Status:** Accepted
-**Parent baseline:** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
+**Parent baseline (historical):** `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
 
 Model turns, agent sessions, and realtime sessions use separate provider protocols and
 registry namespaces. `ModelProvider.streamTurn()` is canonical; collected model runs are

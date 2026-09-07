@@ -1,6 +1,10 @@
 # Blackbox TypeScript Feature-Parity Plan
 
-**Status:** Implemented, published, and protected by pinned-parent maintenance automation
+> Historical plan, superseded by the [0.2 refresh](plans/parity-refresh-plan.md)
+> (pin `d5be68e0`, 144 features). Counts, baselines and gate descriptions below record the
+> earlier implementation; see [current parity maintenance](PARITY_MAINTENANCE.md).
+
+**Historical status:** Implemented, published, and protected by pinned-parent maintenance automation
 **Analysis date:** 2026-07-14
 **TypeScript baseline:** `blackbox-ts` commit `fbe3ebf1add1d7686f4d07dcd8092119d5a02b7b`
 **Parent baseline:** `tyxter-dev/blackbox` commit `f27decbc9aeaae972c5bbeb256c70450b7fe393a`
