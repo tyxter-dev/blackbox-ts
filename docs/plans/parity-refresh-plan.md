@@ -1,7 +1,7 @@
 ---
 gdi_schema: 2
 gdi_version: 0.4.0
-status: executing
+status: verified
 approval: approved 2026-09-05 — floor rulings F1/F3/F4/F6 answered by the user via in-session question (F3 ruled stronger than recommendation); F2/F5 defaults not vetoed; evidence: AskUserQuestion answers recorded in session transcript
 harness: codex
 ---
@@ -113,11 +113,17 @@ Execution realm: local Linux host, direct pnpm/node/python
 
 | Gate                                                                             | Consumes / invalidated by                                    | Planned runs (impl / orch) | Preflight                                                               | Actual runs | Why this count is safe                                                                                                                                   |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------: | ----------------------------------------------------------------------- | ----------: | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Consumer install+import smoke (`pnpm test:package`) — cheapest real-client probe | package.json files/exports, dist, docs presence              |                      2 / 1 | proven (runs inside pnpm check; red only for the npm-12 parse A0 fixes) |             | runs at A0 (green proof), C2 (new tarball shape), final; it is the library's "one real client interaction"                                               |
-| Full `pnpm check`                                                                | any source/test/doc/config change                            |                      2 / 2 | proven                                                                  |             | focused suites per section; full runs at A0 (local-green proof), B1 (all-goldens-green point), final ×2 (pre/post final review only if corrections land) |
-| `pnpm parity:python -- --parent /srv/projects/repos/blackbox`                    | pin, fixtures, TS build, parent checkout ref, python version |                      1 / 1 | unproven (not runnable at old pin without regen; guards verified)       |             | first run inside B1 (implementer), once more by orchestrator at final gate                                                                               |
-| CI 4-cell matrix (ubuntu/windows × node 20.11/22)                                | pushed branch                                                |                      0 / 1 | proven (green on main)                                                  |             | runs once on push of the branch/PR (terminal action F6)                                                                                                  |
-| Release publish                                                                  | tag                                                          |                      0 / 0 | proven this session                                                     |             | out of scope — user cuts releases separately                                                                                                             |
+| Consumer install+import smoke (`pnpm test:package`) — cheapest real-client probe | package.json files/exports, dist, docs presence              |                      2 / 1 | proven (runs inside pnpm check; red only for the npm-12 parse A0 fixes) | 4 | runs at A0 (green proof), C2 (new tarball shape), final; it is the library's "one real client interaction"                                               |
+| Full `pnpm check`                                                                | any source/test/doc/config change                            |                      2 / 2 | proven                                                                  | 3 | focused suites per section; full runs at A0 (local-green proof), B1 (all-goldens-green point), final ×2 (pre/post final review only if corrections land) |
+| `pnpm parity:python -- --parent /srv/projects/repos/blackbox`                    | pin, fixtures, TS build, parent checkout ref, python version |                      1 / 1 | unproven (not runnable at old pin without regen; guards verified)       | 2 | first run inside B1 (implementer), once more by orchestrator at final gate                                                                               |
+| CI 4-cell matrix (ubuntu/windows × node 20.11/22)                                | pushed branch                                                |                      0 / 1 | proven (green on main)                                                  | 2 | runs once on push of the branch/PR (terminal action F6)                                                                                                  |
+| Release publish                                                                  | tag                                                          |                      0 / 0 | proven this session                                                     | 0 | out of scope — user cuts releases separately                                                                                                             |
+
+Actual-run accounting: consumer smoke = A0/B1/C2/final (3 implementer, 1 orchestrator);
+full check = A0/B1/final (2 implementer, 1 orchestrator); Python parity = B1/final
+(1 each); CI = push + PR product-candidate matrices (2 orchestrator-triggered).
+Initial red preflight and automatic ledger-only CI confirmations are separate from these
+product-candidate gate counts; PR checks retain the latter execution history.
 
 ### Rulings
 
@@ -192,22 +198,22 @@ flowchart LR
 
 ### Goal 1 — Parity with parent 0.2.0 (pin d5be68e)
 
-- [ ] `pnpm parity:python -- --parent /srv/projects/repos/blackbox` passes at the new pin: fixtures regenerate byte-for-byte in both directions, the pinned Python serializers round-trip the TS fixtures.
-- [ ] `pnpm check` fully green including all golden suites; parity inventory holds 144 parent features with histogram `Supported: 137`, and every new feature row carries resolvable TS evidence symbols.
-- [ ] The permission-grant boundary denies a non-granted tool at exposure, routing, and dispatch (rejection clause) **and** a granted tool with matching scopes/connector executes end-to-end through the agent loop with an approval recorded (paired admission clause) — both asserted by the A5/A6/A7 unit suites mirroring the parent's `test_package_permissions` cases.
-- [ ] Bundled catalogs report `catalog_version 2026-09-05`, 29 models, 36 pricing rows, matching Python-generated fixtures exactly.
+- [x] `pnpm parity:python -- --parent /srv/projects/repos/blackbox` passes at the new pin: fixtures regenerate byte-for-byte in both directions, the pinned Python serializers round-trip the TS fixtures.
+- [x] `pnpm check` fully green including all golden suites; parity inventory holds 144 parent features with histogram `Supported: 137`, and every new feature row carries resolvable TS evidence symbols.
+- [x] The permission-grant boundary denies a non-granted tool at exposure, routing, and dispatch (rejection clause) **and** a granted tool with matching scopes/connector executes end-to-end through the agent loop with an approval recorded (paired admission clause) — both asserted by the A5/A6/A7 unit suites mirroring the parent's `test_package_permissions` cases.
+- [x] Bundled catalogs report `catalog_version 2026-09-05`, 29 models, 36 pricing rows, matching Python-generated fixtures exactly.
 
 ### Goal 2 — blackbox-ts canonical
 
-- [ ] release.yml contains no parent-repo checkout, Python setup, or `parity:python` step (per F3 ruling); a release is provable from this repository alone.
-- [ ] The weekly drift workflow reports parent movement per the F3 ruling (informational or removed), and its advice text no longer instructs treating parent drift as a defect.
-- [ ] docs/PARITY_MAINTENANCE.md describes the flipped relationship (TS canonical, Python frozen at the pin as a downstream/historical reference) and the offline checks that still guard the recorded pin.
+- [x] release.yml contains no parent-repo checkout, Python setup, or `parity:python` step (per F3 ruling); a release is provable from this repository alone.
+- [x] The weekly drift workflow reports parent movement per the F3 ruling (informational or removed), and its advice text no longer instructs treating parent drift as a defect.
+- [x] docs/PARITY_MAINTENANCE.md describes the flipped relationship (TS canonical, Python frozen at the pin as a downstream/historical reference) and the offline checks that still guard the recorded pin.
 
 ### Goal 3 — honest repo, lean package
 
-- [ ] `npm pack --dry-run --json` shows the tarball per the F1 ruling, with zero generated parity artifacts (option a) and no file outside the ruled allow-list; `pnpm test:package` asserts the ruled shape and passes under npm 10, 11, and 12 report formats.
-- [ ] Every scope/shape/command claim in AGENTS.md, README.md, and docs/SPEC.md is true at HEAD (doc-truth review clean); README installation instructions install from npm.
-- [ ] A fresh consumer install from the packed tarball imports the root and one subpath and runs the model-turn example (existing package-smoke consumer flow, on the new tarball shape).
+- [x] `npm pack --dry-run --json` shows the tarball per the F1 ruling, with zero generated parity artifacts (option a) and no file outside the ruled allow-list; `pnpm test:package` asserts the ruled shape and passes under npm 10, 11, and 12 report formats.
+- [x] Every scope/shape/command claim in AGENTS.md, README.md, and docs/SPEC.md is true at HEAD (doc-truth review clean); README installation instructions install from npm.
+- [x] A fresh consumer install from the packed tarball imports the root and one subpath and runs the model-turn example (existing package-smoke consumer flow, on the new tarball shape).
 
 The plan is complete only when every goal exit test passes.
 
@@ -222,20 +228,20 @@ flowchart LR
   IN3(["Req 3 — organize repo + packaging"])
 
   subgraph PA["Phase A — behavior ports (old pin, fixture red window)"]
-    A0["A0 — package-smoke npm-12 fix"]
-    A1["A1 — accounting + cache parity"]
-    A2["A2 — gemini/openai/xai controls"]
-    A3["A3 — anthropic adaptive controls"]
-    A4["A4 — catalog + pricing refresh"]
-    A5["A5 — permission grants core"]
-    A6["A6 — permission enforcement spine"]
-    A7["A7 — permission metadata + providers"]
-    A8["A8 — codex agent provider ⚠"]
-    A9["A9 — small parity fixes"]
+    A0["A0 — package-smoke npm-12 fix ✅"]
+    A1["A1 — accounting + cache parity ✅ 🔁×1"]
+    A2["A2 — gemini/openai/xai controls ✅ 🔁×1"]
+    A3["A3 — anthropic adaptive controls ✅ 🔁×1"]
+    A4["A4 — catalog + pricing refresh ✅ 🔁×1"]
+    A5["A5 — permission grants core ✅ 🔁×2"]
+    A6["A6 — permission enforcement spine ✅ 🔁×1"]
+    A7["A7 — permission metadata + providers ✅ 🔁×1"]
+    A8["A8 — codex agent provider ⚠→F4 ✅ 🔁×1"]
+    A9["A9 — small parity fixes ✅"]
   end
 
   subgraph PB["Phase B — baseline bump"]
-    B1["B1 — pin bump + regen + counts"]
+    B1["B1 — pin bump + regen + counts ✅ 🔁×1"]
   end
 
   subgraph PC["Phase C — canonical + packaging + docs"]
@@ -280,14 +286,14 @@ flowchart LR
   C2 --> C3
   C3 --> G3{"Goal 3 exit"}
   PROBE --> G3
-  G1 --> FR{"final review — merged onto origin/main"}
+  G1 --> FR{"final review ✅ — current origin/main"}
   G2 --> FR
   G3 --> FR
-  FR -- findings --> FIX["correction commit(s)"]
+  FR -- findings --> FIX["corrections ✅ — e382c91"]
   FIX --> FR
-  FR -- clean --> GG{"global gate ×1<br>pnpm check + parity:python"}
-  GG --> CI{"CI matrix ×1 on push"}
-  CI --> PR(["terminal action per F6"])
+  FR -- clean --> GG{"global gate ✅<br>pnpm check + parity:python"}
+  GG --> CI{"CI matrices ✅<br>push + PR, 4 cells each"}
+  CI --> PR(["F6 ✅ — pushed, PR #3 open"])
 ```
 
 ### Graph Findings
@@ -319,9 +325,9 @@ Final-review correction applied 2026-09-07 (found during B1 review): src/core/to
 
 At completion (trace vs findings):
 
-- Confirmed: —
-- Did not occur: —
-- Missed: —
+- Confirmed: npm 12 report-shape risk was fixed in A0; permission-boundary paired denial/admission and fixture consistency pass in the final suite; package shape and injected integration limits remain explicit.
+- Did not occur: no main-branch drift or Python 3.11 fixture-byte drift at the final gate; no runtime dependency, provider credential use, release tag, or deployment was introduced.
+- Missed: final review found the MCP in-flight invalidation/cache race and corrected it with generation fencing and both completion-order regressions. C1 also closed inherited status-name acceptance. The original consumer budget omitted B1's implicit smoke inside `pnpm check` (4 actual vs 3 planned). CI runs on both push and pull_request (2 product matrices vs 1 planned, >1.5×); final ledger-only pushes may automatically repeat the same verified inputs and are recorded by PR checks, not a new product gate.
 
 ### Corrections in force
 
@@ -1247,21 +1253,43 @@ Record schema for a checked row (one line per rejection round):
 
 ### Final review correction ledger
 
-- Accepted 2026-09-07 (this commit): escape the two approval-key source NULs with identical runtime delimiters; fence MCP pending discovery/cache writes across list-change generations. Final review: independent ×3 (boundary/reader sweep, provider/contract seams, conformance/doc-truth), all CLEAN at the corrected candidate. Routing: direct pinned Astra low implementer / Terra high reviewers; tokens unavailable. R1: known source encoding debt plus MCP invalidation race; R2: root corrected the plan note that still described the encoding fix as pending. Focused evidence: 30 approval tests and 65 MCP/permission/workspace-agent tests pass; both response-order regressions fail before and pass after; source byte/AST equivalence, lint/format pass. Full final gates follow this commit.
+- Accepted 2026-09-07 `e382c91`: escape the two approval-key source NULs with identical runtime delimiters; fence MCP pending discovery/cache writes across list-change generations. Final review: independent ×3 (boundary/reader sweep, provider/contract seams, conformance/doc-truth), all CLEAN at the corrected candidate. Routing: direct pinned Astra low implementer / Terra high reviewers; tokens unavailable. R1: known source encoding debt plus MCP invalidation race; R2: root corrected the plan note that still described the encoding fix as pending. Focused evidence: 30 approval tests and 65 MCP/permission/workspace-agent tests pass; both response-order regressions fail before and pass after; source byte/AST equivalence, lint/format pass. Full final gates follow this commit.
 
 ## Completion
 
 - [x] Every section is committed with its ledger record.
 - [x] Branch re-baselined on `origin/main` before final review — 2026-09-07 fetch; f7286fa already an ancestor of fcc6664, merge reported already up to date.
 - [x] Whole-branch final review (seams, contract, conformance, reader sweep, claim decay, rollout window) is clean; corrections committed with this ledger. No schema/deployment rollout applies to this library change.
-- [ ] Goal 1 exit tests pass with evidence.
-- [ ] Goal 2 exit tests pass with evidence.
-- [ ] Goal 3 exit tests pass with evidence.
-- [ ] Global and budgeted gate evidence is valid and passing for the final reviewed candidate.
-- [ ] Every budgeted gate records actual runs; overruns named in Graph Findings.
-- [ ] Every deferral has a tracking issue or a machine-checkable re-entry gate.
-- [ ] Topology graph marks match the ledger (validator passes), re-rendered, compared with Graph Findings.
-- [ ] Routing table complete; tokens per section reported.
+- [x] Goal 1 exit tests pass — final local check/parity gates at e382c91, evidence below.
+- [x] Goal 2 exit tests pass — C1 independent review/YAML checks and final offline parity gate.
+- [x] Goal 3 exit tests pass — C2/C3 review and final clean installed-consumer model turn/pack check.
+- [x] Global and budgeted gate evidence is valid and passing for reviewed code e382c91; both GitHub product-candidate matrices passed all four cells.
+- [x] Every budgeted gate records product-candidate runs; nested consumer and duplicate-CI overruns are named in Graph Findings. PR checks record automatic ledger-only replays of unchanged inputs.
+- [x] Every deferral is tracked in blackbox-ts#2 or blackbox#22; independent final review verified both issues open and reachable.
+- [x] Topology graph marks match the ledger (validator passes), re-rendered and compared with Graph Findings; rendered HTML is a temporary review artifact, not package/repo debris.
+- [x] Routing table complete; prior-session token reports preserved and this harness's unavailable counts stated explicitly.
+
+### Final local gate evidence — 2026-09-07
+
+Reviewed source candidate: `e382c91`, based on fetched `origin/main` `f7286fa`.
+
+- `pnpm check` passed: formatting, offline parity, source/example typechecks, API snapshot
+  (514 root symbols / 27 export entries), ESLint, 31 passing test files / 292 passing tests,
+  one network-gated smoke file / five smoke cases skipped, build, catalog and consumer smoke.
+- Python 3.11.15: `pnpm parity:python -- --parent /srv/projects/repos/blackbox` passed at
+  `d5be68e03ca7750920569578710a2ee25d25530c`: 129 evidence files / 118 test modules,
+  byte-identical forward and reverse fixtures, Python acceptance of the TS fixture.
+- `pnpm pack --dry-run` passed. The npm consumer tarball held 209 files / 782092 unpacked
+  bytes (57.0% below the recorded 1818806-byte baseline); installed root/subpath/metadata
+  imports and a real Echo model turn passed. No provider keys were present or consumed.
+- Branch pushed and PR opened: https://github.com/tyxter-dev/blackbox-ts/pull/3.
+  Product-candidate CI runs: push 34075794100 and pull_request 34075806529; both passed
+  Ubuntu/Windows × Node 20.11.0/22. `gh pr checks 3` returned all eight checks passing.
+  The final ledger-only push can retrigger these unchanged code inputs; the PR checks are
+  the live record of those automatic confirmation runs.
+- Final code corrections were reviewed independently through all three final lenses; only
+  plan/ledger bookkeeping follows. Changes to this ignored plan file do not invalidate
+  product, fixture, API, package or test evidence.
 
 ## Deferrals
 
