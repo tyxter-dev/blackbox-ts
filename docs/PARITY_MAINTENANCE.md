@@ -1,5 +1,7 @@
 # Parity maintenance
 
+See the [documentation index](README.md) for current guides and historical records.
+
 `blackbox-ts` is the canonical implementation of the Blackbox provider/runtime contracts.
 For this repository, the Python repository `tyxter-dev/blackbox` is a historical reference
 frozen at the recorded pin: the pin records the last parent state this repository was

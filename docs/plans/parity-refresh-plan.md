@@ -10,7 +10,7 @@ harness: codex
 
 Sources: user request 2026-09-05 — (1) "do another parity plan to update our app from the python lib", (2) "make blackbox-ts canonical", (3) "organize the repo and update the packaging if possible, it's in bad shape". Parent delta: tyxter-dev/blackbox `f27decbc` → `d5be68e0` (22 commits, releases 0.1.1 + 0.2.0).
 Written: 2026-09-05
-Feature map: docs/plans/parity-refresh-feature-map.yml — flat repository (0 apps / 0 features / 0 shared kernels, 178 files)
+Feature map (historical): flat repository (0 apps / 0 features / 0 shared kernels, 178 files at planning time). The generated scouting file was retired after verification; this summary preserves its planning input.
 
 ## Premise corrections
 
@@ -1290,6 +1290,50 @@ Reviewed source candidate: `e382c91`, based on fetched `origin/main` `f7286fa`.
 - Final code corrections were reviewed independently through all three final lenses; only
   plan/ledger bookkeeping follows. Changes to this ignored plan file do not invalidate
   product, fixture, API, package or test evidence.
+
+### Documentation cleanup follow-up — 2026-09-07
+
+The user explicitly requested another cleanup of parity docs and an audit for remaining
+cleanup work. This follow-up refines C3's retirement work; the completed implementation
+and its original verification evidence above remain historical records.
+
+⇢ Archive the superseded initial plan under `docs/plans/archive/initial-parity-plan.md`,
+preserving dated facts and repairing navigation. Keep this verified refresh plan at the
+original requested path. Retire the generated feature-map working file, retaining its
+flat-repository summary above. Add a documentation index separating current guidance,
+generated evidence, and historical decisions/plans. Keep live parity artifacts at their
+existing paths because scripts and tests consume them. No public contract changes.
+
+Routing continues the direct pinned fallback: sole correction implementer requested
+`gpt-6-astra` low; independent reviewers requested `gpt-5.6-terra` high;
+attestation=none, effective runtime metadata unavailable. Main edits only this ledger and
+its generated plan artifact. Baseline `d3e4dd7`, clean working tree, PR #3 still open.
+
+Acceptance: obsolete plan absent from current docs root, archived history and current
+docs reachable through the index, edited links resolve, generated parity checks and
+formatting pass, and additional cleanup findings are fixed or explicitly reported.
+Verification budget: one affected formatting/parity check by implementer; independent
+doc-truth, scope/debris and link/provenance review; one final package smoke because the
+packed README changes. Reuse source/test/API/Python verification at `e382c91` unless its
+inputs change. No release or tag.
+
+Accepted 2026-09-07 — cleanup commit recorded in Git history with this ledger;
+rounds: 0 — review: independent ×3 (doc-truth, link/provenance, convention/scope/debris),
+all APPROVE. Additional audit found the accepted ZIP-injection sentence stale and the
+wire-state round-trip sentence liable to imply universal package interchange; dated ADR
+amendments now point to current implementation and migration limits. No other concrete
+documentation/debris cleanup was found; D1–D8 remain tracked below. Cost: runtime token
+counts unavailable. No environment retries or new lifecycle risks.
+
+Gate evidence on the cleanup worktree over `d3e4dd7`: formatting passed after the ADR
+amendments; offline parity passed (144 features / 26 supplements / 118 Python test modules),
+with unchanged generator inputs after the prose amendments. All 675 local Markdown
+file/heading targets across 14 documents resolved. Archive byte comparison confirmed only
+the two relative link targets changed. One final `pnpm test:package` passed: build, catalog
+snapshot (29 models / 36 prices), 209-file / 782253-byte clean consumer install, imports and
+Echo model turn. Original source/test/API/Python evidence remains valid. Fetched
+`origin/main` remains `f7286fa`, already an ancestor. The docs-only cleanup will update the
+existing PR #3; its checks record any automatic CI replays.
 
 ## Deferrals
 

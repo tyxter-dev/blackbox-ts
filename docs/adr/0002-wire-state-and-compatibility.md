@@ -13,3 +13,11 @@ The canonical provider reference is `provider:model`. `provider/model` remains a
 read-compatible form. Chat-shaped messages and the initial flattened request controls remain
 compatibility projections; conflicts with the nested canonical control object fail loudly.
 Unsupported multimodal projections throw typed errors instead of dropping content.
+
+## Clarification — 2026-09-07
+
+The round-trip statement above describes the wire-state design, not universal Python/TypeScript
+package interchange. Workspace-agent manifests require field translation, and the fallback
+SKILL.md parser accepts JSON-only inline flow scalars. See the current
+[package interchange](../MIGRATION.md#workspace-agent-package-interchange) and
+[skills limitations](../MIGRATION.md#injected-agent-providers-and-skills).

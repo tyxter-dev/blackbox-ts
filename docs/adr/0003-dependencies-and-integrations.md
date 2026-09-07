@@ -16,3 +16,10 @@ peer requires a separate repository-policy ADR.
 Structured output follows the same rule: core accepts a generic validator or raw JSON Schema;
 provider-native enforcement and finalizer-tool strategies are capability-gated, with explicit
 fallback selection rather than silent degradation.
+
+## Amendment — 2026-09-07
+
+The ZIP-injection statement above is superseded for workspace-agent packages:
+[`packWorkspaceAgent` and `unpackWorkspaceAgent`](../../src/workspace-agents/package.ts)
+implement ZIP packing and parsing directly, without a runtime dependency. Packing uses the
+STORE method. The original decision and historical parent pin are retained above.

@@ -108,3 +108,5 @@ TypeScript extensions reported separately. Scoped evidence is in
 update workflow is in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
 [features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),
 [migration](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).
+The [documentation index](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/README.md)
+collects current guides, generated evidence, and historical plans.
