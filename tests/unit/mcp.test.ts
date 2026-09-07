@@ -56,6 +56,51 @@ describe('MCP boundary', () => {
     expect(result).toMatchObject({ content: 'hello', is_error: false });
   });
 
+  it.each(['old-first', 'new-first'] as const)(
+    'fences notification-invalidated discovery when responses complete %s',
+    async (order) => {
+      const server = new MCPServer('changing', [{ name: 'old', handler: () => 'old' }]);
+      const transport = inProcessMCPTransport(server);
+      const responses: (() => void)[] = [];
+      const client = new MCPClient(
+        { name: 'changing', transport: 'stdio', trusted: true },
+        {
+          onNotification: transport.onNotification,
+          request: async (method, params, context) => {
+            const response = await transport.request(method, params, context);
+            if (method !== 'tools/list') return response;
+            return new Promise((resolve) => responses.push(() => resolve(response)));
+          },
+        },
+      );
+      await client.initialize();
+      const old = client.listTools();
+      await vi.waitFor(() => expect(responses).toHaveLength(1));
+      server.registerTool({ name: 'new', handler: () => 'new' });
+      const fresh = client.listTools();
+      await vi.waitFor(() => expect(responses).toHaveLength(2));
+
+      if (order === 'old-first') {
+        responses[0]!();
+        expect((await old).map((tool) => tool.name)).toEqual(['old']);
+        // Completing the invalidated request must not clear the newer pending slot.
+        const joined = client.listTools({ refresh: true });
+        responses[1]!();
+        expect(await joined).toBe(await fresh);
+      } else {
+        responses[1]!();
+        await fresh;
+        responses[0]!();
+        await old;
+      }
+      const current = await fresh;
+      expect(current.map((tool) => tool.name)).toEqual(['old', 'new']);
+      expect(await client.listTools()).toBe(current);
+      expect(responses).toHaveLength(2);
+      await client.close();
+    },
+  );
+
   it('evaluates trust before discovery and refreshes authentication only once', async () => {
     let dispatches = 0;
     const blocked = new MCPClient(

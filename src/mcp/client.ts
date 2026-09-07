@@ -56,7 +56,8 @@ export interface MCPClientOptions {
 export class MCPClient {
   private initializedVersion?: MCPProtocolVersion;
   private toolsCache?: { readonly expires: number; readonly tools: readonly MCPTool[] };
-  /** The one `tools/list` in flight, shared by every caller that misses the cache. */
+  private toolsGeneration = 0;
+  /** The current generation's `tools/list`, shared by callers that miss the cache. */
   private pendingTools?: Promise<readonly MCPTool[]>;
   private readonly trust: MCPTrustPolicy;
   private readonly now: () => number;
@@ -126,9 +127,10 @@ export class MCPClient {
   /**
    * List the visible tools, from the cache while it is fresh.
    *
-   * Every caller that misses the cache joins the one `tools/list` already in
-   * flight instead of starting its own, so concurrent callers resolve the same
-   * descriptor objects. A refetch that discovers the descriptors unchanged
+   * Callers that miss the cache share the current generation's `tools/list`,
+   * so concurrent callers resolve the same descriptor objects. Invalidation
+   * starts a new generation; older callers may finish with their original
+   * response, but that response cannot repopulate the current cache. A refetch that discovers the descriptors unchanged
    * keeps the objects the cache already held: descriptor identity therefore
    * changes only when the list really changed or an invalidation dropped it,
    * which is what the dispatch pin in {@link callTool} compares.
@@ -142,7 +144,7 @@ export class MCPClient {
       return this.toolsCache.tools;
     }
     if (this.pendingTools === undefined) {
-      const pending = this.fetchTools(options.signal).finally(() => {
+      const pending = this.fetchTools(this.toolsGeneration, options.signal).finally(() => {
         if (this.pendingTools === pending) this.pendingTools = undefined;
       });
       this.pendingTools = pending;
@@ -150,7 +152,7 @@ export class MCPClient {
     return this.pendingTools;
   }
 
-  private async fetchTools(signal?: AbortSignal): Promise<readonly MCPTool[]> {
+  private async fetchTools(generation: number, signal?: AbortSignal): Promise<readonly MCPTool[]> {
     await this.emit(AgentEventTypes.MCP_LIST_TOOLS_STARTED, {});
     const response = asRecord(await this.request('tools/list', {}, signal));
     const discovered = Array.isArray(response.tools) ? response.tools.map(readTool) : [];
@@ -163,13 +165,15 @@ export class MCPClient {
     // An expired cache that was never invalidated still holds the descriptors
     // callers resolved from; keep those objects when the server reports the
     // same list, so a TTL refresh alone never manufactures a "changed" tool.
-    const previous = this.toolsCache?.tools;
+    const previous = generation === this.toolsGeneration ? this.toolsCache?.tools : undefined;
     const tools =
       previous !== undefined && stableJson(previous) === stableJson(fetched) ? previous : fetched;
-    this.toolsCache = {
-      expires: this.now() + (this.options.cache_ttl_ms ?? 30_000),
-      tools,
-    };
+    if (generation === this.toolsGeneration) {
+      this.toolsCache = {
+        expires: this.now() + (this.options.cache_ttl_ms ?? 30_000),
+        tools,
+      };
+    }
     await this.emit(AgentEventTypes.MCP_LIST_TOOLS_COMPLETED, {
       discovered: discovered.length,
       visible: tools.length,
@@ -178,7 +182,9 @@ export class MCPClient {
   }
 
   invalidateTools(reason = 'listChanged'): void {
+    this.toolsGeneration += 1;
     this.toolsCache = undefined;
+    this.pendingTools = undefined;
     void this.emit(AgentEventTypes.MCP_TOOLS_CACHE_INVALIDATED, { reason });
   }
 

@@ -162,6 +162,7 @@ Execution realm: local Linux host, direct pnpm/node/python
 | R19 | B1      | ⇢ Unenumerated old-pin sites found by B1's defining search: docs/adr/0001–0003 "Parent baseline" headers, docs/PARITY_PLAN.md:6 and its 143/136 counts, and CHANGELOG.md's historical 0.1.0-alpha.0 entry keep `f27decb` — they are dated decision/analysis/release records that were true when written (the alpha.0 release WAS ported against f27decb); rewriting them would make history false. The offline parity check reads none of them. C3's staleness pass MUST add a one-line "superseded by the 0.2 refresh (pin d5be68e0, 144 features)" banner at the top of docs/PARITY_PLAN.md (the B1 doc-truth lens found present-tense sentences at docs/PARITY_PLAN.md:8, :48, :206) and a "(historical)" qualifier on the three undated ADR "Parent baseline" headers; the values themselves stay | Historical records are evidence, not claims about the present |
 | R20 | C1 | ⇢ Replace prototype-inclusive `in STATUS_RANK` with own-property membership and a focused inherited-name rejection test. | Enforces R3's already documented rejection of unknown statuses; no new contract or error code. |
 | R21 | C2 | ⇢ Add real Echo model-turn execution to the package consumer smoke; update CHANGELOG's migration link as well as README links when docs leave the tarball. | The existing smoke only imported modules, contrary to Goal 3's premise; the change supplies its required real-client proof and prevents newly broken package documentation links. |
+| R22 | final | ⇢ Fence MCP in-flight discovery/cache results across list-change invalidation and prove both response orderings. | Final review reproduced stale descriptors repopulating the cache; A7/A9 freshness and permission-pin promises require the invalidation to remain effective. This repairs an existing enforcement gap without a new public contract/error. |
 
 ### Base drift policy
 
@@ -314,7 +315,7 @@ Reader sweep (new values written into shared registries):
 - **Feature row 144 + histogram value (B1)** — readers: scripts/check-parity-inventory.mjs:26-47 (counts updated same section), scripts/generate-parity-matrix.mjs, scripts/generate-test-crosswalk.mjs feature_coverage guard, tests/unit/parity-maintenance.test.ts:64-84 (updated same section).
 - **New crosswalk mapping rules for codex/permission test modules (B1)** — readers: crosswalk `--check` in check:parity; wrong-projection risk (default-branch fallthrough) eliminated by explicit rules with named TS targets.
 
-Queued for the final-review correction round (found during B1 review, outside any open section): src/core/tool-permissions.ts:335 builds the approval key with two literal U+0000 separator characters inside a template literal (A5), so `file` classifies the module as data and grep skips it as binary; replace with `\u0000` escapes (identical string value; the approval-key tests pin the behaviour).
+Final-review correction applied 2026-09-07 (found during B1 review): src/core/tool-permissions.ts:335 now spells both separators as `\u0000` source escapes. The module has no literal NUL bytes; its approval keys retain the same two runtime NUL delimiters, verified by the TypeScript AST and 30 passing approval tests.
 
 At completion (trace vs findings):
 
@@ -1242,13 +1243,17 @@ Record schema for a checked row (one line per rejection round):
 - [x] C1 canonical gate flip — Goal 2 clauses 1–3 pass — accepted 2026-09-07 `59a6a37` — rounds: 1 — review: independent ×3 (contract, convention/scope, doc-truth) — routing: direct pinned Astra low implementer / Terra high reviewers; attestation=none, effective runtime unknown — cost: unavailable (harness exposes no token usage) — env-retries: 0 — gates: check:parity, 20 parity-maintenance tests, workflow YAML parse, focused lint/format all pass; surviving C1 diff resumed and completed
   - R1 doc-truth: future-sync procedure omitted inventory.catalog_unique_feature_count; update it alongside the feature set before generators that enforce agreement.
 - [x] C2 lean packaging — Goal 3 clauses 1/3 pass — accepted 2026-09-07 `ca765f1` — rounds: 0 — review: independent ×4 (contract, failure-mode, convention/scope, doc-truth) — routing: direct pinned Astra low implementer / Terra high reviewers; attestation=none, effective runtime unknown — cost: unavailable — env-retries: 0 — gates: test:package (209 files, 779343 B, 57.2% below baseline; clean install and Echo turn), npm dry-run, check:api (514 symbols, 27 subpaths), examples typecheck, focused format all pass
-- [x] C3 docs truth + version — Goal 3 clause 2 passes — accepted 2026-09-07 (this commit) — rounds: 0 — review: independent ×3 lenses (contract, doc-truth, convention/scope; scope sequential after thread cap rejected simultaneous dispatch) — routing: direct pinned Astra low implementer / Terra high reviewers / Luna max mapper; attestation=none, effective runtime unknown — cost: unavailable — env-retries: 0 — gates: format:check; version, four model IDs, 15 local links and historical-pin/count probe all pass; no source/generated artifact changes
+- [x] C3 docs truth + version — Goal 3 clause 2 passes — accepted 2026-09-07 `fcc6664` — rounds: 0 — review: independent ×3 lenses (contract, doc-truth, convention/scope; scope sequential after thread cap rejected simultaneous dispatch) — routing: direct pinned Astra low implementer / Terra high reviewers / Luna max mapper; attestation=none, effective runtime unknown — cost: unavailable — env-retries: 0 — gates: format:check; version, four model IDs, 15 local links and historical-pin/count probe all pass; no source/generated artifact changes
+
+### Final review correction ledger
+
+- Accepted 2026-09-07 (this commit): escape the two approval-key source NULs with identical runtime delimiters; fence MCP pending discovery/cache writes across list-change generations. Final review: independent ×3 (boundary/reader sweep, provider/contract seams, conformance/doc-truth), all CLEAN at the corrected candidate. Routing: direct pinned Astra low implementer / Terra high reviewers; tokens unavailable. R1: known source encoding debt plus MCP invalidation race; R2: root corrected the plan note that still described the encoding fix as pending. Focused evidence: 30 approval tests and 65 MCP/permission/workspace-agent tests pass; both response-order regressions fail before and pass after; source byte/AST equivalence, lint/format pass. Full final gates follow this commit.
 
 ## Completion
 
-- [ ] Every section is committed with its ledger record.
-- [ ] Branch re-baselined on `origin/main` before final review.
-- [ ] Whole-branch final review (seams, contract, conformance, reader sweep, claim decay, rollout window) is clean; corrections committed.
+- [x] Every section is committed with its ledger record.
+- [x] Branch re-baselined on `origin/main` before final review — 2026-09-07 fetch; f7286fa already an ancestor of fcc6664, merge reported already up to date.
+- [x] Whole-branch final review (seams, contract, conformance, reader sweep, claim decay, rollout window) is clean; corrections committed with this ledger. No schema/deployment rollout applies to this library change.
 - [ ] Goal 1 exit tests pass with evidence.
 - [ ] Goal 2 exit tests pass with evidence.
 - [ ] Goal 3 exit tests pass with evidence.

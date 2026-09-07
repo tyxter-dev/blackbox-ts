@@ -332,7 +332,7 @@ function identityToken(value: object): string {
 export function approvalKey(definition: ToolDefinition): string {
   const request = toolRequest(definition);
   const identity = identityToken(definition.handler ?? definition);
-  return `${definition.name} ${identity} ${stableRepr(request.metadata)}`;
+  return `${definition.name}\u0000${identity}\u0000${stableRepr(request.metadata)}`;
 }
 
 const NO_APPROVALS: ReadonlySet<string> = Object.freeze(new Set<string>());
