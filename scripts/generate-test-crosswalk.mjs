@@ -70,6 +70,7 @@ const DIVERGENCE_NOTES = {
   ],
   'tests/golden/codex/test_app_server_event_mapping.py': [
     "The buffered `blackbox/session/started` entry is unreachable by any cursor (parent quirk kept).",
+    "Private `blackbox/*` notifications are non-authoritative logs in TypeScript, unlike the parent's string-only mapping. Only adapter-synthesized objects receive private lifecycle/approval authority; raw wire fields cannot assert provenance. Logs retain raw payloads without creating durable approvals or replacing provider state; native approval requests and cancellation/failure paths remain supported.",
   ],
   'tests/integration/codex/test_codex_subscription.py': [
     "Honest N/A: TS has no Codex child-process/SDK runtime (ruling F4); the subscription-only guard is exercised against the injected client, not a live app-server.",

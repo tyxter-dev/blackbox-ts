@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Codex private `blackbox/*` wire notifications are diagnostic logs rather than authoritative
+  session or approval events. Adapter-synthesized lifecycle events and native approvals retain
+  authority; raw notification payloads are preserved.
+
 - Local session cancellation remains terminal when an in-flight run emits trailing failure,
   completion or approval diagnostics. Session streams preserve those events for durable replay
   without raising a terminal-transition error.

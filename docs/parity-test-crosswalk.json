@@ -97,7 +97,8 @@
         "tests/unit/codex-agent-provider.test.ts"
       ],
       "notes": [
-        "The buffered `blackbox/session/started` entry is unreachable by any cursor (parent quirk kept)."
+        "The buffered `blackbox/session/started` entry is unreachable by any cursor (parent quirk kept).",
+        "Private `blackbox/*` notifications are non-authoritative logs in TypeScript, unlike the parent's string-only mapping. Only adapter-synthesized objects receive private lifecycle/approval authority; raw wire fields cannot assert provenance. Logs retain raw payloads without creating durable approvals or replacing provider state; native approval requests and cancellation/failure paths remain supported."
       ]
     },
     {

@@ -80,7 +80,7 @@ Execution realm: local repository and offline test doubles; GitHub only for issu
 
 | Gate | Consumes / invalidated by | Planned runs (impl / orch) | Preflight | Actual runs | Why this count is safe |
 | --- | --- | --- | --- | --- | --- |
-| Focused regression suites | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | 0 | distinct regression paths, share evidence |
+| Focused regression suites | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | A1: 3 failing reproductions and 3 passing iterations; final 43 tests. A2: 1 failing reproduction + 29 passing Codex tests + 43 shared-reader tests | distinct regression paths, share evidence |
 | Full pnpm check | final source/tests/scripts/artifacts/docs | 0 / 1 | proven at released baseline | 0 | after final review; includes clean package consumer |
 | pnpm pack --dry-run | final package/source/docs | 0 / 1 | proven at released baseline | 0 | final publishable tarball without publishing |
 | Python compatibility | fixtures/scripts and frozen checkout | 0 / 1 | proven in previous parity refresh with Python 3.11 | 0 | verify new compatibility mappings once at final candidate |
@@ -126,7 +126,7 @@ One implementer at a time; no unrelated changes. Use focused before/after eviden
 ### Goal 1 — Runtime and pricing compatibility
 
 - [x] Cancelling a local session through run/stream returns and durably replays cancelled without terminal-transition errors; normal completion and real failure remain distinct.
-- [ ] Forged blackbox/* notifications cannot create approval or terminal authority; real approval/cancel/failure paths still work and raw wire evidence survives.
+- [x] Forged blackbox/* notifications cannot create approval or terminal authority; real approval/cancel/failure paths still work and raw wire evidence survives.
 - [ ] Combined cache usage, aliases and independent pricing/provenance fields behave as specified with existing callers preserved.
 
 ### Goal 2 — Package interchange and canonical evidence
@@ -142,7 +142,7 @@ One implementer at a time; no unrelated changes. Use focused before/after eviden
 ```mermaid
 flowchart LR
   I7(["Issue 2 D7"]) -.-> A1["A1 🔁×1 local cancellation"]
-  I8(["Issue 2 D8"]) -.-> A2["A2 Codex event authority"]
+  I8(["Issue 2 D8"]) -.-> A2["A2 ✅ Codex event authority"]
   IP(["Issue 2 D3-D5"]) -.-> B1["B1 pricing compatibility"]
   IW(["Issue 2 D6"]) -.-> C1["C1 package interchange"]
   IS(["Issue 2 D1"]) -.-> D1["D1 TypeScript feature score"]
@@ -164,6 +164,7 @@ flowchart LR
 
 ### Graph Findings
 
+- Confirmed during A1: terminal-state readers include a stopped consumer and a recreated provider. Initial implementation missed their interaction; one reliability correction added a live-record check and focused before/after regressions. Extra focused runs came from this concrete reader-sweep finding, not duplicated broad gates.
 - Structural/provenance classes: every D item reaches a section and goal. Only D2 joins three hard dependencies; those are independently tested before fixture assembly. No cycle or false long chain.
 - Reader sweep: A1 touches terminal-state projection read by persistence/run/replay; A2 touches event authority read by facade approvals/terminal state; B1 touches pricing read by runtime estimates, model catalogs, golden normalizers and catalog snapshots; C1 touches grants and routing read by validation, lowering, serialization and package execution; D1/D2 touch inventory/fixtures read by every parity generator, test and current doc. Owning section must enumerate and verify exact readers before acceptance.
 - Constraint/negative-space classes: A1 does not relax transitionAgentSession; A2 native approvals and cancellation must pass; C1 ambiguous grants fail closed and legitimate explicit grants are admitted. No auth/tenant/database migration, quota or production rollout.
@@ -181,6 +182,7 @@ flowchart LR
 - 2026-09-08 — mapping — package and parity reports validated with 40 and 63 anchors. Raw report paths /tmp/blackbox-issue2-packages-map.md and /tmp/blackbox-issue2-parity-map.md are temporary working evidence. Pricing mapping paused to prioritize A1; orchestrator independently verified the parent estimator and catalog alias writers. Do not accept the parity mapper's automatic omission of the unsupported feature from the score.
 - 2026-09-08 — B1 mapping completed — /tmp/blackbox-issue2-pricing-map.md validated with 50 anchors. Preserve exact-first single-hop alias lookup, 36 canonical pricing rows, independent cached-input and read fields, supplemental reasoning cost, and source URLs already present on all pinned parent rows. The xAI alias cannot create a missing canonical price. Public/manual usage may supply a combined counter independently; provider extraction is not the only writer.
 - 2026-09-08 — A1 correction — cancellation can precede invocation shutdown. A later consumer must drain unseen events only if the actual local provider still owns that live session. Internal WeakMap lookup avoids reconnecting remote or recreated providers; persisted terminal stream/replay remains available without a provider. Fresh-runtime run artifact lookup is a pre-existing limitation outside A1; no new public capability or durable schema was added.
+- 2026-09-08 — A2 reader correction — changing forged private methods to log events alone is insufficient: the facade previously saved approval-shaped data from every event and accepted provider state from logs. Gate approval projection by APPROVAL_REQUESTED and exclude CLOUD_AGENT_LOG state projection, preserving raw diagnostics and genuine normalized authority. This enforces the existing log authority boundary without a new public event type.
 
 ### Hard dependencies
 
@@ -486,10 +488,11 @@ Read the complete diff and claim anchors; verify actual tests, no unauthorized f
 
 ## 5. Progress ledger
 
-- [x] A1 Local cancellation terminal state — Goal 1 cancellation exit passed — accepted 2026-09-08 (commit containing this ledger; SHA recorded next section) — rounds: 1 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers — env-retries: 0
+- [x] A1 Local cancellation terminal state — Goal 1 cancellation exit passed — accepted 2026-09-08 42accc6 — rounds: 1 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers — env-retries: 0
   - R1 reliability: cancelled durable snapshots short-circuit later stream consumption after an early consumer stop; preserve access to unseen trailing diagnostics without weakening terminal state or reopening unrelated provider sessions. Validated review /tmp/blackbox-issue2-A1-reliability.md; doc-truth and scope approved the initial diff.
   - Evidence: 43 focused session/permission tests, typecheck, focused lint and API snapshot passed. Original 4 transition failures, resumed-consumer failure and 2 recreated-runtime failures observed before their corresponding fixes. Three independent lenses approved final six-file diff; main read full diff, verified sibling sweep and reports, all seven acceptance checks passed. Full gates remain scheduled.
-- [ ] A2 Codex event authority — matching Goal exit tests
+- [x] A2 Codex event authority — Goal 1 authority exit passed — accepted 2026-09-08 (commit containing this ledger; SHA recorded next section) — rounds: 0 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers across 5 lenses — env-retries: 0
+  - Evidence: four forged-method failures observed before correction; 29 Codex/golden tests and 43 affected shared-reader tests passed, plus typecheck, parity, lint and formatting. Security, contract, reliability, scope and doc-truth approved; main read complete eight-file diff, verified authority reader/writer sweep and all seven acceptance checks. Public transport and durable schemas unchanged. Full gates remain scheduled.
 - [ ] B1 Lossless pricing compatibility — matching Goal exit tests
 - [ ] C1 Explicit portable-package interchange — matching Goal exit tests
 - [ ] D1 TypeScript-owned feature score — matching Goal exit tests

@@ -92,8 +92,14 @@ export class AgentSessionsRuntime {
       snapshot = (await this.store.load(session.id)) ?? snapshot;
       if (snapshot.events.some((storedEvent) => storedEvent.id === event.id)) continue;
       const stamped = { ...event, session_id: event.session_id ?? session.id };
-      const approvalRequest = readApprovalRequest(stamped.data.request);
-      const providerState = readProviderState(stamped.data.provider_state);
+      const approvalRequest =
+        stamped.type === AgentEventTypes.APPROVAL_REQUESTED
+          ? readApprovalRequest(stamped.data.request)
+          : undefined;
+      const providerState =
+        stamped.type === AgentEventTypes.CLOUD_AGENT_LOG
+          ? undefined
+          : readProviderState(stamped.data.provider_state);
       snapshot = {
         ...snapshot,
         session: transitionFromEvent(snapshot.session, stamped),
