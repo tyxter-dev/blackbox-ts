@@ -34,8 +34,36 @@ Documentation links in README/CHANGELOG point to GitHub.
 Accounting now treats Anthropic input/total tokens as inclusive of cache read/creation;
 cache hit ratios count reads only. Current OpenAI/xAI/Anthropic model controls and catalogs
 were refreshed. `extra.model` remains rejected rather than overriding the selected model.
-Pricing aliases are still not resolved by `PricingCatalog.get`; use a price row's exact model
-ID. The bundled catalog contains 29 models and 36 pricing rows.
+The bundled catalog contains 29 models and 36 pricing rows.
+
+## Pricing compatibility
+
+`PricingCatalog.get` and `estimate` resolve registered model aliases after checking exact
+price rows. Use `registerModelAlias(provider, alias, model)` for custom catalogs; bundled
+pricing registers the bundled model aliases without adding rows. Resolution is one hop:
+an alias pointing to an unpriced model still has no price and `estimate` throws
+`pricing_not_found`. An explicit price row for an alias takes precedence.
+
+For usage with combined and split cache counters, ordinary input is
+`max(input_tokens - cached_input_tokens, 0)`. Any positive remainder of the combined cache
+counter after subtracting reads and creation is charged as additional cache reads. Supplying
+contradictory counters does not normalize them: explicit reads and creation retain their
+quantities, while the combined counter controls the ordinary-input subtraction.
+
+Rates now support independent optional `cached_input_per_million` and
+`reasoning_output_per_million`. Read pricing falls back from `cache_read_per_million` to
+`cached_input_per_million` to ordinary input; creation falls back from
+`cache_creation_per_million` to cached input to ordinary input. An explicit reasoning rate
+adds a supplemental `reasoning_output` component: all output tokens still incur their
+ordinary output charge. Without that optional rate, reasoning adds no separate charge.
+`PricingEntry.source_url` is preserved on estimates when supplied.
+
+Bundled rows and normalized Python fixtures retain the earlier effective read and creation
+fields for compatibility while also carrying the distinct cached-input rate and source URL.
+Where Python omits a creation rate, those bundled rows still explicitly use ordinary input;
+this preserves the historical TypeScript default rather than Python's cached-input fallback.
+Optional-field absence is therefore not a round-trip guarantee. Rates and source URLs remain
+snapshots of the recorded baseline, not live pricing lookups.
 
 ## Workspace-agent package interchange
 

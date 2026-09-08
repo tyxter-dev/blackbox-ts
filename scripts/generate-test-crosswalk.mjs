@@ -39,7 +39,7 @@ const DIVERGENCE_NOTES = {
     "The TS fable replay guard binds system + tools + the recorded assistant prefix only; the parent additionally binds the full prior conversation for fable-5-1.",
   ],
   'tests/unit/core/test_pricing_catalog.py': [
-    "TS `PricingEntry` has no `source_url` or `reasoning_output_per_million` and collapses `cached_input`/`cache_read_input` into one read rate; `PricingCatalog.get` performs no alias resolution (parent `_register_provider_model_aliases`), so an alias such as `openai:gpt-5.6` prices as `pricing_not_found`.",
+    "TS rates remain nested under `PricingEntry.rates`, with independent cached-input/read/creation/reasoning fields and source URLs. Pricing aliases use exact-first single-hop resolution without adding rows. Bundled/normalized rows preserve the effective read rate and explicitly default absent parent creation rates to ordinary input for TS compatibility, rather than Python's cached-input fallback; optional-field absence is not preserved. Custom entries use read→cached→input and creation→cached→input fallbacks, with reasoning priced as a supplement to all ordinary output.",
   ],
   'tests/runtime/test_package_permissions.py': [
     "TS has no client-executed hosted tools, so the parent hosted_runtime execution-time package/user gate has no counterpart; only the model-configuration gate applies.",

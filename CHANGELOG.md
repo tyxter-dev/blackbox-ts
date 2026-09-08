@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Pricing now accounts for legacy combined cache counters and resolves registered model aliases
+  with exact-row precedence. Independent cached-input and supplemental reasoning-output rates,
+  plus source URLs, are preserved; bundled pricing retains 36 rows and its existing effective
+  cache-creation defaults.
+
 - Codex private `blackbox/*` wire notifications are diagnostic logs rather than authoritative
   session or approval events. Adapter-synthesized lifecycle events and native approvals retain
   authority; raw notification payloads are preserved.

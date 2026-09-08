@@ -787,7 +787,7 @@
         "tests/unit/planning-accounting-config.test.ts"
       ],
       "notes": [
-        "TS `PricingEntry` has no `source_url` or `reasoning_output_per_million` and collapses `cached_input`/`cache_read_input` into one read rate; `PricingCatalog.get` performs no alias resolution (parent `_register_provider_model_aliases`), so an alias such as `openai:gpt-5.6` prices as `pricing_not_found`."
+        "TS rates remain nested under `PricingEntry.rates`, with independent cached-input/read/creation/reasoning fields and source URLs. Pricing aliases use exact-first single-hop resolution without adding rows. Bundled/normalized rows preserve the effective read rate and explicitly default absent parent creation rates to ordinary input for TS compatibility, rather than Python's cached-input fallback; optional-field absence is not preserved. Custom entries use read→cached→input and creation→cached→input fallbacks, with reasoning priced as a supplement to all ordinary output."
       ]
     },
     {

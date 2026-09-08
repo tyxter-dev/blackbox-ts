@@ -22,7 +22,7 @@ describe('Python catalog differential fixtures', () => {
     expect(fixture.models).toHaveLength(29);
   });
 
-  it('keeps every bundled price and provenance field identical to the pinned parent', () => {
+  it('matches bundled pricing to normalized pinned-parent fixtures', () => {
     expect(BUNDLED_PRICING.list().map(jsonValue)).toEqual(fixture.pricing);
     expect(fixture.pricing).toHaveLength(36);
   });
