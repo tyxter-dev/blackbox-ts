@@ -10,10 +10,14 @@ import { formatGenerated } from './lib/format-generated.mjs';
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const parentDir = resolve(requiredArgument('--parent'));
-const inventory = JSON.parse(await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'));
+const inventory = JSON.parse(
+  await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'),
+);
 const head = await git('rev-parse', 'HEAD');
-if (head !== inventory.parent.commit) {
-  throw new Error(`Parent checkout is ${head}; expected pinned commit ${inventory.parent.commit}.`);
+if (head !== inventory.python_reference.commit) {
+  throw new Error(
+    `Parent checkout is ${head}; expected pinned commit ${inventory.python_reference.commit}.`,
+  );
 }
 
 const check = process.argv.includes('--check');
@@ -22,28 +26,38 @@ const outputDir = check
   : resolve(repoRoot, 'tests/fixtures/python');
 try {
   const python = process.env.PYTHON ?? (process.platform === 'win32' ? 'python' : 'python3');
-  await execFileAsync(
-    python,
-    [
-      resolve(repoRoot, 'scripts/python/generate_contract_fixtures.py'),
-      '--output',
-      outputDir,
-      '--parent-commit',
-      head,
-    ],
-    {
-      cwd: parentDir,
-      env: {
-        ...process.env,
-        PYTHONPATH: [resolve(parentDir, 'src'), parentDir, process.env.PYTHONPATH]
-          .filter(Boolean)
-          .join(delimiter),
+  for (const generator of [
+    'generate_contract_fixtures.py',
+    'generate_workspace_agent_fixture.py',
+  ]) {
+    await execFileAsync(
+      python,
+      [
+        resolve(repoRoot, 'scripts/python', generator),
+        '--output',
+        outputDir,
+        '--parent-commit',
+        head,
+      ],
+      {
+        cwd: parentDir,
+        env: {
+          ...process.env,
+          PYTHONPATH: [resolve(parentDir, 'src'), parentDir, process.env.PYTHONPATH]
+            .filter(Boolean)
+            .join(delimiter),
+        },
+        windowsHide: true,
+        maxBuffer: 20 * 1024 * 1024,
       },
-      windowsHide: true,
-      maxBuffer: 20 * 1024 * 1024,
-    },
-  );
-  for (const name of ['core-contracts.json', 'catalogs.json', 'provider-differential.json']) {
+    );
+  }
+  for (const name of [
+    'core-contracts.json',
+    'catalogs.json',
+    'provider-differential.json',
+    'workspace-agent-package.json',
+  ]) {
     const generatedPath = resolve(outputDir, name);
     const content = await readFile(generatedPath, 'utf8');
     const formatted = await formatGenerated(
@@ -53,13 +67,21 @@ try {
     await writeFile(generatedPath, formatted, 'utf8');
   }
   if (check) {
-    for (const name of ['core-contracts.json', 'catalogs.json', 'provider-differential.json']) {
+    for (const name of [
+      'core-contracts.json',
+      'catalogs.json',
+      'provider-differential.json',
+      'workspace-agent-package.json',
+    ]) {
       const expected = await readFile(resolve(outputDir, name), 'utf8');
-      const current = await readFile(resolve(repoRoot, 'tests/fixtures/python', name), 'utf8').catch(
-        () => '',
-      );
+      const current = await readFile(
+        resolve(repoRoot, 'tests/fixtures/python', name),
+        'utf8',
+      ).catch(() => '');
       if (current !== expected) {
-        throw new Error(`tests/fixtures/python/${name} is stale. Regenerate from the pinned parent.`);
+        throw new Error(
+          `tests/fixtures/python/${name} is stale. Regenerate from the pinned parent.`,
+        );
       }
     }
     console.log(`Python parity fixtures OK at ${head.slice(0, 12)}.`);

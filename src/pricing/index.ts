@@ -1,11 +1,14 @@
 import { AgentRuntimeError } from '../core/errors.js';
 import type { ModelUsage } from '../core/usage.js';
+import { bundledProviderModels } from '../providers/catalog.js';
 
 export interface PricingRates {
   readonly input_per_million: number;
   readonly output_per_million: number;
+  readonly cached_input_per_million?: number;
   readonly cache_read_per_million?: number;
   readonly cache_creation_per_million?: number;
+  readonly reasoning_output_per_million?: number;
 }
 
 export interface PricingEntry {
@@ -14,6 +17,7 @@ export interface PricingEntry {
   readonly currency: 'USD' | (string & {});
   readonly rates: PricingRates;
   readonly source: string;
+  readonly source_url?: string;
   readonly version: string;
   readonly effective_at: string;
   readonly metadata: Readonly<Record<string, unknown>>;
@@ -25,6 +29,7 @@ export interface MonetaryEstimate {
   readonly user_billable: number;
   readonly currency: string;
   readonly source: string;
+  readonly source_url?: string;
   readonly version: string;
   readonly components: Readonly<Record<string, number>>;
   readonly metadata: Readonly<Record<string, unknown>>;
@@ -38,6 +43,7 @@ export interface BillingPolicy {
 
 export class PricingCatalog {
   private readonly entries = new Map<string, PricingEntry>();
+  private readonly aliases = new Map<string, string>();
   constructor(entries: readonly PricingEntry[] = []) {
     for (const entry of entries) this.set(entry);
   }
@@ -49,8 +55,12 @@ export class PricingCatalog {
     }
     this.entries.set(key(entry.provider, entry.model), entry);
   }
+  registerModelAlias(provider: string, alias: string, model: string): void {
+    this.aliases.set(key(provider, alias), key(provider, model));
+  }
   get(provider: string, model: string): PricingEntry | undefined {
-    return this.entries.get(key(provider, model));
+    const exactKey = key(provider, model);
+    return this.entries.get(exactKey) ?? this.entries.get(this.aliases.get(exactKey) ?? exactKey);
   }
   list(provider?: string): readonly PricingEntry[] {
     return [...this.entries.values()].filter(
@@ -71,18 +81,33 @@ export class PricingCatalog {
     }
     const cacheRead = usage.cache_read_input_tokens;
     const cacheCreation = usage.cache_creation_input_tokens;
-    const uncachedInput = Math.max(0, usage.input_tokens - cacheRead - cacheCreation);
+    // The combined counter can include legacy reads absent from the split counters.
+    const legacyCached = Math.max(0, usage.cached_input_tokens - cacheRead - cacheCreation);
+    const uncachedInput = Math.max(0, usage.input_tokens - usage.cached_input_tokens);
     const components = {
       input: price(uncachedInput, entry.rates.input_per_million),
       output: price(usage.output_tokens, entry.rates.output_per_million),
       cache_read: price(
-        cacheRead,
-        entry.rates.cache_read_per_million ?? entry.rates.input_per_million,
+        cacheRead + legacyCached,
+        entry.rates.cache_read_per_million ??
+          entry.rates.cached_input_per_million ??
+          entry.rates.input_per_million,
       ),
       cache_creation: price(
         cacheCreation,
-        entry.rates.cache_creation_per_million ?? entry.rates.input_per_million,
+        entry.rates.cache_creation_per_million ??
+          entry.rates.cached_input_per_million ??
+          entry.rates.input_per_million,
       ),
+      // Explicit reasoning pricing supplements the ordinary output charge.
+      ...(entry.rates.reasoning_output_per_million === undefined
+        ? {}
+        : {
+            reasoning_output: price(
+              usage.reasoning_tokens,
+              entry.rates.reasoning_output_per_million,
+            ),
+          }),
     };
     const providerCost = Object.values(components).reduce((total, value) => total + value, 0);
     const markedUp = providerCost * (1 + (policy.markup_bps ?? 0) / 10_000);
@@ -95,6 +120,7 @@ export class PricingCatalog {
       user_billable: userBillable,
       currency: entry.currency,
       source: entry.source,
+      ...(entry.source_url === undefined ? {} : { source_url: entry.source_url }),
       version: entry.version,
       components,
       metadata: { pricing_effective_at: entry.effective_at, policy },
@@ -117,6 +143,11 @@ export const BUNDLED_PRICING = new PricingCatalog([
   ...googlePricing(),
   ...xaiPricing(),
 ]);
+for (const model of bundledProviderModels()) {
+  for (const alias of model.aliases ?? []) {
+    BUNDLED_PRICING.registerModelAlias(model.provider, alias, model.id);
+  }
+}
 
 function openaiPricing(): readonly PricingEntry[] {
   const current: readonly (readonly [string, number, number])[] = [
@@ -133,18 +164,38 @@ function openaiPricing(): readonly PricingEntry[] {
         input,
         output,
         cacheRead: input * 0.1,
+        cachedInput: input * 0.1,
+        sourceUrl: `https://developers.openai.com/api/docs/models/${model}`,
         cacheCreation: input * 1.25,
         retrievedAt: BUNDLED_PRICING_RETRIEVED_AT,
       }),
     ),
-    pricing({ provider: 'openai', model: 'gpt-5.5', input: 5, output: 30, cacheRead: 0.5 }),
-    pricing({ provider: 'openai', model: 'gpt-5.4', input: 2.5, output: 15, cacheRead: 0.25 }),
+    pricing({
+      provider: 'openai',
+      model: 'gpt-5.5',
+      input: 5,
+      output: 30,
+      cacheRead: 0.5,
+      cachedInput: 0.5,
+      sourceUrl: 'https://openai.com/api/pricing/',
+    }),
+    pricing({
+      provider: 'openai',
+      model: 'gpt-5.4',
+      input: 2.5,
+      output: 15,
+      cacheRead: 0.25,
+      cachedInput: 0.25,
+      sourceUrl: 'https://openai.com/api/pricing/',
+    }),
     pricing({
       provider: 'openai',
       model: 'gpt-5.4-mini',
       input: 0.75,
       output: 4.5,
       cacheRead: 0.075,
+      cachedInput: 0.075,
+      sourceUrl: 'https://openai.com/api/pricing/',
     }),
   ];
 }
@@ -165,6 +216,7 @@ function anthropicPricing(): readonly PricingEntry[] {
     ...current.map(([model, input, output, cacheRead]) =>
       pricing({
         provider: 'anthropic',
+        sourceUrl: 'https://platform.claude.com/docs/en/about-claude/pricing',
         model,
         input,
         output,
@@ -190,6 +242,8 @@ function googlePricing(): readonly PricingEntry[] {
       input: 0.5,
       output: 3,
       cacheRead: 0.05,
+      cachedInput: 0.05,
+      sourceUrl: 'https://ai.google.dev/gemini-api/docs/pricing',
     }),
     pricing({
       provider: 'google',
@@ -197,6 +251,8 @@ function googlePricing(): readonly PricingEntry[] {
       input: 1.25,
       output: 10,
       cacheRead: 0.125,
+      cachedInput: 0.125,
+      sourceUrl: 'https://ai.google.dev/gemini-api/docs/pricing',
     }),
     pricing({
       provider: 'google',
@@ -204,6 +260,8 @@ function googlePricing(): readonly PricingEntry[] {
       input: 0.3,
       output: 2.5,
       cacheRead: 0.03,
+      cachedInput: 0.03,
+      sourceUrl: 'https://ai.google.dev/gemini-api/docs/pricing',
     }),
     pricing({
       provider: 'google',
@@ -211,6 +269,8 @@ function googlePricing(): readonly PricingEntry[] {
       input: 0.1,
       output: 0.4,
       cacheRead: 0.01,
+      cachedInput: 0.01,
+      sourceUrl: 'https://ai.google.dev/gemini-api/docs/pricing',
     }),
   ];
 }
@@ -226,10 +286,12 @@ function xaiPricing(): readonly PricingEntry[] {
   return rows.map(([model, input, cacheRead, output]) =>
     pricing({
       provider: 'xai',
+      sourceUrl: `https://docs.x.ai/developers/models/${model.startsWith('grok-4-1-fast-') ? 'grok-4.3' : model}`,
       model,
       input,
       output,
       cacheRead,
+      cachedInput: cacheRead,
       retrievedAt: BUNDLED_PRICING_RETRIEVED_AT,
     }),
   );
@@ -243,6 +305,7 @@ function anthropicAliasPricing(
   return models.map((model) =>
     pricing({
       provider: 'anthropic',
+      sourceUrl: 'https://platform.claude.com/docs/en/about-claude/pricing',
       model,
       input,
       output,
@@ -258,6 +321,8 @@ interface PricingRow {
   readonly input: number;
   readonly output: number;
   readonly cacheRead: number;
+  readonly cachedInput?: number;
+  readonly sourceUrl: string;
   readonly cacheCreation?: number;
   readonly retrievedAt?: string;
 }
@@ -271,9 +336,11 @@ function pricing(row: PricingRow): PricingEntry {
       input_per_million: row.input,
       output_per_million: row.output,
       cache_read_per_million: row.cacheRead,
+      cached_input_per_million: row.cachedInput,
       cache_creation_per_million: row.cacheCreation ?? row.input,
     },
     source: 'blackbox-bundled',
+    source_url: row.sourceUrl,
     version: BUNDLED_PRICING_VERSION,
     effective_at: `${row.retrievedAt ?? PRIOR_PRICING_RETRIEVED_AT}T00:00:00.000Z`,
     metadata: { replaceable: true },

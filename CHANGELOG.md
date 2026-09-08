@@ -1,5 +1,34 @@
 # Changelog
 
+## Unreleased
+
+- Canonical TypeScript fixtures now use native contracts and are checked against current source
+  offline. The crosswalk lists all executable TypeScript tests first; frozen Python samples
+  and module dispositions remain explicit compatibility evidence. Python ZIP sample generation
+  joins optional checked regeneration and normalizes local ZIP timestamps.
+
+- Feature scoring is now TypeScript-owned: 138 of 145 scoped features are fully supported,
+  including OpenRouter in the denominator. Verification supplements stay separate; frozen
+  Python requirements have explicit compatibility dispositions without imposing a status floor.
+
+- Added explicit Python workspace-agent ZIP import with grant/workspace-ref translation and
+  separate execution options for model-loop and local-agent runs. Connector authentication
+  must be supplied explicitly; unrepresentable execution settings are rejected. Native
+  package readers and writers retain their format.
+
+- Pricing now accounts for legacy combined cache counters and resolves registered model aliases
+  with exact-row precedence. Independent cached-input and supplemental reasoning-output rates,
+  plus source URLs, are preserved; bundled pricing retains 36 rows and its existing effective
+  cache-creation defaults.
+
+- Codex private `blackbox/*` wire notifications are diagnostic logs rather than authoritative
+  session or approval events. Adapter-synthesized lifecycle events and native approvals retain
+  authority; raw notification payloads are preserved.
+
+- Local session cancellation remains terminal when an in-flight run emits trailing failure,
+  completion or approval diagnostics. Session streams preserve those events for durable replay
+  without raising a terminal-transition error.
+
 ## 0.2.0-alpha.0
 
 Canonical TypeScript runtime with compatibility refreshed to the pinned Python Blackbox

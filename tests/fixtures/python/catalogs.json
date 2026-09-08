@@ -556,10 +556,12 @@
       "rates": {
         "cache_creation_per_million": 12.5,
         "cache_read_per_million": 1.0,
+        "cached_input_per_million": 1.0,
         "input_per_million": 10.0,
         "output_per_million": 50.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
       "version": "2026-09-05"
     },
     {
@@ -573,10 +575,12 @@
       "rates": {
         "cache_creation_per_million": 5.0,
         "cache_read_per_million": 0.4,
+        "cached_input_per_million": 0.4,
         "input_per_million": 4.0,
         "output_per_million": 20.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
       "version": "2026-09-05"
     },
     {
@@ -590,10 +594,12 @@
       "rates": {
         "cache_creation_per_million": 2.5,
         "cache_read_per_million": 0.2,
+        "cached_input_per_million": 0.2,
         "input_per_million": 2.0,
         "output_per_million": 12.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
       "version": "2026-09-05"
     },
     {
@@ -607,10 +613,12 @@
       "rates": {
         "cache_creation_per_million": 0.25,
         "cache_read_per_million": 0.020000000000000004,
+        "cached_input_per_million": 0.020000000000000004,
         "input_per_million": 0.2,
         "output_per_million": 1.2
       },
       "source": "blackbox-bundled",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
       "version": "2026-09-05"
     },
     {
@@ -624,10 +632,12 @@
       "rates": {
         "cache_creation_per_million": 5.0,
         "cache_read_per_million": 0.5,
+        "cached_input_per_million": 0.5,
         "input_per_million": 5.0,
         "output_per_million": 30.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://openai.com/api/pricing/",
       "version": "2026-09-05"
     },
     {
@@ -641,10 +651,12 @@
       "rates": {
         "cache_creation_per_million": 2.5,
         "cache_read_per_million": 0.25,
+        "cached_input_per_million": 0.25,
         "input_per_million": 2.5,
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://openai.com/api/pricing/",
       "version": "2026-09-05"
     },
     {
@@ -658,10 +670,12 @@
       "rates": {
         "cache_creation_per_million": 0.75,
         "cache_read_per_million": 0.075,
+        "cached_input_per_million": 0.075,
         "input_per_million": 0.75,
         "output_per_million": 4.5
       },
       "source": "blackbox-bundled",
+      "source_url": "https://openai.com/api/pricing/",
       "version": "2026-09-05"
     },
     {
@@ -679,6 +693,7 @@
         "output_per_million": 50.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -696,6 +711,7 @@
         "output_per_million": 50.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -713,6 +729,7 @@
         "output_per_million": 25.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -730,6 +747,7 @@
         "output_per_million": 10.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -747,6 +765,7 @@
         "output_per_million": 25.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -764,6 +783,7 @@
         "output_per_million": 25.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -781,6 +801,7 @@
         "output_per_million": 25.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -798,6 +819,7 @@
         "output_per_million": 25.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -815,6 +837,7 @@
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -832,6 +855,7 @@
         "output_per_million": 75.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -849,6 +873,7 @@
         "output_per_million": 75.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -866,6 +891,7 @@
         "output_per_million": 75.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -883,6 +909,7 @@
         "output_per_million": 75.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -900,6 +927,7 @@
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -917,6 +945,7 @@
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -934,6 +963,7 @@
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -951,6 +981,7 @@
         "output_per_million": 15.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -968,6 +999,7 @@
         "output_per_million": 5.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -985,6 +1017,7 @@
         "output_per_million": 5.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1002,6 +1035,7 @@
         "output_per_million": 4.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1019,6 +1053,7 @@
         "output_per_million": 4.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1032,10 +1067,12 @@
       "rates": {
         "cache_creation_per_million": 0.5,
         "cache_read_per_million": 0.05,
+        "cached_input_per_million": 0.05,
         "input_per_million": 0.5,
         "output_per_million": 3.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1049,10 +1086,12 @@
       "rates": {
         "cache_creation_per_million": 1.25,
         "cache_read_per_million": 0.125,
+        "cached_input_per_million": 0.125,
         "input_per_million": 1.25,
         "output_per_million": 10.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1066,10 +1105,12 @@
       "rates": {
         "cache_creation_per_million": 0.3,
         "cache_read_per_million": 0.03,
+        "cached_input_per_million": 0.03,
         "input_per_million": 0.3,
         "output_per_million": 2.5
       },
       "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1083,10 +1124,12 @@
       "rates": {
         "cache_creation_per_million": 0.1,
         "cache_read_per_million": 0.01,
+        "cached_input_per_million": 0.01,
         "input_per_million": 0.1,
         "output_per_million": 0.4
       },
       "source": "blackbox-bundled",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
       "version": "2026-09-05"
     },
     {
@@ -1100,10 +1143,12 @@
       "rates": {
         "cache_creation_per_million": 2.0,
         "cache_read_per_million": 0.5,
+        "cached_input_per_million": 0.5,
         "input_per_million": 2.0,
         "output_per_million": 6.0
       },
       "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models/grok-4.6",
       "version": "2026-09-05"
     },
     {
@@ -1117,10 +1162,12 @@
       "rates": {
         "cache_creation_per_million": 1.25,
         "cache_read_per_million": 0.2,
+        "cached_input_per_million": 0.2,
         "input_per_million": 1.25,
         "output_per_million": 2.5
       },
       "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models/grok-4.3",
       "version": "2026-09-05"
     },
     {
@@ -1134,10 +1181,12 @@
       "rates": {
         "cache_creation_per_million": 1.25,
         "cache_read_per_million": 0.2,
+        "cached_input_per_million": 0.2,
         "input_per_million": 1.25,
         "output_per_million": 2.5
       },
       "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models/grok-4.3",
       "version": "2026-09-05"
     },
     {
@@ -1151,10 +1200,12 @@
       "rates": {
         "cache_creation_per_million": 1.25,
         "cache_read_per_million": 0.2,
+        "cached_input_per_million": 0.2,
         "input_per_million": 1.25,
         "output_per_million": 2.5
       },
       "source": "blackbox-bundled",
+      "source_url": "https://docs.x.ai/developers/models/grok-4.3",
       "version": "2026-09-05"
     }
   ],

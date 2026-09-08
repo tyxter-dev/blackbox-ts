@@ -11,12 +11,12 @@ const inventoryUrl = new URL('../docs/parity-inventory.json', import.meta.url);
 // The snapshot is stamped with the pinned parent commit from the parity
 // inventory (the single authoritative pin site) rather than a hardcoded SHA.
 const inventory = JSON.parse(await readFile(inventoryUrl, 'utf8'));
-if (!/^[0-9a-f]{40}$/.test(inventory.parent?.commit ?? '')) {
+if (!/^[0-9a-f]{40}$/.test(inventory.python_reference?.commit ?? '')) {
   throw new Error('docs/parity-inventory.json must pin a full 40-character parent commit.');
 }
 const snapshot = {
   schema_version: 1,
-  parent_commit: inventory.parent.commit,
+  parent_commit: inventory.python_reference.commit,
   provider_models: {
     version: BUNDLED_PROVIDER_MODEL_CATALOG_VERSION,
     entries: bundledProviderModels(),

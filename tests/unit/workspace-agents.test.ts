@@ -4,7 +4,9 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  AgentRuntimeError,
   InMemoryWorkspaceAgentRegistry,
+  importPythonWorkspaceAgentPackage,
   SQLiteWorkspaceAgentRegistry,
   ScheduleExecutor,
   assertValidWorkspaceAgent,
@@ -22,6 +24,10 @@ import {
   type SQLiteDatabase,
   type WorkspaceAgentSpec,
 } from '../../src/index.js';
+
+import pythonPackage from '../fixtures/python/workspace-agent-package.json';
+import parityInventory from '../../docs/parity-inventory.json';
+import { translatePythonPackage } from '../../src/workspace-agents/python-package.js';
 
 const temporaryDirectories: string[] = [];
 
@@ -433,3 +439,155 @@ function replaceAllBytes(buffer: Buffer, from: string, to: string): void {
   }
   expect(replacements).toBeGreaterThanOrEqual(2);
 }
+
+describe('explicit Python workspace-agent ingress', () => {
+  const options = { connector_auth: { files: 'host-managed' } };
+  function project(patch: Record<string, unknown>) {
+    const manifest = {
+      ...pythonPackage.manifest,
+      spec: { ...pythonPackage.manifest.spec, ...patch },
+    };
+    return translatePythonPackage(
+      new Map([
+        ['agent.json', Buffer.from(JSON.stringify(manifest))],
+        ['instructions.md', Buffer.from('Read safely.')],
+      ]),
+      options,
+    );
+  }
+
+  it('imports a pinned Python-written ZIP explicitly and round-trips the native projection', () => {
+    const bytes = Buffer.from(pythonPackage.archive_base64, 'base64');
+    expect(pythonPackage.parent_commit).toBe(parityInventory.python_reference.commit);
+    expect(() => unpackWorkspaceAgent(bytes)).toThrow();
+    const imported = importPythonWorkspaceAgentPackage(bytes, options);
+    expect(imported.source).toBe('python');
+    expect(imported.spec).toMatchObject({
+      version: '1.2.3',
+      model: 'script:model',
+      instructions: 'Read safely.',
+      permissions: {},
+      permission_mode: 'allowlist_v1',
+      grants: [{ ref: 'workspace:read' }],
+      tools: ['workspace_read', 'workspace_list', 'workspace_write', 'workspace_command'],
+      connectors: [
+        {
+          name: 'files',
+          type: 'filesystem',
+          auth: 'host-managed',
+          auth_mode: 'end_user',
+          tool_refs: ['workspace:read', 'workspace:list', 'workspace:write', 'workspace:command'],
+        },
+      ],
+    });
+    expect(imported.run_options).toEqual({ agent_provider: 'local' });
+    expect(unpackWorkspaceAgent(packWorkspaceAgent(imported.spec)).agent).toEqual(imported.spec);
+    expect(() => importPythonWorkspaceAgentPackage(bytes)).toThrow(/connector_auth/);
+    expect(() => importPythonWorkspaceAgentPackage(bytes.subarray(0, 40), options)).toThrow();
+  });
+
+  it('translates operation and local grant refs without changing approval or connector authority', () => {
+    const { spec } = project({
+      permissions: [
+        {
+          ref: 'workspace:write_file',
+          scopes: ['write'],
+          connector: 'files',
+          approval: { mode: 'always', reason: 'Review' },
+        },
+        { ref: 'local:workspace_run_command', scopes: ['execute'] },
+      ],
+    });
+    expect(spec.grants).toMatchObject([
+      {
+        ref: 'workspace:write',
+        scopes: ['write'],
+        connector: 'files',
+        approval: { mode: 'always', reason: 'Review' },
+      },
+      { ref: 'local:workspace_command', scopes: ['execute'] },
+    ]);
+  });
+
+  it('preserves descriptive records and safe publication without inventing execution settings', () => {
+    const imported = project({
+      metadata: { owner: 'team', labels: ['checked'], metadata: { ticket: 2 } },
+      version: {
+        version: '2.0.0',
+        changelog: 'Reviewed',
+        previous_version: '1.2.3',
+        metadata: { release: 2 },
+      },
+      publication: {
+        visibility: 'public',
+        directory_enabled: false,
+        approved: false,
+        channels: [],
+        metadata: { note: 'descriptive' },
+      },
+    });
+    expect(imported.spec).toMatchObject({
+      version: '2.0.0',
+      visibility: 'public',
+      metadata: {
+        python_package: {
+          metadata: { owner: 'team', labels: ['checked'], metadata: { ticket: 2 } },
+          version: { changelog: 'Reviewed', previous_version: '1.2.3', metadata: { release: 2 } },
+          publication: { metadata: { note: 'descriptive' } },
+        },
+      },
+    });
+  });
+
+  it('rejects missing, invalid-text and unconsumed archive members with domain errors', () => {
+    const files = new Map([
+      ['agent.json', Buffer.from(JSON.stringify(pythonPackage.manifest))],
+      ['instructions.md', Buffer.from('Read safely.')],
+    ]);
+    expect(() => translatePythonPackage(new Map(), options)).toThrowError(AgentRuntimeError);
+    for (const name of ['agent.json', 'instructions.md']) {
+      const invalid = new Map(files);
+      invalid.set(name, Buffer.from([0xff]));
+      expect(() => translatePythonPackage(invalid, options)).toThrowError(AgentRuntimeError);
+    }
+    files.set('unconsumed.txt', Buffer.from('must not disappear'));
+    expect(() => translatePythonPackage(files, options)).toThrowError(AgentRuntimeError);
+  });
+
+  it('keeps custom workspace-prefixed tool names and accepts native model-reference syntax', () => {
+    expect(
+      project({
+        tools: ['workspace_custom'],
+        model_provider: null,
+        model: 'script/model',
+        instructions: 'Read safely.',
+      }).spec,
+    ).toMatchObject({ tools: ['workspace_custom'], model: 'script:model' });
+  });
+
+  it.each([
+    { agent_id: 'existing' },
+    { agent_provider: 'codex' },
+    { model_provider: 'other', model: 'script:model' },
+    { permissions: {} },
+    { permissions: [{ ref: 'workspace:delete_file' }] },
+    { permissions: [{ ref: 'read', connector: 'unknown' }] },
+    { grants: [] },
+    { skills: [{ name: 'required' }] },
+    { schedules: [{ enabled: false }] },
+    { mcp_servers: [{ name: 'server' }] },
+    { mcp_toolsets: [{}] },
+    { memory: { mode: 'session' } },
+    { publication: { visibility: 'workspace' } },
+    { publication: { directory_enabled: true } },
+    { hosted_tools: [{ search_context_size: 'medium' }] },
+    { extra: [] },
+    { permission_mode: null },
+    { instructions: 'Conflict' },
+    { tools: ['workspace_delete_file'] },
+    { permissions: [{ ref: 'read', approval: null }] },
+    { model: 'script:', model_provider: null },
+  ])('rejects unrepresentable or malformed foreign authority: %j', (patch) => {
+    expect(() => project(patch)).toThrowError(AgentRuntimeError);
+  });
+});
