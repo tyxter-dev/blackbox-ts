@@ -1,19 +1,20 @@
 {
   "schema_version": 1,
   "parent_repository": "tyxter-dev/blackbox",
-  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
+  "parent_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
   "generated_from": "docs/parent-baseline.json",
   "summary": {
-    "python_test_modules": 108,
-    "direct_evidence": 53,
-    "semantic_projections": 55,
+    "python_test_modules": 118,
+    "direct_evidence": 64,
+    "semantic_projections": 54,
     "domains_covered": 20,
     "classifications": {
-      "semantic": 87,
-      "sdk_protocol_fixture": 6,
+      "semantic": 95,
+      "sdk_protocol_fixture": 7,
       "integration_smoke": 4,
-      "partial_contract_negative": 11
-    }
+      "partial_contract_negative": 12
+    },
+    "entries_with_notes": 15
   },
   "entries": [
     {
@@ -23,7 +24,25 @@
       "coverage": "direct_evidence",
       "domains": ["Policy, Approvals, and Safety"],
       "evidence_refs": ["policy-approvals-and-safety"],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/core-contracts.test.ts"]
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/core-contracts.test.ts"],
+      "notes": []
+    },
+    {
+      "id": "python-test.contracts.test.package.permission.capabilities",
+      "python_test": "tests/contracts/test_package_permission_capabilities.py",
+      "classification": "partial_contract_negative",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-runtime-grants"],
+      "typescript_tests": [
+        "tests/unit/mcp.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts"
+      ],
+      "notes": [
+        "Any agent adapter not advertising `supports_package_permissions` (including test fakes) is refused under a boundary; `AgentSessionsRuntime.stream` under a boundary resolves the provider eagerly (ProviderNotFoundError at call rather than SessionNotFoundError at first pull)."
+      ]
     },
     {
       "id": "python-test.e2e.test.diet.coach.example",
@@ -32,7 +51,25 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
+    },
+    {
+      "id": "python-test.e2e.test.permissioned.package",
+      "python_test": "tests/e2e/test_permissioned_package.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-runtime-grants"],
+      "typescript_tests": [
+        "tests/unit/mcp.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts"
+      ],
+      "notes": [
+        "Portable-package interchange differs (`grants` vs parent `permissions`); the agent-provider path of `runWorkspaceAgent` carries tools, hosted tools, workspace, and policy on `AgentSpec.metadata.run_request` and writes the effective model/instructions onto the spec (TS-only local-adapter convention)."
+      ]
     },
     {
       "id": "python-test.golden.anthropic.test.messages.event.mapping",
@@ -44,6 +81,23 @@
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
+      ],
+      "notes": []
+    },
+    {
+      "id": "python-test.golden.codex.test.app.server.event.mapping",
+      "python_test": "tests/golden/codex/test_app_server_event_mapping.py",
+      "classification": "sdk_protocol_fixture",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["cloud-agent-providers"],
+      "typescript_tests": [
+        "tests/golden/codex-app-server-events.test.ts",
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts"
+      ],
+      "notes": [
+        "The buffered `blackbox/session/started` entry is unreachable by any cursor (parent quirk kept)."
       ]
     },
     {
@@ -56,7 +110,8 @@
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.golden.gemini.live.test.event.mapping",
@@ -68,7 +123,8 @@
       "typescript_tests": [
         "tests/golden/python-provider-differential.test.ts",
         "tests/golden/providers.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.golden.openai.test.hosted.tools.v2.event.mapping",
@@ -80,7 +136,8 @@
       "typescript_tests": [
         "tests/golden/python-provider-differential.test.ts",
         "tests/golden/providers.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.golden.openai.test.responses.event.mapping",
@@ -92,7 +149,8 @@
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.golden.openai.realtime.test.event.mapping",
@@ -104,7 +162,8 @@
       "typescript_tests": [
         "tests/golden/python-provider-differential.test.ts",
         "tests/golden/providers.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.integration.anthropic.test.cache.and.cost",
@@ -113,7 +172,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.anthropic.test.messages.smoke",
@@ -122,7 +182,24 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
+    },
+    {
+      "id": "python-test.integration.codex.test.codex.subscription",
+      "python_test": "tests/integration/codex/test_codex_subscription.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["cloud-agent-providers"],
+      "typescript_tests": [
+        "tests/golden/codex-app-server-events.test.ts",
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts"
+      ],
+      "notes": [
+        "Honest N/A: TS has no Codex child-process/SDK runtime (ruling F4); the subscription-only guard is exercised against the injected client, not a live app-server."
+      ]
     },
     {
       "id": "python-test.integration.gemini.test.cache.and.cost",
@@ -131,7 +208,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.gemini.test.generate.content.smoke",
@@ -140,7 +218,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.openai.test.cache.and.cost",
@@ -149,7 +228,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.openai.test.responses.smoke",
@@ -158,7 +238,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.xai.test.cost.tracking",
@@ -167,7 +248,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.integration.xai.test.responses.smoke",
@@ -176,7 +258,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.journey.agent.provider.test.agent.provider.journeys",
@@ -188,7 +271,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.journey.business.cases.test.bella.cucina.returning.guest",
@@ -197,7 +281,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.journey.model.provider.test.model.provider.journeys",
@@ -209,7 +294,8 @@
       "typescript_tests": [
         "tests/unit/model-runtime.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.journey.workspace.provider.test.workspace.provider.journeys",
@@ -218,7 +304,8 @@
       "coverage": "direct_evidence",
       "domains": ["Workspaces"],
       "evidence_refs": ["workspaces"],
-      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+      "typescript_tests": ["tests/unit/workspaces.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.perf.test.benchmarks",
@@ -227,7 +314,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.agent.session.persistence",
@@ -236,7 +324,8 @@
       "coverage": "direct_evidence",
       "domains": ["Agent Sessions"],
       "evidence_refs": ["agent-sessions"],
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.agent.session.run",
@@ -244,8 +333,15 @@
       "classification": "semantic",
       "coverage": "direct_evidence",
       "domains": ["Agent Sessions"],
-      "evidence_refs": ["agent-sessions"],
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions", "cloud-agent-providers"],
+      "typescript_tests": [
+        "tests/golden/codex-app-server-events.test.ts",
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts"
+      ],
+      "notes": [
+        "`AgentSessionsRuntime.run` output for a Codex session is '' (TS derives text from SESSION_COMPLETED/AGENT_RESPONSE_MESSAGE_CREATED, not deltas), unlike the parent test_agents_run_collects_a_codex_app_server_session."
+      ]
     },
     {
       "id": "python-test.runtime.test.agent.webhook.ingress",
@@ -254,18 +350,54 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "notes": []
+    },
+    {
+      "id": "python-test.runtime.test.cache.metadata",
+      "python_test": "tests/runtime/test_cache_metadata.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Accounting and Cache"],
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.claude.code.agent.provider",
       "python_test": "tests/runtime/test_claude_code_agent_provider.py",
       "classification": "semantic",
-      "coverage": "semantic_projection",
-      "domains": ["Provider Runtime"],
-      "evidence_refs": [],
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["cloud-agent-providers"],
       "typescript_tests": [
-        "tests/unit/provider-contracts.test.ts",
-        "tests/unit/model-runtime.test.ts"
+        "tests/golden/codex-app-server-events.test.ts",
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts"
+      ],
+      "notes": [
+        "The Claude task-budget contract ports only `_normalize_task_budget`, applied at `ClaudeCodeAgentProvider.startSession` to `task.metadata.task_budget`; per-turn MODEL_REQUEST_STARTED emission, model precedence, process/SDK machinery, and the agent-level `permissions.task_budget` precedence are honestly N/A; JS admits `1.0`/`1e6` as integers where the parent rejects floats."
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.codex.agent.provider",
+      "python_test": "tests/runtime/test_codex_agent_provider.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Agent Sessions"],
+      "evidence_refs": ["cloud-agent-providers"],
+      "typescript_tests": [
+        "tests/golden/codex-app-server-events.test.ts",
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts"
+      ],
+      "notes": [
+        "Contract port only (ruling F4): the TS client boundary is connection-level (`connect` -> `send`/`messages`/`close`) while the parent `CodexAppServerClient` protocol is session-level; the provider owns thread/turn requests and the normalization table. No child-process/SDK runtime: inherited-env stripping, bundled PATH, `codex_bin`/SDK version check, kill grace, stderr tail, and the include-normalization compat registry are honestly N/A.",
+        "`supports_resume` is forced false (the parent forces only package permissions); `supports_follow_up` true is TS-only; `metadata.codex_sdk_version` names the pinned protocol version; parent `permissions`/`extra` options are read from TS `metadata` (`AgentSpec.metadata.id/.sandbox`, `TaskSpec.metadata.ephemeral/.sandbox`, `WorkspaceSpec.metadata.root`).",
+        "Fail-closed deviations: numeric JSON-RPC request ids are answered (parent ignores them); a duplicate pending approval id is refused with -32000 (parent overwrites); pending approvals are dropped on close and on reader failure with an explicit unknown-approval error afterwards; after a reader fault the connection is write-closed and `cancel` skips the interrupt."
       ]
     },
     {
@@ -275,7 +407,8 @@
       "coverage": "semantic_projection",
       "domains": ["Local Tools"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.dynamic.toolsets",
@@ -284,7 +417,8 @@
       "coverage": "semantic_projection",
       "domains": ["Local Tools"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.hosted.tool.loop",
@@ -293,7 +427,8 @@
       "coverage": "semantic_projection",
       "domains": ["Hosted Tools"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.local.agent.provider",
@@ -305,7 +440,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.loop.input.shapes",
@@ -314,7 +450,11 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.maia.business.case.example",
@@ -323,7 +463,11 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.mcp.toolset.runtime",
@@ -332,7 +476,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.model.capability.validation",
@@ -344,7 +489,8 @@
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.observability.presets",
@@ -356,7 +502,8 @@
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.openai.agents.provider",
@@ -368,6 +515,47 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
+      ],
+      "notes": []
+    },
+    {
+      "id": "python-test.runtime.test.package.permission.regressions",
+      "python_test": "tests/runtime/test_package_permission_regressions.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-runtime-grants"],
+      "typescript_tests": [
+        "tests/unit/mcp.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts"
+      ],
+      "notes": [
+        "Custom workspace prefixes compose against the TS operation names `read|list|write|command`, not the parent's `read_file|list_files|write_file|run_command`."
+      ]
+    },
+    {
+      "id": "python-test.runtime.test.package.permissions",
+      "python_test": "tests/runtime/test_package_permissions.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-runtime-grants"],
+      "typescript_tests": [
+        "tests/unit/mcp.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts"
+      ],
+      "notes": [
+        "TS has no client-executed hosted tools, so the parent hosted_runtime execution-time package/user gate has no counterpart; only the model-configuration gate applies.",
+        "A package-denied loop call still emits TOOL_CALL_REQUESTED/STARTED and TOOL_CALL_FAILED before TOOL_CHOICE_REJECTED (the parent short-circuits with only the rejection); a user-policy deny or denied approval ticket throws ApprovalError and ends the run (the parent continues with a failed item); an unregistered call name under a boundary ends as tool_not_found without TOOL_CHOICE_REJECTED.",
+        "`load` reports refused names as `denied`/`denied_by_package` on its payload with no per-load run event (the parent emits an `invalid` list plus a run-visible event).",
+        "Workspace canonical refs are `workspace:read|list|write|command` (parent: `workspace:read_file|list_files|write_file|run_command`), so a literal parent workspace grant does not match a TS workspace tool.",
+        "MCP `connector_scopes` derive from the descriptor `required_scopes` only (the parent also unions the host trust blob and `metadata.scopes`); the in-process MCPServer `tools/list` omits descriptor metadata, so a connector-bound definition served in-process is never admitted (fail-closed).",
+        "Realtime `connect` passes tool definitions and hosted tools to the provider unfiltered (parent-faithful); dispatch still denies but realtime hosted tools have no dispatch backstop.",
+        "`AgentRuntime.stream` validates the request synchronously at call time rather than at first pull."
       ]
     },
     {
@@ -377,7 +565,8 @@
       "coverage": "direct_evidence",
       "domains": ["Prompt Planning"],
       "evidence_refs": ["prompt-planning"],
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.provider.fallback",
@@ -389,7 +578,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.provider.native.output",
@@ -398,7 +588,8 @@
       "coverage": "direct_evidence",
       "domains": ["Structured Output"],
       "evidence_refs": ["runtime-lifecycle-hardening"],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.realtime.approvals",
@@ -411,7 +602,8 @@
         "tests/unit/agent-loop.test.ts",
         "tests/unit/core-contracts.test.ts",
         "tests/unit/realtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.realtime.runtime",
@@ -420,7 +612,8 @@
       "coverage": "direct_evidence",
       "domains": ["Realtime"],
       "evidence_refs": ["realtime"],
-      "typescript_tests": ["tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.realtime.tool.loop",
@@ -429,7 +622,8 @@
       "coverage": "direct_evidence",
       "domains": ["Realtime"],
       "evidence_refs": ["realtime"],
-      "typescript_tests": ["tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.resume.run.from.saved.state",
@@ -438,7 +632,8 @@
       "coverage": "direct_evidence",
       "domains": ["Persistence"],
       "evidence_refs": ["persistence", "resume-run-state"],
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.runtime.config",
@@ -447,7 +642,8 @@
       "coverage": "direct_evidence",
       "domains": ["Runtime Configuration"],
       "evidence_refs": ["runtime-configuration"],
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.runtime.retry",
@@ -456,7 +652,8 @@
       "coverage": "direct_evidence",
       "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
       "evidence_refs": ["runtime-lifecycle-hardening"],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.runtime.run",
@@ -465,7 +662,11 @@
       "coverage": "direct_evidence",
       "domains": ["High-Level Runtime"],
       "evidence_refs": ["high-level-runtime"],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": [
+        "tests/journey/runtime-journey.test.ts",
+        "tests/unit/agent-loop.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.runtime.skills",
@@ -474,7 +675,11 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime", "Runtime Lifecycle Hardening"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.runtime.stream",
@@ -483,7 +688,11 @@
       "coverage": "direct_evidence",
       "domains": ["High-Level Runtime"],
       "evidence_refs": ["high-level-runtime"],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": [
+        "tests/journey/runtime-journey.test.ts",
+        "tests/unit/agent-loop.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.runtime.test.workspace.tool.loop",
@@ -492,7 +701,8 @@
       "coverage": "semantic_projection",
       "domains": ["Local Tools"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.compat.test.chat.compat",
@@ -501,7 +711,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.compat.test.compat.providers",
@@ -513,7 +724,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.data.models",
@@ -522,7 +734,8 @@
       "coverage": "direct_evidence",
       "domains": ["Artifacts"],
       "evidence_refs": ["artifacts"],
-      "typescript_tests": ["tests/unit/core-contracts.test.ts"]
+      "typescript_tests": ["tests/unit/core-contracts.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.errors",
@@ -534,7 +747,8 @@
       "typescript_tests": [
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.model.accounting",
@@ -543,7 +757,8 @@
       "coverage": "direct_evidence",
       "domains": ["Accounting and Cache"],
       "evidence_refs": ["accounting-and-cache"],
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.multimodal.content",
@@ -555,7 +770,8 @@
       "typescript_tests": [
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.pricing.catalog",
@@ -568,6 +784,9 @@
         "tests/golden/python-catalog-differential.test.ts",
         "tests/unit/registry-catalog.test.ts",
         "tests/unit/planning-accounting-config.test.ts"
+      ],
+      "notes": [
+        "TS `PricingEntry` has no `source_url` or `reasoning_output_per_million` and collapses `cached_input`/`cache_read_input` into one read rate; `PricingCatalog.get` performs no alias resolution (parent `_register_provider_model_aliases`), so an alias such as `openai:gpt-5.6` prices as `pricing_not_found`."
       ]
     },
     {
@@ -577,7 +796,8 @@
       "coverage": "direct_evidence",
       "domains": ["Accounting and Cache"],
       "evidence_refs": ["accounting-and-cache"],
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.session.state.serialization",
@@ -586,7 +806,8 @@
       "coverage": "semantic_projection",
       "domains": ["Agent Sessions"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.session.store",
@@ -595,7 +816,8 @@
       "coverage": "direct_evidence",
       "domains": ["Agent Sessions"],
       "evidence_refs": ["persistence-contracts"],
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.state",
@@ -607,7 +829,8 @@
       "typescript_tests": [
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.stores",
@@ -619,7 +842,8 @@
       "typescript_tests": [
         "tests/unit/persistence-observability.test.ts",
         "tests/golden/core-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.stores.persistent",
@@ -637,7 +861,8 @@
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.core.test.streams",
@@ -649,7 +874,8 @@
       "typescript_tests": [
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.integrations.test.google.integrations",
@@ -658,7 +884,8 @@
       "coverage": "semantic_projection",
       "domains": ["High-Level Runtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/journey/runtime-journey.test.ts"]
+      "typescript_tests": ["tests/journey/runtime-journey.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.auth",
@@ -667,7 +894,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.client",
@@ -676,7 +904,10 @@
       "coverage": "direct_evidence",
       "domains": ["MCP"],
       "evidence_refs": ["mcp"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"],
+      "notes": [
+        "`clientInfo` is `blackbox-ts` at version 0.2.0 (ruling R6); `listTools` coalesces in-flight fetches (concurrent cold callers emit one MCP_LIST_TOOLS pair) and preserves descriptor identity across unchanged refetches; only boolean `annotations.readOnlyHint`/`destructiveHint` hints are mapped."
+      ]
     },
     {
       "id": "python-test.unit.mcp.test.mcp.connector",
@@ -685,7 +916,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.security.validation",
@@ -694,7 +926,8 @@
       "coverage": "direct_evidence",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": ["mcp-lifecycle-security"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.server",
@@ -703,7 +936,10 @@
       "coverage": "direct_evidence",
       "domains": ["MCP"],
       "evidence_refs": ["mcp"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"],
+      "notes": [
+        "`serverInfo.version` is `0.2.0` (parent-mirrored, R18); `serverInfo.name` is the configured server name exactly as in the parent, and only `clientInfo.name` diverges (`blackbox-ts`, ruling R6); the in-process `tools/list` still omits descriptor metadata."
+      ]
     },
     {
       "id": "python-test.unit.mcp.test.mcp.spec",
@@ -712,7 +948,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.toolset",
@@ -721,7 +958,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.transports",
@@ -730,7 +968,8 @@
       "coverage": "direct_evidence",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": ["mcp-lifecycle-security"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/mcp.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.mcp.test.mcp.trust.policy",
@@ -739,7 +978,8 @@
       "coverage": "semantic_projection",
       "domains": ["MCP", "MCP Lifecycle Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.observability.test.event.sinks",
@@ -751,7 +991,8 @@
       "typescript_tests": [
         "tests/unit/persistence-observability.test.ts",
         "tests/unit/workers-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.observability.test.metrics",
@@ -763,7 +1004,8 @@
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.observability.test.observability.workflows",
@@ -775,7 +1017,8 @@
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.observability.test.presets",
@@ -787,7 +1030,8 @@
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.observability.test.trace.spans",
@@ -799,7 +1043,8 @@
       "typescript_tests": [
         "tests/unit/persistence-observability.test.ts",
         "tests/unit/workers-observability.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.output.test.output.schema",
@@ -808,7 +1053,8 @@
       "coverage": "direct_evidence",
       "domains": ["Structured Output"],
       "evidence_refs": ["structured-output"],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"]
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.output.test.output.validation",
@@ -817,7 +1063,26 @@
       "coverage": "direct_evidence",
       "domains": ["Structured Output"],
       "evidence_refs": ["structured-output"],
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"]
+      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/unit/tools-output.test.ts"],
+      "notes": []
+    },
+    {
+      "id": "python-test.unit.providers.model.adapters.test.current.model.controls",
+      "python_test": "tests/unit/providers/model_adapters/test_current_model_controls.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Native Model Providers"],
+      "evidence_refs": ["native-model-providers"],
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ],
+      "notes": [
+        "TS `mergeExtra` hard-rejects `extra.model` (ConfigurationError), so no effective-model override exists: the parametrizations test_astra_restricted_parameters_fail_before_sdk[model_override], test_current_invalid_cache_fails_before_sdk[model_override], and the override half of test_cache_mapping_uses_effective_model_and_preserves_legacy have no TS equivalent.",
+        "The TS xAI capability profile advertises `cache_ttl` and `top_logprobs` keys the parent xAI profile lacks; the legacy OpenAI reasoning-effort list stays narrower than the parent advisory list; a legacy-model `cache.ttl` + `extra.prompt_cache_retention` combination collides in TS where the parent previously ignored the field.",
+        "Anthropic legacy `reasoning_effort` advertises native_name `thinking` (parent: `thinking.budget_tokens`) with a narrower supported_values list; the parent's `_merge_output_config` merges while TS `mergeExtra` reports a collision.",
+        "The TS fable replay guard binds system + tools + the recorded assistant prefix only; the parent additionally binds the full prior conversation for fable-5-1."
+      ]
     },
     {
       "id": "python-test.unit.providers.model.adapters.test.echo.model",
@@ -829,7 +1094,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.model.adapters.test.model.capability.profiles",
@@ -841,7 +1107,8 @@
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.model.adapters.test.model.provider.hardening",
@@ -853,7 +1120,8 @@
       "typescript_tests": [
         "tests/unit/model-runtime.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.model.adapters.test.model.request.controls",
@@ -865,7 +1133,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.model.adapters.test.multimodal.input",
@@ -877,7 +1146,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.test.bundled.model.catalog",
@@ -886,7 +1156,11 @@
       "coverage": "direct_evidence",
       "domains": ["Provider Controls and Catalog"],
       "evidence_refs": ["provider-controls-and-catalog"],
-      "typescript_tests": ["tests/unit/capabilities.test.ts", "tests/unit/registry-catalog.test.ts"]
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/registry-catalog.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.test.model.catalog",
@@ -895,7 +1169,11 @@
       "coverage": "direct_evidence",
       "domains": ["Provider Controls and Catalog"],
       "evidence_refs": ["provider-controls-and-catalog"],
-      "typescript_tests": ["tests/unit/capabilities.test.ts", "tests/unit/registry-catalog.test.ts"]
+      "typescript_tests": [
+        "tests/unit/capabilities.test.ts",
+        "tests/unit/registry-catalog.test.ts"
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.providers.test.registry",
@@ -907,7 +1185,8 @@
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.realtime.test.realtime.capabilities",
@@ -916,7 +1195,8 @@
       "coverage": "semantic_projection",
       "domains": ["Realtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.realtime.test.realtime.event.types",
@@ -925,7 +1205,8 @@
       "coverage": "semantic_projection",
       "domains": ["Realtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.realtime.test.realtime.registry",
@@ -934,7 +1215,8 @@
       "coverage": "semantic_projection",
       "domains": ["Realtime"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/realtime.test.ts"]
+      "typescript_tests": ["tests/unit/realtime.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.skills.test.skills",
@@ -943,7 +1225,10 @@
       "coverage": "direct_evidence",
       "domains": ["Skills and Workspace Agents"],
       "evidence_refs": ["skills-and-workspace-agents"],
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "notes": [
+        "The frontmatter fallback parser mirrors the parent YAML-subset block grammar; inline flow scalars (`[a, b]`, `{ k: v }`, `~`, single quotes) remain JSON-only, so the parent's hand-written SKILL.md fixture still does not parse in TS."
+      ]
     },
     {
       "id": "python-test.unit.tools.test.hosted.tool.capabilities",
@@ -952,7 +1237,8 @@
       "coverage": "semantic_projection",
       "domains": ["Hosted Tools"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.tools.test.hosted.tools",
@@ -961,7 +1247,8 @@
       "coverage": "direct_evidence",
       "domains": ["Hosted Tools"],
       "evidence_refs": ["hosted-tools"],
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.tools.test.hosted.tools.v2",
@@ -970,7 +1257,8 @@
       "coverage": "direct_evidence",
       "domains": ["Hosted Tools"],
       "evidence_refs": ["hosted-tools"],
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.tools.test.tool.routing",
@@ -979,7 +1267,8 @@
       "coverage": "direct_evidence",
       "domains": ["Local Tools"],
       "evidence_refs": ["local-tools"],
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.tools.test.tool.runtime",
@@ -988,7 +1277,8 @@
       "coverage": "direct_evidence",
       "domains": ["Local Tools"],
       "evidence_refs": ["local-tools"],
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workers.test.anthropic.work.source",
@@ -997,7 +1287,8 @@
       "coverage": "direct_evidence",
       "domains": ["Environment Workers"],
       "evidence_refs": ["anthropic-work-source"],
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workers.test.environment.worker",
@@ -1009,7 +1300,8 @@
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/workspace-agents.test.ts"
-      ]
+      ],
+      "notes": []
     },
     {
       "id": "python-test.unit.workers.test.work.source",
@@ -1018,7 +1310,8 @@
       "coverage": "direct_evidence",
       "domains": ["Environment Workers"],
       "evidence_refs": ["environment-workers"],
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspace.agents.test.package",
@@ -1031,6 +1324,25 @@
         "tests/security/boundaries.test.ts",
         "tests/unit/workers-observability.test.ts",
         "tests/unit/workspace-agents.test.ts"
+      ],
+      "notes": []
+    },
+    {
+      "id": "python-test.unit.workspace.agents.test.permission.enforcement",
+      "python_test": "tests/unit/workspace_agents/test_permission_enforcement.py",
+      "classification": "semantic",
+      "coverage": "direct_evidence",
+      "domains": ["Skills and Workspace Agents"],
+      "evidence_refs": ["workspace-agent-runtime-grants"],
+      "typescript_tests": [
+        "tests/unit/mcp.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts"
+      ],
+      "notes": [
+        "The parent stores grants under `permissions`; TS stores them under `grants` (R15), so a parent-written allowlist_v1 package fails closed in TS.",
+        "MCP descriptor `annotations.readOnlyHint`/`destructiveHint` map to `metadata.read_only`/`destructive` as booleans only (an explicit metadata key wins; the parent's whole-object `annotations` copy is not ported); the descriptor `scopes` array is an extra scope-ladder rung with no parent counterpart."
       ]
     },
     {
@@ -1040,7 +1352,8 @@
       "coverage": "direct_evidence",
       "domains": ["Skills and Workspace Agents"],
       "evidence_refs": ["schedule-executor"],
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspace.agents.test.sqlite.registry",
@@ -1049,7 +1362,8 @@
       "coverage": "direct_evidence",
       "domains": ["Skills and Workspace Agents"],
       "evidence_refs": ["workspace-agent-registry"],
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspace.agents.test.validation",
@@ -1058,7 +1372,8 @@
       "coverage": "direct_evidence",
       "domains": ["Skills and Workspace Agents"],
       "evidence_refs": ["workspace-agent-validation"],
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspace.agents.test.workspace.agents",
@@ -1067,7 +1382,8 @@
       "coverage": "direct_evidence",
       "domains": ["Skills and Workspace Agents"],
       "evidence_refs": ["skills-and-workspace-agents"],
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspaces.test.local.workspace.provider",
@@ -1076,7 +1392,8 @@
       "coverage": "direct_evidence",
       "domains": ["Workspaces", "Workspace Providers and Security"],
       "evidence_refs": ["workspace-providers-and-security"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspaces.test.sandbox.workspace.provider",
@@ -1085,7 +1402,8 @@
       "coverage": "direct_evidence",
       "domains": ["Workspaces", "Workspace Providers and Security"],
       "evidence_refs": ["workspace-providers-and-security"],
-      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"]
+      "typescript_tests": ["tests/security/boundaries.test.ts", "tests/unit/workspaces.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspaces.test.workspace.provider.contracts",
@@ -1094,7 +1412,8 @@
       "coverage": "semantic_projection",
       "domains": ["Workspaces", "Workspace Providers and Security"],
       "evidence_refs": [],
-      "typescript_tests": ["tests/unit/workspaces.test.ts", "tests/security/boundaries.test.ts"]
+      "typescript_tests": ["tests/unit/workspaces.test.ts", "tests/security/boundaries.test.ts"],
+      "notes": []
     },
     {
       "id": "python-test.unit.workspaces.test.workspace.runtime",
@@ -1103,7 +1422,8 @@
       "coverage": "direct_evidence",
       "domains": ["Workspaces"],
       "evidence_refs": ["workspaces"],
-      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+      "typescript_tests": ["tests/unit/workspaces.test.ts"],
+      "notes": []
     }
   ],
   "feature_coverage": [
@@ -1160,6 +1480,17 @@
       "domain": "Skills and Workspace Agents",
       "evidence_ref": "skills-and-workspace-agents",
       "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+    },
+    {
+      "feature_id": "parent.skills-and-workspace-agents.workspace-agent-runtime-grants",
+      "domain": "Skills and Workspace Agents",
+      "evidence_ref": "workspace-agent-runtime-grants",
+      "typescript_tests": [
+        "tests/unit/tool-permissions.test.ts",
+        "tests/unit/permission-spine.test.ts",
+        "tests/unit/workspace-agent-runtime.test.ts",
+        "tests/unit/mcp.test.ts"
+      ]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.workspace-agent-validation",
@@ -1890,8 +2221,12 @@
     {
       "feature_id": "parent.agent-sessions.cloud-agent-providers",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_ref": "cloud-agent-providers",
+      "typescript_tests": [
+        "tests/unit/agent-sessions.test.ts",
+        "tests/unit/codex-agent-provider.test.ts",
+        "tests/golden/codex-app-server-events.test.ts"
+      ]
     },
     {
       "feature_id": "parent.agent-sessions.cloud-agent-webhook-ingress",

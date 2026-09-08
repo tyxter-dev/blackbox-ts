@@ -21,6 +21,8 @@ import {
   resolveClaudeCodeAuth,
   textCompletionCapabilityProfile,
   type CapabilityProfile,
+  type InjectedCloudAgentClient,
+  type TaskSpec,
 } from '../../src/index.js';
 
 function toolProfile(model?: string): CapabilityProfile {
@@ -174,5 +176,74 @@ describe('agent sessions runtime', () => {
     expect(new ClaudeCodeAgentProvider(client, { auth: 'subscription' }).resolveAuth()).toBe(
       'subscription',
     );
+  });
+
+  it('admits only an exact bounded Claude task_budget before the injected client is called', async () => {
+    const started: TaskSpec[] = [];
+    const unused = () => {
+      throw new Error('unused');
+    };
+    const client = {
+      createAgent: async () => ({ provider: 'native-client', id: 'agent', metadata: {} }),
+      startSession: async (_agent: unknown, task: TaskSpec) => {
+        started.push(task);
+        return { provider: 'native-client', id: 'session', agent_id: 'agent', metadata: {} };
+      },
+      streamEvents: unused,
+      sendMessage: unused,
+      approve: unused,
+      cancel: unused,
+      listArtifacts: unused,
+    } as unknown as InjectedCloudAgentClient;
+    const provider = new ClaudeCodeAgentProvider(client, { auth: 'subscription' });
+    const agent = await provider.createAgent({ name: 'coder' });
+    const message =
+      "task_budget must be exactly {'total': <positive int>} and no greater than 1000000.";
+
+    // (parent) tests/runtime/test_claude_code_agent_provider.py L271-296 plus the
+    // JavaScript shapes the parent cannot spell (arrays, null, undefined, 1.5).
+    const rejected: Record<string, unknown> = {
+      string: '1024',
+      empty_object: {},
+      boolean_total: { total: true },
+      string_total: { total: '1024' },
+      zero: { total: 0 },
+      negative: { total: -1 },
+      over_cap: { total: 1_000_001 },
+      extra_key: { total: 1024, unreviewed: 1 },
+      float_total: { total: 1.5 },
+      nan_total: { total: Number.NaN },
+      infinite_total: { total: Number.POSITIVE_INFINITY },
+      array: [1024],
+      null: null,
+      undefined_value: undefined,
+      missing_total: { max: 1024 },
+    };
+    for (const [name, value] of Object.entries(rejected)) {
+      await expect(
+        provider.startSession(agent, { input: name, metadata: { task_budget: value } }),
+        name,
+      ).rejects.toMatchObject({ code: 'configuration_error', message });
+    }
+    expect(started).toEqual([]);
+
+    // (parent) L260-268: the boundaries are admitted; the task reaches the
+    // client untouched, and so does a task without any budget.
+    const untouched: TaskSpec = { input: 'plain', metadata: { other: 1 } };
+    for (const task of [
+      { input: 'one', metadata: { task_budget: { total: 1 } } },
+      { input: 'cap', metadata: { task_budget: { total: 1_000_000 } } },
+      untouched,
+      { input: 'bare' },
+    ]) {
+      const session = await provider.startSession(agent, task);
+      expect(session.provider).toBe('claude-code');
+      expect(started.at(-1)).toBe(task);
+    }
+    expect(started).toHaveLength(4);
+    // The OpenAI wrapper has no budget contract and forwards the task as-is.
+    const openai = new OpenAICloudAgentProvider(client);
+    await openai.startSession(agent, { input: 'x', metadata: { task_budget: '1024' } });
+    expect(started).toHaveLength(5);
   });
 });

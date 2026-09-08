@@ -5,8 +5,9 @@ import type { RunItem } from '../core/items.js';
 import type { ProviderState } from '../core/state.js';
 import type { ModelUsage } from '../core/usage.js';
 import type { Artifact } from '../core/artifacts.js';
-import { ConfigurationError } from '../core/errors.js';
+import { ConfigurationError, UnsupportedFeatureError } from '../core/errors.js';
 import { parseProviderModelRef } from '../core/refs.js';
+import { activePermissions, validatePackageModelConfig } from '../core/tool-permissions.js';
 import type { RuntimeConfig } from '../config/index.js';
 import { normalizeTurnRequest, type TurnRequest, type TurnResult } from '../providers/base.js';
 import { ProviderRegistry } from '../providers/registry.js';
@@ -45,11 +46,13 @@ export class ModelRuntime {
     delete rest.model;
     delete rest.trace_id;
     const resolved = this.registry.resolveModelProvider(modelRef, providerHint);
-    const request = normalizeTurnRequest({
-      ...rest,
-      model: resolved.model,
-      trace_id: trace_id ?? crypto.randomUUID(),
-    });
+    const request = gatePackageModelConfig(
+      normalizeTurnRequest({
+        ...rest,
+        model: resolved.model,
+        trace_id: trace_id ?? crypto.randomUUID(),
+      }),
+    );
     const profile = resolved.provider.capabilities(resolved.model);
     assertTurnRequestCapabilities(resolved.provider_id, request, profile);
 
@@ -119,6 +122,40 @@ export class ModelRuntime {
     const resolved = this.registry.resolveModelProvider(ref, fallbackProvider);
     return resolved.provider.capabilities(resolved.model);
   }
+}
+
+/**
+ * Re-validate one turn's model configuration against the active package
+ * boundary, immediately before the capability check.
+ *
+ * This runs per turn rather than once per run: the agent loop re-enters this
+ * method for every iteration, so a boundary entered around the run constrains
+ * every turn it makes. With no boundary active the request object is returned
+ * unchanged.
+ */
+function gatePackageModelConfig(request: TurnRequest): TurnRequest {
+  if (activePermissions().length === 0) return request;
+  if (toolSearchRequested(request.tool_search)) {
+    // Provider-native tool search would let the model reach tools this process
+    // never exposes, so no per-tool checkpoint can see them.
+    throw new UnsupportedFeatureError(
+      'allowlist_v1 cannot enforce provider-native ToolSearchControl.',
+    );
+  }
+  const hostedTools = validatePackageModelConfig(request.hosted_tools ?? [], request.extra ?? {});
+  return request.hosted_tools === undefined || hostedTools === request.hosted_tools
+    ? request
+    : { ...request, hosted_tools: hostedTools };
+}
+
+/** Mirror the parent's `tool_search is not None and tool_search.enabled`. */
+function toolSearchRequested(value: unknown): boolean {
+  if (value === undefined || value === null || value === false) return false;
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const enabled = (value as { readonly enabled?: unknown }).enabled;
+    return enabled === undefined || enabled !== false;
+  }
+  return true;
 }
 
 function isQualifiedProviderRef(value: string | undefined): value is string {

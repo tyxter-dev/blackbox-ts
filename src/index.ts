@@ -20,6 +20,7 @@ export * from './providers/http.js';
 export * from './providers/agent.js';
 export * from './providers/local-agent.js';
 export * from './providers/cloud-agents.js';
+export * from './providers/codex-agent.js';
 export * from './providers/realtime.js';
 export * from './providers/duplex-realtime.js';
 export * from './providers/registry.js';

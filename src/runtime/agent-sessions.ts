@@ -11,9 +11,10 @@ import {
   type InvocationRef,
   type SessionRef,
 } from '../core/sessions.js';
+import { activePermissions, permissionBoundaryIterator } from '../core/tool-permissions.js';
 import type { SessionSnapshot, SessionStore } from '../persistence/stores.js';
 import { createSessionSnapshot, InMemorySessionStore } from '../persistence/stores.js';
-import type { AgentSpec, TaskSpec } from '../providers/agent.js';
+import type { AgentProvider, AgentSpec, TaskSpec } from '../providers/agent.js';
 import { ProviderRegistry } from '../providers/registry.js';
 
 export class AgentSessionsRuntime {
@@ -25,19 +26,46 @@ export class AgentSessionsRuntime {
   ) {}
 
   createAgent(provider: string, spec: AgentSpec): Promise<AgentRef> {
-    return this.registry.getAgentProvider(provider).createAgent(spec);
+    const adapter = this.registry.getAgentProvider(provider);
+    this.assertPackageEnforcement(adapter);
+    return adapter.createAgent(spec);
   }
 
   async start(provider: string, agent: AgentRef | string, task: TaskSpec): Promise<AgentSession> {
-    const session = await this.registry.getAgentProvider(provider).startSession(agent, task);
+    const adapter = this.registry.getAgentProvider(provider);
+    this.assertPackageEnforcement(adapter);
+    const session = await adapter.startSession(agent, task);
     await this.store.save(createSessionSnapshot(session));
     return session;
   }
 
-  async *stream(
+  /**
+   * Stream one agent session, keeping the caller's package permission boundary
+   * attached to the returned iterator.
+   *
+   * This is the single boundary layer for agent-session streams: every agent
+   * provider's `streamEvents` is pulled from inside this generator, so its
+   * steps resume inside the re-entered boundary too. With no boundary active
+   * the inner generator is returned untouched.
+   */
+  stream(
     session: SessionRef | AgentSession,
     options: { readonly after_event_id?: string } = {},
   ): AsyncIterable<AgentEvent> {
+    const permissions = activePermissions();
+    if (permissions.length > 0) {
+      this.assertPackageEnforcement(this.registry.getAgentProvider(session.provider));
+    }
+    const source = this.streamSession(session, options);
+    return permissions.length === 0
+      ? source
+      : permissionBoundaryIterator(permissions, source[Symbol.asyncIterator]());
+  }
+
+  private async *streamSession(
+    session: SessionRef | AgentSession,
+    options: { readonly after_event_id?: string } = {},
+  ): AsyncGenerator<AgentEvent> {
     let snapshot = await this.requireSnapshot(session.id);
     const stored = eventsAfter(snapshot.events, options.after_event_id);
     for (const event of stored) yield event;
@@ -164,6 +192,24 @@ export class AgentSessionsRuntime {
     const provider = this.registry.getAgentProvider(session.provider);
     if (!provider.capabilities().supports_resume) throw new UnsupportedFeatureError('agent_resume');
     await provider.resume?.(session);
+  }
+
+  /**
+   * Refuse an adapter that cannot hold the active package boundary.
+   *
+   * Mirrors the parent's create/start gates ((parent) src/blackbox/runtime/
+   * agents.py L107, L186): a restricted package must not reach an adapter
+   * that would run its calls unconstrained. With no boundary active every
+   * adapter is accepted exactly as before.
+   */
+  private assertPackageEnforcement(provider: AgentProvider): void {
+    if (activePermissions().length === 0) return;
+    if (provider.capabilities().supports_package_permissions !== true) {
+      throw new UnsupportedFeatureError(
+        'agent_package_permissions',
+        'Agent provider cannot enforce active package permissions.',
+      );
+    }
   }
 
   replay(sessionId: string): Promise<SessionSnapshot> {

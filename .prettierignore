@@ -4,3 +4,4 @@ coverage
 pnpm-lock.yaml
 docs/PARITY_MATRIX.md
 docs/catalog-snapshot.json
+docs/plans/

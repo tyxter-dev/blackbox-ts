@@ -1,4 +1,10 @@
 import { MCPError } from '../core/errors.js';
+import {
+  activePermissions,
+  packageCallApproved,
+  packageDecision,
+  toolRequest,
+} from '../core/tool-permissions.js';
 import type { ToolDefinition } from '../tools/types.js';
 import { MCP_PROTOCOL_VERSIONS, type MCPProtocolVersion, type MCPToolResult } from './types.js';
 
@@ -50,7 +56,7 @@ export class MCPServer {
       return {
         protocolVersion: requested,
         capabilities: { tools: { listChanged: true } },
-        serverInfo: { name: this.name, version: '0.1.0' },
+        serverInfo: { name: this.name, version: '0.2.0' },
       };
     }
     if (method === 'tools/list') {
@@ -74,6 +80,7 @@ export class MCPServer {
           code: 'mcp_tool_not_found',
         });
       const arguments_ = asRecord(request.arguments ?? {});
+      this.assertPackagePermits(request.name, tool, arguments_);
       const value = await tool.handler(arguments_, {
         signal: new AbortController().signal,
         values: {},
@@ -81,6 +88,59 @@ export class MCPServer {
       return normalizeHandlerResult(value);
     }
     throw new MCPError(`Unsupported MCP method '${method}'.`, { code: 'mcp_method_not_found' });
+  }
+
+  /**
+   * Decide a `tools/call` against the package boundary.
+   *
+   * This branch runs a registered handler directly, without the tool runtime,
+   * so it is the second place a package grant has to be checked. The request
+   * is built on this server's MCP ref (`mcp:<this server's name>.<tool>`),
+   * which is also the ref a client addressing this server under that name
+   * derives for the same tool, so one grant admits the whole hop instead of
+   * the two ends disagreeing. The registry entry is re-read and pinned by
+   * identity in the shape of the parent's pin ((parent)
+   * src/blackbox/mcp/connector.py L211-234), but there is no asynchronous
+   * policy step on this side -- nothing is awaited between the caller's lookup
+   * and this re-read -- so the pin only guards against a concurrent
+   * `registerTool`/`unregisterTool` of the same name. There is no event
+   * channel here, so a refusal is only the raised {@link MCPError}. With no
+   * boundary active nothing runs.
+   */
+  private assertPackagePermits(
+    name: string,
+    tool: ToolDefinition,
+    arguments_: Readonly<Record<string, unknown>>,
+  ): void {
+    if (activePermissions().length === 0) return;
+    const fresh = this.tools.get(name);
+    if (fresh?.handler === undefined) {
+      throw new MCPError(`MCP tool '${name}' was not found.`, { code: 'mcp_tool_not_found' });
+    }
+    const ref = `mcp:${this.name}.${fresh.name}`;
+    const base = toolRequest(fresh, { checkpoint: 'before_mcp_call', arguments: arguments_ });
+    const request = {
+      ...base,
+      action: ref,
+      metadata: {
+        ...base.metadata,
+        mcp: true,
+        server: this.name,
+        tool: fresh.name,
+        ref,
+        tool_ref: ref,
+      },
+    };
+    const decision = packageDecision(request);
+    if (
+      decision.verdict === 'deny' ||
+      (decision.verdict === 'require_approval' && !packageCallApproved(request))
+    ) {
+      throw new MCPError(decision.reason ?? 'Package permission denied MCP tool.');
+    }
+    if (fresh !== tool) {
+      throw new MCPError('MCP tool changed during policy evaluation; retry required.');
+    }
   }
 }
 

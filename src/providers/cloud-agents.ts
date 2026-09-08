@@ -1,5 +1,9 @@
-import { ProviderNotConfiguredError, UnsupportedFeatureError } from '../core/errors.js';
-import type { AgentProvider, AgentCapabilities } from './agent.js';
+import {
+  ConfigurationError,
+  ProviderNotConfiguredError,
+  UnsupportedFeatureError,
+} from '../core/errors.js';
+import type { AgentProvider, AgentCapabilities, TaskSpec } from './agent.js';
 
 export interface InjectedCloudAgentClient extends Omit<AgentProvider, 'id' | 'capabilities'> {
   close?(): void | Promise<void>;
@@ -13,11 +17,20 @@ abstract class InjectedCloudAgentProvider implements AgentProvider {
     private readonly configuredCapabilities: AgentCapabilities,
   ) {}
 
+  /**
+   * The injected client cannot advertise package enforcement.
+   *
+   * This adapter forwards calls to a client it does not control, so it has no
+   * way to hold a boundary across them; the flag is forced false whatever the
+   * configured capabilities say ((parent) src/blackbox/providers/agent_adapters/
+   * claude_code.py L152-157, openai_cloud.py L94-99).
+   */
   capabilities(): AgentCapabilities {
     return {
       ...this.configuredCapabilities,
       supports_resume:
         this.configuredCapabilities.supports_resume && this.client.resume !== undefined,
+      supports_package_permissions: false,
     };
   }
 
@@ -69,6 +82,7 @@ const CLOUD_CAPABILITIES: AgentCapabilities = {
   supports_cancellation: true,
   supports_artifacts: true,
   supports_approvals: true,
+  supports_package_permissions: false,
   metadata: { adapter: 'injected_client' },
 };
 
@@ -123,6 +137,54 @@ export class ClaudeCodeAgentProvider extends InjectedCloudAgentProvider {
   resolveAuth(): ResolvedClaudeCodeAuth {
     return resolveClaudeCodeAuth(this.authOptions);
   }
+
+  /**
+   * A `task_budget` on the task is admitted only in the parent's exact shape
+   * before the injected client sees the task; an absent budget leaves the task
+   * untouched. Follow-ups carry no budget channel (`sendMessage` options are
+   * the idempotency key only), so only session start is gated.
+   */
+  override async startSession(
+    agent: Parameters<AgentProvider['startSession']>[0],
+    task: Parameters<AgentProvider['startSession']>[1],
+  ) {
+    assertClaudeTaskBudget(task);
+    return super.startSession(agent, task);
+  }
+}
+
+/** Largest admitted Claude Agent SDK task budget, in output tokens ((parent) claude_code.py L42). */
+const MAX_CLAUDE_TASK_BUDGET_TOKENS = 1_000_000;
+
+/**
+ * The parent's `_normalize_task_budget` ((parent) src/blackbox/providers/
+ * agent_adapters/claude_code.py L1001-1013), read from `task.metadata` --
+ * the TS home of the parent's `task.extra`. The key's presence triggers the
+ * check, so an explicit `task_budget: undefined` is rejected like the
+ * parent's `None`. JavaScript has one number type, so `1.0` is the integer 1
+ * where the parent would reject a float.
+ */
+function assertClaudeTaskBudget(task: TaskSpec): void {
+  const metadata = task.metadata;
+  if (metadata === undefined || !('task_budget' in metadata)) return;
+  const budget = metadata.task_budget;
+  const total =
+    typeof budget === 'object' && budget !== null && !Array.isArray(budget)
+      ? (budget as Record<string, unknown>).total
+      : undefined;
+  if (
+    total === undefined ||
+    Object.keys(budget as object).length !== 1 ||
+    typeof total !== 'number' ||
+    !Number.isInteger(total) ||
+    total < 1 ||
+    total > MAX_CLAUDE_TASK_BUDGET_TOKENS
+  ) {
+    throw new ConfigurationError(
+      "task_budget must be exactly {'total': <positive int>} and no greater than " +
+        `${MAX_CLAUDE_TASK_BUDGET_TOKENS}.`,
+    );
+  }
 }
 
 export class VertexAIAgentEngineProvider implements AgentProvider {
@@ -135,6 +197,7 @@ export class VertexAIAgentEngineProvider implements AgentProvider {
       supports_cancellation: false,
       supports_artifacts: false,
       supports_approvals: false,
+      supports_package_permissions: false,
       metadata: { status: 'partial_stub' },
     };
   }

@@ -1,23 +1,25 @@
 # blackbox-ts
 
-`blackbox-ts` is the zero-runtime-dependency TypeScript port of the Python
-[`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) provider and agent runtime.
+`blackbox-ts` is the canonical, zero-runtime-dependency TypeScript Blackbox provider and
+agent runtime. Python [`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) is a
+pinned historical compatibility reference. [FEATURES.md](FEATURES.md) is the current catalog.
 It keeps model, agent-session, realtime, workspace, MCP, worker, and package protocols separate
 while exposing one provider-neutral runtime.
 
-Node 20.11 or newer is required. The package is ESM-only and all default tests are offline.
+Node 20.11 or newer is required. The package is ESM-only; network smoke tests skip unless their provider keys are present.
 
 ## Install
 
 ```sh
-pnpm add blackbox-ts
+pnpm add blackbox-ts@alpha
 ```
 
-Until the repository and npm package are published, build a local tarball from this checkout:
+This checkout targets `0.2.0-alpha.0`. To install from source, build a local tarball:
 
 ```sh
+pnpm install
 pnpm pack
-pnpm add ./blackbox-ts-0.1.0-alpha.0.tgz
+pnpm add ./blackbox-ts-0.2.0-alpha.0.tgz
 ```
 
 ## Run a model or full agent loop
@@ -54,7 +56,7 @@ explicit call arguments retain highest precedence:
 import { RuntimeConfig } from 'blackbox-ts/config';
 
 const config = RuntimeConfig.profile('fast_text').withOverrides({
-  provider: 'openai:gpt-5.4-mini',
+  provider: 'openai:gpt-5.6-sol',
 });
 const result = await runtime.run({ input: 'Summarize this.', config, max_output_tokens: 256 });
 ```
@@ -65,7 +67,8 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
 - `runtime.run/stream`: model → tools → model loop, structured output, fallback, approvals,
   dynamic toolsets, policy, persistence, and prompt planning.
 - `runtime.agents`: local or injected cloud-agent sessions, replay, follow-ups, approvals,
-  cancellation, and artifacts.
+  cancellation, and artifacts, according to each adapter's capabilities. Codex uses an injected
+  app-server client; it does not bundle an SDK or launch a process.
 - `runtime.realtime`: managed low-latency sessions with text/audio/image input, interruption,
   and injected OpenAI Realtime or Gemini Live duplex transports.
 - `blackbox-ts/workspaces`: local/git/sandbox/Docker/cloud workspace protocols and tools.
@@ -90,9 +93,19 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
   transports are injected.
 
-The pinned score covers 143 Python catalog features, with 26 verification supplements and
+Use `runWorkspaceAgent` from `blackbox-ts/workspace-agents` to execute `allowlist_v1`
+packages with their grants enforced. Cross-language package fields differ; see
+[0.2 migration notes](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md).
+
+The tarball contains compiled JavaScript/declarations, this README, CHANGELOG, FEATURES,
+LICENSE and examples. Repository docs and sourcemaps are not packed;
+`blackbox-ts/package.json` exposes package metadata.
+
+The pinned score covers 144 Python catalog features, with 26 verification supplements and
 TypeScript extensions reported separately. Scoped evidence is in
-[the parity matrix](docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
-update workflow is in [parity maintenance](docs/PARITY_MAINTENANCE.md). See
-[features](FEATURES.md), [capabilities](docs/CAPABILITIES.md),
-[migration](docs/MIGRATION.md), and [examples](examples/).
+[the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
+update workflow is in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
+[features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),
+[migration](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).
+The [documentation index](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/README.md)
+collects current guides, generated evidence, and historical plans.

@@ -5,6 +5,7 @@ import {
   createProviderState,
   createSSEFetchFixture,
   mediaFromBase64,
+  structuredOutput,
   type TurnRequest,
 } from '../../src/index.js';
 import { createAnthropicProvider } from '../../src/providers/anthropic/index.js';
@@ -254,7 +255,7 @@ describe('provider golden mappings', () => {
       arguments: '{"id":"42"}',
     });
     expect(result.usage).toMatchObject({
-      input_tokens: 10,
+      input_tokens: 16,
       output_tokens: 3,
       cached_input_tokens: 6,
       cache_read_input_tokens: 4,
@@ -272,6 +273,108 @@ describe('provider golden mappings', () => {
           cache_control: { type: 'ephemeral' },
         },
       ],
+    });
+  });
+
+  it('maps adaptive Claude effort onto output_config with bare adaptive thinking', async () => {
+    const fixture = createJsonFetchFixture({
+      model: 'claude-opus-4-8',
+      content: [{ type: 'text', text: 'adaptive answer' }],
+      usage: { input_tokens: 2, output_tokens: 3 },
+    });
+    const provider = createAnthropicProvider({
+      apiKey: 'key',
+      model: 'claude-opus-4-8',
+      apiBase: 'https://anthropic.test',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({
+      model: 'claude-opus-4-8',
+      input: 'hi',
+      trace_id: 'trace_adaptive',
+      reasoning_effort: 'max',
+      output: structuredOutput({ type: 'object', properties: {} }),
+      hosted_tools: [{ type: 'web_search' }],
+    });
+
+    expect(result.output_text).toBe('adaptive answer');
+    expect(fixture.calls[0]?.body).toMatchObject({
+      model: 'claude-opus-4-8',
+      thinking: { type: 'adaptive' },
+      output_config: {
+        effort: 'max',
+        format: { type: 'json_schema', schema: { type: 'object', properties: {} } },
+      },
+      tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+    });
+    expect(fixture.calls[0]?.body).not.toHaveProperty('thinking.effort');
+  });
+
+  it('pins hosted web search versions per Claude model and keeps caller spec versions', async () => {
+    const cases: readonly [string, string][] = [
+      ['claude-fable-5-1', 'web_search_20260209'],
+      ['claude-sonnet-4-6', 'web_search_20260209'],
+      ['claude-opus-4.6-preview', 'web_search_20260209'],
+      ['claude-haiku-4-5-20251001', 'web_search_20250305'],
+      ['claude-fable-99', 'web_search_20250305'],
+    ];
+
+    for (const [model, version] of cases) {
+      const fixture = createJsonFetchFixture({
+        model,
+        content: [{ type: 'text', text: 'ok' }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      });
+      await createAnthropicProvider({
+        apiKey: 'key',
+        model,
+        apiBase: 'https://anthropic.test',
+        fetchImpl: fixture.fetchImpl,
+      }).turn({
+        model,
+        input: 'hi',
+        trace_id: 'trace_hosted',
+        hosted_tools: [
+          { type: 'web_search' },
+          { type: 'web_search', name: 'pinned', config: { type: 'web_search_20990101' } },
+        ],
+      });
+
+      expect(fixture.calls[0]?.body, model).toMatchObject({
+        tools: [
+          { type: version, name: 'web_search' },
+          { type: 'web_search_20990101', name: 'pinned' },
+        ],
+      });
+    }
+  });
+
+  it('keeps the legacy thinking mapping and raw top_k for non-adaptive Claude models', async () => {
+    const fixture = createJsonFetchFixture({
+      model: 'claude-haiku-4-5-20251001',
+      content: [{ type: 'text', text: 'legacy answer' }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    });
+
+    await createAnthropicProvider({
+      apiKey: 'key',
+      model: 'claude-haiku-4-5-20251001',
+      apiBase: 'https://anthropic.test',
+      fetchImpl: fixture.fetchImpl,
+    }).turn({
+      model: 'claude-haiku-4-5-20251001',
+      input: 'hi',
+      trace_id: 'trace_legacy',
+      temperature: 0.2,
+      reasoning_effort: 'high',
+      extra: { top_k: 5 },
+    });
+
+    expect(fixture.calls[0]?.body).toMatchObject({
+      temperature: 0.2,
+      thinking: { type: 'adaptive', effort: 'high' },
+      top_k: 5,
     });
   });
 
@@ -399,6 +502,123 @@ describe('provider golden mappings', () => {
         { googleSearch: {} },
       ],
     });
+  });
+
+  it('keeps Gemini terminal finish metadata when a usage-only chunk ends the stream', async () => {
+    const terminal = {
+      candidates: [{ content: { role: 'model', parts: [{ text: 'done' }] }, finishReason: 'STOP' }],
+      usageMetadata: { promptTokenCount: 2, candidatesTokenCount: 1, totalTokenCount: 3 },
+    };
+    const usageOnly = {
+      candidates: [],
+      usageMetadata: { promptTokenCount: 2, candidatesTokenCount: 1, totalTokenCount: 3 },
+    };
+    const fixture = createSSEFetchFixture(
+      [terminal, usageOnly].map((payload) => `data: ${JSON.stringify(payload)}\n\n`),
+    );
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBe('STOP');
+    expect(completed?.raw).toEqual(terminal);
+    expect(result.raw_response).toEqual(terminal);
+  });
+
+  it('keeps Gemini terminal finish metadata when a later candidate carries no reason', async () => {
+    const terminal = {
+      candidates: [{ content: { role: 'model', parts: [{ text: 'done' }] }, finishReason: 'STOP' }],
+    };
+    const trailing = {
+      candidates: [{ content: { role: 'model', parts: [{ text: ' more' }] } }],
+    };
+    const fixture = createSSEFetchFixture(
+      [terminal, trailing].map((payload) => `data: ${JSON.stringify(payload)}\n\n`),
+    );
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBe('STOP');
+    expect(completed?.raw).toEqual(terminal);
+    expect(result.output_text).toBe('done more');
+  });
+
+  it('reads the Gemini finish reason from candidate zero only', async () => {
+    const chunk = {
+      candidates: [
+        { index: 0, content: { role: 'model', parts: [{ text: 'done' }] } },
+        { index: 1, content: { role: 'model', parts: [] }, finishReason: 'SAFETY' },
+      ],
+    };
+    const fixture = createSSEFetchFixture([`data: ${JSON.stringify(chunk)}\n\n`]);
+    const provider = createGeminiProvider({
+      apiKey: 'key',
+      model: 'gemini-2.5-flash',
+      apiBase: 'https://gemini.test/v1beta',
+      fetchImpl: fixture.fetchImpl,
+    });
+
+    const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+    const completed = result.events?.find(
+      (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+    );
+    expect(completed?.data.finish_reason).toBeNull();
+    expect(completed?.raw).toEqual(chunk);
+  });
+
+  it('normalizes Gemini candidate-zero finish reasons and reports null when absent', async () => {
+    const cases: readonly (readonly [unknown, string | null])[] = [
+      ['STOP', 'STOP'],
+      ['MAX_TOKENS', 'MAX_TOKENS'],
+      ['safety', 'SAFETY'],
+      [undefined, null],
+      [{ name: 'SAFETY' }, 'SAFETY'],
+      [{ value: 'RECITATION' }, 'RECITATION'],
+    ];
+
+    for (const [reason, expected] of cases) {
+      const chunk = {
+        candidates: [
+          {
+            content: { role: 'model', parts: [{ text: 'done' }] },
+            ...(reason === undefined ? {} : { finishReason: reason }),
+          },
+        ],
+      };
+      const fixture = createSSEFetchFixture([`data: ${JSON.stringify(chunk)}\n\n`]);
+      const provider = createGeminiProvider({
+        apiKey: 'key',
+        model: 'gemini-2.5-flash',
+        apiBase: 'https://gemini.test/v1beta',
+        fetchImpl: fixture.fetchImpl,
+      });
+
+      const result = await provider.turn({ ...turn, model: 'gemini-2.5-flash' });
+
+      const completed = result.events?.find(
+        (event) => event.type === AgentEventTypes.MODEL_COMPLETED,
+      );
+      expect(completed?.data.finish_reason, JSON.stringify(reason ?? null)).toBe(expected);
+      expect(completed?.raw).toEqual(chunk);
+    }
   });
 
   it('reuses Responses mechanics for xAI without inheriting OpenAI identity', async () => {

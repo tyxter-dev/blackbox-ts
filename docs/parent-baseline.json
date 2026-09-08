@@ -2,23 +2,23 @@
   "schema_version": 1,
   "parent_repository": "tyxter-dev/blackbox",
   "parent_default_branch": "master",
-  "parent_commit": "f27decbc9aeaae972c5bbeb256c70450b7fe393a",
-  "parent_tree": "1d54b26dc1d4a60cc07bfe2cb55e80deef951c1c",
-  "committed_at": "2026-06-27T18:28:22Z",
+  "parent_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
+  "parent_tree": "ef985a6ff842ef57c9d6697453c68f5f12c04a7b",
+  "committed_at": "2026-09-05T18:45:39Z",
   "feature_catalog": {
     "path": "FEATURES.md",
-    "sha256": "e60a24b4039ee4cfcd5e50fb9798e65372754ae3982a4751720e649560495d32"
+    "sha256": "3fd62dc7c326f5089a59009c23eba4089399493e9304a490ee53c8ecce8fdaee"
   },
   "evidence_files": [
     {
       "path": "FEATURES.md",
-      "blob_sha": "cf627ce04e3ca309f711fb85a4e1c872856dbbd4",
-      "size": 31958
+      "blob_sha": "38c099bce1282bacfd926fcdd7ebfb6d8a27a462",
+      "size": 32861
     },
     {
       "path": "src/blackbox/core/accounting.py",
-      "blob_sha": "e781e58d9dff0c034ba3e3c93d4aede023db8c1d",
-      "size": 20066
+      "blob_sha": "7fff3f00c0cd174d19d4aee08f44c0b5cefd4b34",
+      "size": 20239
     },
     {
       "path": "src/blackbox/core/approvals.py",
@@ -32,13 +32,13 @@
     },
     {
       "path": "src/blackbox/core/cache.py",
-      "blob_sha": "ae4b99c15999aca6908543bf28b66d01eff15d39",
-      "size": 21851
+      "blob_sha": "a240182de776ebf1e6c38fef8b2c84e68c4c36bd",
+      "size": 22006
     },
     {
       "path": "src/blackbox/core/capabilities.py",
-      "blob_sha": "4ef7b9d4ad6fa9c066a10e44ecacefb05f39e925",
-      "size": 15726
+      "blob_sha": "1006a0035ece630a752902e918df1b6b09d465b9",
+      "size": 15773
     },
     {
       "path": "src/blackbox/core/events.py",
@@ -76,9 +76,19 @@
       "size": 39916
     },
     {
+      "path": "src/blackbox/core/tool_permissions.py",
+      "blob_sha": "8a9f2defd1cce80ffb6231577f4c51e906625591",
+      "size": 9335
+    },
+    {
       "path": "src/blackbox/mcp/client.py",
-      "blob_sha": "1d563f76dc03d8f1ebb3659d9b984ed480be114a",
+      "blob_sha": "fbb7709e0cef3c5a0eeccec6b6b82eda045324fb",
       "size": 5816
+    },
+    {
+      "path": "src/blackbox/mcp/connector.py",
+      "blob_sha": "1ea0e8d486a39f1cc3698d2a45e9b65030c87fdd",
+      "size": 42698
     },
     {
       "path": "src/blackbox/mcp/security.py",
@@ -87,7 +97,7 @@
     },
     {
       "path": "src/blackbox/mcp/server.py",
-      "blob_sha": "717f44745b5cd764da1be444b3c27285d819c465",
+      "blob_sha": "0775cfa33a2eaaa9bfd51017d6d637fc48cdb4e9",
       "size": 15729
     },
     {
@@ -116,19 +126,44 @@
       "size": 30123
     },
     {
+      "path": "src/blackbox/providers/agent_adapters/claude_code.py",
+      "blob_sha": "59bbde3e4f95c6346b26978008ac4471495a9289",
+      "size": 50146
+    },
+    {
+      "path": "src/blackbox/providers/agent_adapters/codex.py",
+      "blob_sha": "1c5b24fa9215205b800606c3a2c08e40081b8c00",
+      "size": 46069
+    },
+    {
+      "path": "src/blackbox/providers/agent_adapters/local.py",
+      "blob_sha": "1697c922f47ed78ee4b79e4060e50947fd291686",
+      "size": 14356
+    },
+    {
+      "path": "src/blackbox/providers/agent_adapters/openai_cloud.py",
+      "blob_sha": "27fafd52a78bf97af64bfe791d4caf5d9922a20a",
+      "size": 32687
+    },
+    {
       "path": "src/blackbox/providers/base.py",
       "blob_sha": "ac1a37a331ea1630398f87db70203631e6577fd6",
       "size": 8817
     },
     {
       "path": "src/blackbox/providers/catalog.py",
-      "blob_sha": "3ebc7b7fd61f50d8e2b9b0c256c4e2797bde0e5a",
-      "size": 10477
+      "blob_sha": "3a5a44d3158a56e3890812266f4cdc7d46ca71e4",
+      "size": 16519
+    },
+    {
+      "path": "src/blackbox/providers/model_adapters/anthropic_messages/controls.py",
+      "blob_sha": "ff61db44f021afbe0835bc67df278d0ce2101fb4",
+      "size": 6662
     },
     {
       "path": "src/blackbox/providers/model_adapters/anthropic_messages/provider.py",
-      "blob_sha": "77b175aeaa45dbdb35923fca378155e40e2e712f",
-      "size": 44943
+      "blob_sha": "808e13e38534382ac8be03d793b7df25fe26aec9",
+      "size": 46725
     },
     {
       "path": "src/blackbox/providers/model_adapters/capability_validation.py",
@@ -137,18 +172,18 @@
     },
     {
       "path": "src/blackbox/providers/model_adapters/gemini_generate_content/provider.py",
-      "blob_sha": "c4b7d4c952ecc0e8e17b87e4a211af26cfe73bd1",
-      "size": 41192
+      "blob_sha": "7b2faf9d9a80ec19227bf78f1375ffed7db59739",
+      "size": 42977
     },
     {
       "path": "src/blackbox/providers/model_adapters/openai_responses/provider.py",
-      "blob_sha": "6a6ca9e5a89efb4805afc7c1bc0bf71444cdf0ba",
-      "size": 48631
+      "blob_sha": "bea4c6b657ac2612beb365db820a8f188410fb50",
+      "size": 52225
     },
     {
       "path": "src/blackbox/providers/model_adapters/xai_responses/provider.py",
-      "blob_sha": "80e6c5c25731550ed6db7d7573e7e47ebc1f0f49",
-      "size": 6756
+      "blob_sha": "9aad2723259d19b0f08e9e8b7f285241df0beba9",
+      "size": 7177
     },
     {
       "path": "src/blackbox/providers/model_catalog.py",
@@ -167,13 +202,13 @@
     },
     {
       "path": "src/blackbox/runtime/agent_loop.py",
-      "blob_sha": "91ba9906ed777b39b60417c879de2701b10a803e",
-      "size": 31916
+      "blob_sha": "9e5092784f7df37ead94bd8c78b23593218f10b4",
+      "size": 33037
     },
     {
       "path": "src/blackbox/runtime/agents.py",
-      "blob_sha": "87416c4e96e301d01e65d104b63839c6f0c3ba8f",
-      "size": 41432
+      "blob_sha": "56670c85b512c6b26bfaab6d23890c7505755f84",
+      "size": 41946
     },
     {
       "path": "src/blackbox/runtime/config.py",
@@ -182,13 +217,13 @@
     },
     {
       "path": "src/blackbox/runtime/main.py",
-      "blob_sha": "cd3bb2bcc28b4cf16501fda008ed8e7aee35da00",
-      "size": 100643
+      "blob_sha": "cc41662c5bf677d3b9f9c5fbea555a3f60bd8adf",
+      "size": 102288
     },
     {
       "path": "src/blackbox/runtime/model.py",
-      "blob_sha": "6a57289a7719feb61b1f732ec94c1203d17e07a6",
-      "size": 19707
+      "blob_sha": "255219b3bd3863819a9e386df66fb4bb563a2e49",
+      "size": 20228
     },
     {
       "path": "src/blackbox/runtime/output.py",
@@ -207,13 +242,13 @@
     },
     {
       "path": "src/blackbox/tools/hosted_runtime.py",
-      "blob_sha": "e30ed7ed10b1586a6a06eb8c8dd46d7f37505e88",
-      "size": 8433
+      "blob_sha": "4d60eaea94eaf10542195349d96e50a94bf79b8b",
+      "size": 8875
     },
     {
       "path": "src/blackbox/tools/hosted/specs.py",
-      "blob_sha": "b40f6eab264d6fc22e0f9ae1728158e1670e055d",
-      "size": 26933
+      "blob_sha": "f351b502a86020f9f94c27886a5c98bb1f4a563b",
+      "size": 27334
     },
     {
       "path": "src/blackbox/tools/registry.py",
@@ -222,8 +257,8 @@
     },
     {
       "path": "src/blackbox/tools/runtime.py",
-      "blob_sha": "41a439db20c2cf989a72d69fc32d3ca55bb5a3a3",
-      "size": 3675
+      "blob_sha": "909b983814d910738c50b7908048c315b801b1c6",
+      "size": 5361
     },
     {
       "path": "src/blackbox/workers/anthropic.py",
@@ -246,14 +281,19 @@
       "size": 10574
     },
     {
+      "path": "src/blackbox/workspace_agents/permissions.py",
+      "blob_sha": "580cbcd5149b0150c549673ba4d8098c1f2dcf35",
+      "size": 4770
+    },
+    {
       "path": "src/blackbox/workspace_agents/registry.py",
       "blob_sha": "bdbe9c337c03adb63e4bea51af1587eda4a7d874",
       "size": 9997
     },
     {
       "path": "src/blackbox/workspace_agents/runtime.py",
-      "blob_sha": "2a274d2ddfea07271cbf3af0ecf68b9f6d1acc60",
-      "size": 5880
+      "blob_sha": "1e9e4437289ed01c95844ba788a704373da7d601",
+      "size": 8587
     },
     {
       "path": "src/blackbox/workspace_agents/schedules.py",
@@ -262,8 +302,8 @@
     },
     {
       "path": "src/blackbox/workspace_agents/validation.py",
-      "blob_sha": "b9d426da5ba332e70231f7934974406953d0fb39",
-      "size": 14403
+      "blob_sha": "919004422826a076d7fba04666a34f7fc2ca3abe",
+      "size": 14846
     },
     {
       "path": "src/blackbox/workspaces/git.py",
@@ -291,9 +331,24 @@
       "size": 23231
     },
     {
+      "path": "src/blackbox/workspaces/tools.py",
+      "blob_sha": "42d082ef47893592ab4be000eef71cc7b688c403",
+      "size": 11402
+    },
+    {
       "path": "tests/contracts/test_capability_honesty.py",
       "blob_sha": "a07c08433ee9b59ef44860fdcd352a4efcb94d83",
       "size": 15268
+    },
+    {
+      "path": "tests/contracts/test_package_permission_capabilities.py",
+      "blob_sha": "fe015e308dafac7bee0cfc2d5aa07de302569c1f",
+      "size": 3517
+    },
+    {
+      "path": "tests/e2e/test_permissioned_package.py",
+      "blob_sha": "5cf35b4ee830384661f2f682f95fa95a84029f77",
+      "size": 1872
     },
     {
       "path": "tests/golden/anthropic/test_messages_event_mapping.py",
@@ -301,14 +356,24 @@
       "size": 12039
     },
     {
+      "path": "tests/golden/codex/test_app_server_event_mapping.py",
+      "blob_sha": "c26b9ab893b91d8ad4778a63d8d2a0b3a0e69498",
+      "size": 1141
+    },
+    {
       "path": "tests/golden/gemini/test_generate_content_event_mapping.py",
-      "blob_sha": "d4fc3c0b9ca0a005dff389f97670d3d11c524597",
-      "size": 7175
+      "blob_sha": "98b4e08ba2af7cf945070ac779980131a4117e07",
+      "size": 10601
     },
     {
       "path": "tests/golden/openai/test_responses_event_mapping.py",
       "blob_sha": "78c930b02dd481353835b9e2498b77ab73b08382",
       "size": 13987
+    },
+    {
+      "path": "tests/integration/codex/test_codex_subscription.py",
+      "blob_sha": "5674011816600d8f418ec93706d99881514be0d2",
+      "size": 1532
     },
     {
       "path": "tests/journey/model_provider/test_model_provider_journeys.py",
@@ -327,13 +392,38 @@
     },
     {
       "path": "tests/runtime/test_agent_session_run.py",
-      "blob_sha": "5ae4f70359c2083e650066b2c94281bccaf0a630",
-      "size": 8641
+      "blob_sha": "555b40a161caf0c59266106d236dac4f4ae5933b",
+      "size": 10161
+    },
+    {
+      "path": "tests/runtime/test_cache_metadata.py",
+      "blob_sha": "925f9fd2e3e6060ea43f16ca0dd162fa9754b9e3",
+      "size": 3418
+    },
+    {
+      "path": "tests/runtime/test_claude_code_agent_provider.py",
+      "blob_sha": "a9b0a2f10f85a12b18199cf9fd332e6b4dea383c",
+      "size": 24194
+    },
+    {
+      "path": "tests/runtime/test_codex_agent_provider.py",
+      "blob_sha": "811d44ea6c5acaa5355ac0e483bc6b4b19b55ade",
+      "size": 8660
     },
     {
       "path": "tests/runtime/test_model_capability_validation.py",
       "blob_sha": "34cf6998be03a332adc6326b76764b066ce2bbb8",
       "size": 8663
+    },
+    {
+      "path": "tests/runtime/test_package_permission_regressions.py",
+      "blob_sha": "e4d8d2d5f38293f0cdf416dbb3227c7bb969d370",
+      "size": 5861
+    },
+    {
+      "path": "tests/runtime/test_package_permissions.py",
+      "blob_sha": "4ff71a4a15aadaa66bf20037c837d103a55c344e",
+      "size": 20706
     },
     {
       "path": "tests/runtime/test_prompt_composition.py",
@@ -392,7 +482,7 @@
     },
     {
       "path": "tests/unit/core/test_model_accounting.py",
-      "blob_sha": "536edd04fe7251581361ade2d708b4e2cb913092",
+      "blob_sha": "ac61093df47b816010a54c31a76aa02522856bdf",
       "size": 18345
     },
     {
@@ -417,8 +507,8 @@
     },
     {
       "path": "tests/unit/mcp/test_mcp_client.py",
-      "blob_sha": "6bcf393dffaf5f096a03cbda3405cbc37d34ffc1",
-      "size": 4958
+      "blob_sha": "316b538c29feab2d9508089131c8a303e0ae6419",
+      "size": 5185
     },
     {
       "path": "tests/unit/mcp/test_mcp_security_validation.py",
@@ -427,7 +517,7 @@
     },
     {
       "path": "tests/unit/mcp/test_mcp_server.py",
-      "blob_sha": "a057ab7b76abfe14f3df652eba9ab3c3f9faa9fb",
+      "blob_sha": "8e7ddee25587d97c36c5ce1b0483dd9ce4fea72e",
       "size": 6177
     },
     {
@@ -456,6 +546,11 @@
       "size": 1104
     },
     {
+      "path": "tests/unit/providers/model_adapters/test_current_model_controls.py",
+      "blob_sha": "78febd016ba2573da23bae5d98b3c88941ddc83f",
+      "size": 15036
+    },
+    {
       "path": "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
       "blob_sha": "6969e58a49d501877a91c0e85530c7bd14829d87",
       "size": 9612
@@ -467,8 +562,8 @@
     },
     {
       "path": "tests/unit/providers/test_bundled_model_catalog.py",
-      "blob_sha": "5e0d43d39e600be4ab061f12f365580e4b8fdb13",
-      "size": 2855
+      "blob_sha": "70d6b40996f4c43b659a72a0356db4cca5ebd86b",
+      "size": 4697
     },
     {
       "path": "tests/unit/providers/test_model_catalog.py",
@@ -477,8 +572,8 @@
     },
     {
       "path": "tests/unit/skills/test_skills.py",
-      "blob_sha": "eeb006d0a321b3b33d68a3f815c371e922baa01e",
-      "size": 3699
+      "blob_sha": "9210f3c3471552f1cd5c9b1e93fb8fe1da06ef84",
+      "size": 4504
     },
     {
       "path": "tests/unit/tools/test_hosted_tools_v2.py",
@@ -519,6 +614,11 @@
       "path": "tests/unit/workspace_agents/test_package.py",
       "blob_sha": "f8b9564c448b237eaaeaeaa7c323393c7520f3c4",
       "size": 8975
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_permission_enforcement.py",
+      "blob_sha": "da7358203c8b54f1dc69f38972d03878c4f91b2d",
+      "size": 5007
     },
     {
       "path": "tests/unit/workspace_agents/test_schedule_executor.py",
@@ -563,14 +663,29 @@
       "size": 15268
     },
     {
+      "path": "tests/contracts/test_package_permission_capabilities.py",
+      "blob_sha": "fe015e308dafac7bee0cfc2d5aa07de302569c1f",
+      "size": 3517
+    },
+    {
       "path": "tests/e2e/test_diet_coach_example.py",
       "blob_sha": "0e5e6794c83f42afc172637717f14c087f307013",
       "size": 1520
     },
     {
+      "path": "tests/e2e/test_permissioned_package.py",
+      "blob_sha": "5cf35b4ee830384661f2f682f95fa95a84029f77",
+      "size": 1872
+    },
+    {
       "path": "tests/golden/anthropic/test_messages_event_mapping.py",
       "blob_sha": "a01e50a9b5d0b0267219530ab9496d42b2985122",
       "size": 12039
+    },
+    {
+      "path": "tests/golden/codex/test_app_server_event_mapping.py",
+      "blob_sha": "c26b9ab893b91d8ad4778a63d8d2a0b3a0e69498",
+      "size": 1141
     },
     {
       "path": "tests/golden/gemini_live/test_event_mapping.py",
@@ -579,8 +694,8 @@
     },
     {
       "path": "tests/golden/gemini/test_generate_content_event_mapping.py",
-      "blob_sha": "d4fc3c0b9ca0a005dff389f97670d3d11c524597",
-      "size": 7175
+      "blob_sha": "98b4e08ba2af7cf945070ac779980131a4117e07",
+      "size": 10601
     },
     {
       "path": "tests/golden/openai_realtime/test_event_mapping.py",
@@ -606,6 +721,11 @@
       "path": "tests/integration/anthropic/test_messages_smoke.py",
       "blob_sha": "271e1c458d4b6997322a6b02eeb445884456843f",
       "size": 1255
+    },
+    {
+      "path": "tests/integration/codex/test_codex_subscription.py",
+      "blob_sha": "5674011816600d8f418ec93706d99881514be0d2",
+      "size": 1532
     },
     {
       "path": "tests/integration/gemini/test_cache_and_cost.py",
@@ -669,8 +789,8 @@
     },
     {
       "path": "tests/runtime/test_agent_session_run.py",
-      "blob_sha": "5ae4f70359c2083e650066b2c94281bccaf0a630",
-      "size": 8641
+      "blob_sha": "555b40a161caf0c59266106d236dac4f4ae5933b",
+      "size": 10161
     },
     {
       "path": "tests/runtime/test_agent_webhook_ingress.py",
@@ -678,9 +798,19 @@
       "size": 6131
     },
     {
+      "path": "tests/runtime/test_cache_metadata.py",
+      "blob_sha": "925f9fd2e3e6060ea43f16ca0dd162fa9754b9e3",
+      "size": 3418
+    },
+    {
       "path": "tests/runtime/test_claude_code_agent_provider.py",
-      "blob_sha": "cc6dd84e516761a9b0d548b23ffa32539844a66d",
-      "size": 13856
+      "blob_sha": "a9b0a2f10f85a12b18199cf9fd332e6b4dea383c",
+      "size": 24194
+    },
+    {
+      "path": "tests/runtime/test_codex_agent_provider.py",
+      "blob_sha": "811d44ea6c5acaa5355ac0e483bc6b4b19b55ade",
+      "size": 8660
     },
     {
       "path": "tests/runtime/test_dynamic_tool_routing.py",
@@ -731,6 +861,16 @@
       "path": "tests/runtime/test_openai_agents_provider.py",
       "blob_sha": "4230f0c44567dc040a9ebbbbd51b39d771a21219",
       "size": 7205
+    },
+    {
+      "path": "tests/runtime/test_package_permission_regressions.py",
+      "blob_sha": "e4d8d2d5f38293f0cdf416dbb3227c7bb969d370",
+      "size": 5861
+    },
+    {
+      "path": "tests/runtime/test_package_permissions.py",
+      "blob_sha": "4ff71a4a15aadaa66bf20037c837d103a55c344e",
+      "size": 20706
     },
     {
       "path": "tests/runtime/test_prompt_composition.py",
@@ -804,8 +944,8 @@
     },
     {
       "path": "tests/unit/compat/test_compat_providers.py",
-      "blob_sha": "9cd2639ca3576e6bc6dadcccaf1e42d4aa96fb36",
-      "size": 5099
+      "blob_sha": "8cff3348092ca10b3867ae6720d2ffc405c17fd8",
+      "size": 5678
     },
     {
       "path": "tests/unit/core/test_data_models.py",
@@ -819,7 +959,7 @@
     },
     {
       "path": "tests/unit/core/test_model_accounting.py",
-      "blob_sha": "536edd04fe7251581361ade2d708b4e2cb913092",
+      "blob_sha": "ac61093df47b816010a54c31a76aa02522856bdf",
       "size": 18345
     },
     {
@@ -829,8 +969,8 @@
     },
     {
       "path": "tests/unit/core/test_pricing_catalog.py",
-      "blob_sha": "0666cd7fa16d59f39a59e28fd60b4f85f9cc4f4f",
-      "size": 5396
+      "blob_sha": "62a6fc0eeb098ded7748b65d4adab8216e8ae5ea",
+      "size": 11231
     },
     {
       "path": "tests/unit/core/test_provider_cache.py",
@@ -879,8 +1019,8 @@
     },
     {
       "path": "tests/unit/mcp/test_mcp_client.py",
-      "blob_sha": "6bcf393dffaf5f096a03cbda3405cbc37d34ffc1",
-      "size": 4958
+      "blob_sha": "316b538c29feab2d9508089131c8a303e0ae6419",
+      "size": 5185
     },
     {
       "path": "tests/unit/mcp/test_mcp_connector.py",
@@ -894,7 +1034,7 @@
     },
     {
       "path": "tests/unit/mcp/test_mcp_server.py",
-      "blob_sha": "a057ab7b76abfe14f3df652eba9ab3c3f9faa9fb",
+      "blob_sha": "8e7ddee25587d97c36c5ce1b0483dd9ce4fea72e",
       "size": 6177
     },
     {
@@ -953,6 +1093,11 @@
       "size": 1104
     },
     {
+      "path": "tests/unit/providers/model_adapters/test_current_model_controls.py",
+      "blob_sha": "78febd016ba2573da23bae5d98b3c88941ddc83f",
+      "size": 15036
+    },
+    {
       "path": "tests/unit/providers/model_adapters/test_echo_model.py",
       "blob_sha": "faab1794ed197985394618367e43096118db930e",
       "size": 851
@@ -969,8 +1114,8 @@
     },
     {
       "path": "tests/unit/providers/model_adapters/test_model_request_controls.py",
-      "blob_sha": "ef531610ecf88906e84c6a5a41c4af3d02c3a82c",
-      "size": 21967
+      "blob_sha": "6aab404b3a0bb9e5813cd4f9e74db9f945836519",
+      "size": 22507
     },
     {
       "path": "tests/unit/providers/model_adapters/test_multimodal_input.py",
@@ -979,8 +1124,8 @@
     },
     {
       "path": "tests/unit/providers/test_bundled_model_catalog.py",
-      "blob_sha": "5e0d43d39e600be4ab061f12f365580e4b8fdb13",
-      "size": 2855
+      "blob_sha": "70d6b40996f4c43b659a72a0356db4cca5ebd86b",
+      "size": 4697
     },
     {
       "path": "tests/unit/providers/test_model_catalog.py",
@@ -1009,8 +1154,8 @@
     },
     {
       "path": "tests/unit/skills/test_skills.py",
-      "blob_sha": "eeb006d0a321b3b33d68a3f815c371e922baa01e",
-      "size": 3699
+      "blob_sha": "9210f3c3471552f1cd5c9b1e93fb8fe1da06ef84",
+      "size": 4504
     },
     {
       "path": "tests/unit/tools/test_hosted_tool_capabilities.py",
@@ -1056,6 +1201,11 @@
       "path": "tests/unit/workspace_agents/test_package.py",
       "blob_sha": "f8b9564c448b237eaaeaeaa7c323393c7520f3c4",
       "size": 8975
+    },
+    {
+      "path": "tests/unit/workspace_agents/test_permission_enforcement.py",
+      "blob_sha": "da7358203c8b54f1dc69f38972d03878c4f91b2d",
+      "size": 5007
     },
     {
       "path": "tests/unit/workspace_agents/test_schedule_executor.py",

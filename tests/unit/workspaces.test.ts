@@ -60,12 +60,28 @@ describe('local workspace', () => {
     expect(events.some((event) => event.type === AgentEventTypes.WORKSPACE_SNAPSHOT_CREATED)).toBe(
       true,
     );
-    expect(workspaceToolDefinitions(workspace).map((tool) => tool.name)).toEqual([
+    const definitions = workspaceToolDefinitions(workspace);
+    expect(definitions.map((tool) => tool.name)).toEqual([
       'workspace_read',
       'workspace_list',
       'workspace_write',
       'workspace_command',
     ]);
+    // Permission metadata: the canonical operation, its ref, and the parent's
+    // per-operation scopes. A package grant is written against the operation.
+    expect(
+      definitions.map((tool) => [tool.category, tool.metadata?.workspace_operation, tool.scopes]),
+    ).toEqual([
+      ['workspace', 'read', ['read']],
+      ['workspace', 'list', ['read']],
+      ['workspace', 'write', ['write']],
+      ['workspace', 'command', ['execute']],
+    ]);
+    expect(definitions[0]?.metadata).toMatchObject({
+      ref: 'workspace:read',
+      workspace_kind: 'local',
+      workspace_id: workspace.id,
+    });
   });
 
   it('executes argument-safe commands and enforces output caps', async () => {

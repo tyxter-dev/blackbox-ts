@@ -1,5 +1,8 @@
 # Features
 
+This is the canonical feature catalog for `blackbox-ts`. The pinned Python inventory is
+historical compatibility evidence; adapter profiles remain authoritative for request support.
+
 ## Provider-neutral runtime
 
 - Separate model, agent-session, and realtime provider registries.
@@ -33,6 +36,11 @@
 - Local agent sessions plus injected OpenAI Agents and Claude Code adapters; durable replay,
   idempotent follow-ups, artifacts, approvals, cancellation, and conservative Vertex/webhook
   contracts.
+- Codex agent sessions through an injected app-server protocol client (0.147.0 baseline),
+  with event normalization, native approvals and file-change artifacts. No bundled SDK/process;
+  resume and package-permission support are disabled.
+- Invocation-scoped `allowlist_v1` package grants through `runWorkspaceAgent`, with
+  exposure/routing/dispatch enforcement and MCP/workspace permission metadata.
 
 ## Environments and integrations
 
@@ -45,7 +53,7 @@
 - Pricing/accounting with parent-pinned provenance, billable policy, cache metrics, prompt
   dry-runs, and ten frozen workflow profiles.
 - Managed realtime sessions and injected OpenAI Realtime/Gemini Live duplex providers.
-- Lease/heartbeat environment workers and partial opt-in Anthropic Managed Agents adapter.
+- Lease/heartbeat environment workers and partial opt-in Anthropic Managed Agents work source.
 - Trace reconstruction, production metrics, OpenTelemetry export, replay/diff, and evaluators.
 
 ## Deliberately product-owned

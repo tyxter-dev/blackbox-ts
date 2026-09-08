@@ -55,6 +55,8 @@ if (reportPath !== undefined) await writeFile(reportPath, `${JSON.stringify(repo
 if (process.env.GITHUB_STEP_SUMMARY !== undefined) {
   await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`, 'utf8');
 }
+// Drift is informational by default; `--fail-on-drift` is an opt-in flag for
+// callers that want a non-zero exit when the reference branch has moved.
 if (drifted && process.argv.includes('--fail-on-drift')) process.exitCode = 1;
 
 async function githubJson(url) {
@@ -85,7 +87,7 @@ function renderMarkdown(report) {
         (file) => `- \`${file.path}\` (${file.status}, +${file.additions}/-${file.deletions})`,
       ),
       '',
-      'Do not update the pinned commit automatically. Open an intentional parity-baseline PR, regenerate cross-language fixtures, and review every changed parent feature.',
+      'blackbox-ts is canonical; this repository freezes its Python reference at the recorded pin. Parent movement affects no automated CI or release gate. This command fails on drift only with --fail-on-drift. Bump the pin only through the reviewed procedure in docs/PARITY_MAINTENANCE.md.',
     );
   }
   return lines.join('\n');

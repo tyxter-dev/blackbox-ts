@@ -8,13 +8,33 @@ import {
   ProviderExecutionError,
   ProviderNotConfiguredError,
   ProviderNotFoundError,
+  ToolExecutionError,
+  UnsupportedFeatureError,
 } from '../core/errors.js';
 import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../core/events.js';
 import { createRuntimeId } from '../core/ids.js';
 import { createRunItem, type RunItem } from '../core/items.js';
-import { allow, AllowAllPolicy, type Policy, type PolicyCheckpoint } from '../core/policy.js';
+import {
+  allow,
+  AllowAllPolicy,
+  type Policy,
+  type PolicyCheckpoint,
+  type PolicyRequest,
+} from '../core/policy.js';
+import {
+  activePermissions,
+  approvalKey,
+  definitionAllowed,
+  hostedRequest,
+  hostedToolKind,
+  internalDiscoveryTool,
+  packageDecision,
+  permissionBoundaryIterator,
+  toolRequest,
+  validatePackageModelConfig,
+} from '../core/tool-permissions.js';
 import { resolveOutputStrategy } from '../core/capabilities.js';
-import type { AgentResult, OutputSpec, ToolPayload } from '../core/results.js';
+import type { AgentResult, OutputSpec, OutputStrategy, ToolPayload } from '../core/results.js';
 import type { ProviderState } from '../core/state.js';
 import { addUsage, type ModelUsage } from '../core/usage.js';
 import { validateOutputText, type JsonSchema } from '../output/validation.js';
@@ -23,7 +43,8 @@ import { parseProviderModelRef } from '../core/refs.js';
 import type { Artifact } from '../core/artifacts.js';
 import { ModelRuntime, type ModelRunRequest } from './model-runtime.js';
 import { ToolRuntime } from '../tools/runtime.js';
-import { ToolRegistry } from '../tools/registry.js';
+import { ToolRegistry, type ToolSession } from '../tools/registry.js';
+import type { HostedToolSpec } from '../providers/base.js';
 import {
   ToolsetRuntime,
   type ToolBudget,
@@ -75,7 +96,26 @@ export class AgentLoop {
     readonly policy: Policy = new AllowAllPolicy(),
   ) {}
 
-  async *stream<T = string>(request: AgentRunRequest<T>): AsyncIterable<AgentEvent> {
+  /**
+   * Stream a run, keeping the caller's package permission boundary attached to
+   * the returned iterator.
+   *
+   * An async generator body resumes in the async context of whoever pulls it,
+   * so a stream created inside a boundary but consumed outside one would run
+   * its remaining turns unconstrained. The boundary is captured here -- the
+   * innermost public seam, so a consumer driving this loop directly is covered
+   * too -- and re-entered around every step. With no boundary active the run
+   * generator is returned untouched.
+   */
+  stream<T = string>(request: AgentRunRequest<T>): AsyncIterable<AgentEvent> {
+    const permissions = activePermissions();
+    const source = this.streamRun(request);
+    return permissions.length === 0
+      ? source
+      : permissionBoundaryIterator(permissions, source[Symbol.asyncIterator]());
+  }
+
+  private async *streamRun<T = string>(request: AgentRunRequest<T>): AsyncGenerator<AgentEvent> {
     const runId = createRuntimeId('run');
     let sequence = 0;
     const stamp = (event: AgentEvent): AgentEvent => ({
@@ -240,13 +280,50 @@ export class AgentLoop {
         assertApproved(decision, 'model.run');
       }
 
+      let turnHostedTools = request.hosted_tools;
+      if (activePermissions().length > 0 && turnHostedTools !== undefined) {
+        const admitted: HostedToolSpec[] = [];
+        for (const spec of validatePackageModelConfig(turnHostedTools, {})) {
+          const hosted = hostedRequest(hostedToolKind(spec), {
+            checkpoint: 'before_hosted_tool_config',
+          });
+          const decision = (await (request.policy ?? this.policy).check(hosted)) ?? allow();
+          if (decision.verdict === 'require_approval') {
+            throw new UnsupportedFeatureError(
+              'Hosted configuration approval requires an external approval channel.',
+            );
+          }
+          if (decision.verdict === 'deny') {
+            yield stamp(
+              createAgentEvent({
+                type: AgentEventTypes.TOOL_CHOICE_REJECTED,
+                trace_id: request.trace_id,
+                data: {
+                  name: hosted.action,
+                  checkpoint: hosted.checkpoint,
+                  reason: decision.reason,
+                },
+              }),
+            );
+            continue;
+          }
+          admitted.push(spec);
+        }
+        turnHostedTools = admitted;
+      }
+
       let result;
       try {
         result = await this.runWithFallback(
           modelRequestForAgent(
-            { ...request, output, instructions: promptPlan.instructions || undefined },
+            {
+              ...request,
+              output,
+              instructions: promptPlan.instructions || undefined,
+              hosted_tools: turnHostedTools,
+            },
             messages,
-            session.toProviderTools(selectedNames),
+            providerTools(session, selectedNames, finalizerName, output?.strategy),
             providerState,
           ),
           request.fallback_providers ?? [],
@@ -272,9 +349,14 @@ export class AgentLoop {
         refreshSelectedNames(selectedNames, directNames, toolsetRuntime);
         result = await this.runWithFallback(
           modelRequestForAgent(
-            { ...request, output, instructions: promptPlan.instructions || undefined },
+            {
+              ...request,
+              output,
+              instructions: promptPlan.instructions || undefined,
+              hosted_tools: turnHostedTools,
+            },
             messages,
-            session.toProviderTools(selectedNames),
+            providerTools(session, selectedNames, finalizerName, output?.strategy),
             providerState,
           ),
           request.fallback_providers ?? [],
@@ -408,6 +490,14 @@ export class AgentLoop {
       toolsetRuntime?.recordCalls(executableCalls.length);
       const visibleBefore = toolsetRuntime?.visibleNames().join('\u0000');
       const authorizedCalls: ToolCall[] = [];
+      // One turn's approvals, exactly as the parent rebuilds its dispatch
+      // runtime per turn: a key granted here never survives into a later turn.
+      const packageApprovals = new Set<string>();
+      // Read once per turn: the boundary is an async-local frame that cannot
+      // change while this turn runs, and every package-specific branch below
+      // (canonical request, approval keys, rejection events) is gated on it so
+      // an unconstrained run keeps its pre-package behaviour exactly.
+      const enforced = activePermissions().length > 0;
       for (const call of executableCalls) {
         yield stamp(
           createAgentEvent({
@@ -417,13 +507,43 @@ export class AgentLoop {
             data: { name: call.name, call_id: call.call_id, arguments: call.arguments },
           }),
         );
-        const decision =
-          (await (request.policy ?? this.policy).check({
-            checkpoint: 'before_tool_call',
-            action: call.name,
-            arguments: call.arguments,
-            metadata: {},
-          })) ?? allow();
+        // The package boundary decides first, on the canonical request built
+        // from the registered definition; the user policy may then only
+        // tighten that verdict. A package denial is not raised here: the call
+        // still reaches the tool runtime, which refuses it with the
+        // `denied_by_policy` result the loop reports below, so one denied tool
+        // does not end a run that can still finish.
+        let definition: ToolDefinition | undefined;
+        let policyRequest: PolicyRequest = {
+          checkpoint: 'before_tool_call',
+          action: call.name,
+          arguments: call.arguments,
+          metadata: {},
+        };
+        let internal = false;
+        if (enforced) {
+          try {
+            definition = session.get(call.name);
+            policyRequest = toolRequest(definition, {
+              checkpoint: 'before_tool_call',
+              arguments: call.arguments,
+            });
+            internal = internalDiscoveryTool(definition);
+          } catch (cause) {
+            // An unregistered name has no definition to describe; the minimal
+            // request above stands in, and dispatch reports the missing tool.
+            if (!(cause instanceof ToolExecutionError)) throw cause;
+          }
+        }
+        let decision = enforced && !internal ? packageDecision(policyRequest) : allow();
+        const packageDenied = decision.verdict === 'deny';
+        if (!packageDenied) {
+          const userDecision =
+            (await (request.policy ?? this.policy).check(policyRequest)) ?? allow();
+          if (userDecision.verdict !== 'allow') decision = userDecision;
+        } else {
+          decision = allow();
+        }
         let effectiveArguments = call.arguments;
         if (decision.verdict === 'deny') {
           throw new ApprovalError(
@@ -434,6 +554,15 @@ export class AgentLoop {
           );
         }
         if (decision.verdict === 'require_approval') {
+          // Compute the approval key before the ticket is awaited, from the
+          // definition the decision was made on: a registry entry swapped
+          // while the approval is pending produces a different key at
+          // dispatch and is refused there. The key is recorded for any
+          // approval this call waited on, whoever asked for it -- as in the
+          // parent, a user-policy approval also opens the dispatch to nested
+          // package checkpoints.
+          const approvedKey =
+            enforced && definition !== undefined ? approvalKey(definition) : undefined;
           if (request.approval_manager === undefined) {
             throw new ApprovalError(decision.reason ?? `Action '${call.name}' requires approval.`, {
               code: 'approval_required',
@@ -471,6 +600,7 @@ export class AgentLoop {
               code: 'approval_denied',
             });
           }
+          if (approvedKey !== undefined) packageApprovals.add(approvedKey);
           effectiveArguments = approval.modified_arguments ?? effectiveArguments;
         }
         authorizedCalls.push({ ...call, arguments: effectiveArguments });
@@ -484,6 +614,7 @@ export class AgentLoop {
         );
       }
 
+      if (activePermissions().length > 0) toolRuntime.package_approvals = packageApprovals;
       const results = await Promise.all(
         authorizedCalls.map(async (call) => {
           try {
@@ -533,6 +664,25 @@ export class AgentLoop {
             data: { ...item.data, payload: resultValue.payload },
           }),
         );
+        if (enforced && resultValue.metadata.error === 'denied_by_policy') {
+          // The failed tool_result above is the model-visible half; this event
+          // is the run-visible one. TOOL_CALL_FAILED still fires because a
+          // denial arrives here as an ordinary failed result and nothing about
+          // that shape is package specific.
+          yield stamp(
+            createAgentEvent({
+              type: AgentEventTypes.TOOL_CHOICE_REJECTED,
+              trace_id: request.trace_id,
+              item_id: item.id,
+              data: {
+                call_id: call.call_id,
+                name: call.name,
+                reason: resultValue.metadata.reason ?? 'denied_by_policy',
+                checkpoint: 'before_tool_call',
+              },
+            }),
+          );
+        }
         messages.push({
           role: 'tool',
           tool_call_id: call.call_id,
@@ -691,6 +841,33 @@ function runCancelled(reason: unknown): AgentRuntimeError {
     code: 'run_cancelled',
     cause: reason,
   });
+}
+
+/**
+ * Model-visible tools for one turn, filtered by the active package boundary.
+ *
+ * The filter runs per turn, not once per run: the boundary is an async-local
+ * frame and a later turn can be constrained differently from an earlier one.
+ * Under the `finalizer_tool` strategy -- the only strategy that registers the
+ * finalizer, and the one whose run cannot complete without calling it -- the
+ * finalizer name is exempt: the tool this loop registers carries no handler to
+ * mark as runtime-owned, so a name exemption is what is left. The exemption is
+ * by name, so a caller-registered tool of the same name is exempt too under
+ * that strategy. Discovery meta tools are exempt by handler identity inside
+ * {@link definitionAllowed}. With no boundary active the selected names reach
+ * `toProviderTools` untouched.
+ */
+function providerTools(
+  session: ToolSession,
+  selectedNames: readonly string[],
+  finalizerName: string,
+  outputStrategy: OutputStrategy | undefined,
+): readonly ToolDefinition[] {
+  if (activePermissions().length === 0) return session.toProviderTools(selectedNames);
+  const exempt = outputStrategy === 'finalizer_tool' ? finalizerName : undefined;
+  return session.toProviderTools(
+    selectedNames.filter((name) => name === exempt || definitionAllowed(session.get(name))),
+  );
 }
 
 function refreshSelectedNames(

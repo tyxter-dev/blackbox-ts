@@ -1,5 +1,11 @@
 import { MCPAuthenticationError, MCPError } from '../core/errors.js';
 import { AgentEventTypes, createAgentEvent, type AgentEvent } from '../core/events.js';
+import type { PolicyRequest } from '../core/policy.js';
+import {
+  activePermissions,
+  packageCallApproved,
+  packageDecision,
+} from '../core/tool-permissions.js';
 import { toolResult, type ToolDefinition } from '../tools/types.js';
 import {
   MCP_PROTOCOL_VERSIONS,
@@ -50,6 +56,9 @@ export interface MCPClientOptions {
 export class MCPClient {
   private initializedVersion?: MCPProtocolVersion;
   private toolsCache?: { readonly expires: number; readonly tools: readonly MCPTool[] };
+  private toolsGeneration = 0;
+  /** The current generation's `tools/list`, shared by callers that miss the cache. */
+  private pendingTools?: Promise<readonly MCPTool[]>;
   private readonly trust: MCPTrustPolicy;
   private readonly now: () => number;
   private readonly unsubscribeNotifications?: () => void;
@@ -82,7 +91,7 @@ export class MCPClient {
         {
           protocolVersion: requested,
           capabilities: {},
-          clientInfo: { name: 'blackbox-ts', version: '0.1.0' },
+          clientInfo: { name: 'blackbox-ts', version: '0.2.0' },
         },
         options.signal,
       ),
@@ -115,6 +124,17 @@ export class MCPClient {
     return this.initializedVersion;
   }
 
+  /**
+   * List the visible tools, from the cache while it is fresh.
+   *
+   * Callers that miss the cache share the current generation's `tools/list`,
+   * so concurrent callers resolve the same descriptor objects. Invalidation
+   * starts a new generation; older callers may finish with their original
+   * response, but that response cannot repopulate the current cache. A refetch that discovers the descriptors unchanged
+   * keeps the objects the cache already held: descriptor identity therefore
+   * changes only when the list really changed or an invalidation dropped it,
+   * which is what the dispatch pin in {@link callTool} compares.
+   */
   async listTools(
     options: { readonly refresh?: boolean; readonly signal?: AbortSignal } = {},
   ): Promise<readonly MCPTool[]> {
@@ -123,19 +143,37 @@ export class MCPClient {
       await this.emit(AgentEventTypes.MCP_TOOLS_CACHE_HIT, {});
       return this.toolsCache.tools;
     }
+    if (this.pendingTools === undefined) {
+      const pending = this.fetchTools(this.toolsGeneration, options.signal).finally(() => {
+        if (this.pendingTools === pending) this.pendingTools = undefined;
+      });
+      this.pendingTools = pending;
+    }
+    return this.pendingTools;
+  }
+
+  private async fetchTools(generation: number, signal?: AbortSignal): Promise<readonly MCPTool[]> {
     await this.emit(AgentEventTypes.MCP_LIST_TOOLS_STARTED, {});
-    const response = asRecord(await this.request('tools/list', {}, options.signal));
+    const response = asRecord(await this.request('tools/list', {}, signal));
     const discovered = Array.isArray(response.tools) ? response.tools.map(readTool) : [];
-    const tools: MCPTool[] = [];
+    const fetched: MCPTool[] = [];
     for (const tool of discovered) {
       if (!this.isNamedToolAllowed(tool.name)) continue;
       const trust = await this.trust.evaluate(this.server, tool);
-      if (trust.allowed) tools.push(tool);
+      if (trust.allowed) fetched.push(tool);
     }
-    this.toolsCache = {
-      expires: this.now() + (this.options.cache_ttl_ms ?? 30_000),
-      tools,
-    };
+    // An expired cache that was never invalidated still holds the descriptors
+    // callers resolved from; keep those objects when the server reports the
+    // same list, so a TTL refresh alone never manufactures a "changed" tool.
+    const previous = generation === this.toolsGeneration ? this.toolsCache?.tools : undefined;
+    const tools =
+      previous !== undefined && stableJson(previous) === stableJson(fetched) ? previous : fetched;
+    if (generation === this.toolsGeneration) {
+      this.toolsCache = {
+        expires: this.now() + (this.options.cache_ttl_ms ?? 30_000),
+        tools,
+      };
+    }
     await this.emit(AgentEventTypes.MCP_LIST_TOOLS_COMPLETED, {
       discovered: discovered.length,
       visible: tools.length,
@@ -144,7 +182,9 @@ export class MCPClient {
   }
 
   invalidateTools(reason = 'listChanged'): void {
+    this.toolsGeneration += 1;
     this.toolsCache = undefined;
+    this.pendingTools = undefined;
     void this.emit(AgentEventTypes.MCP_TOOLS_CACHE_INVALIDATED, { reason });
   }
 
@@ -162,6 +202,7 @@ export class MCPClient {
       });
     }
     await this.assertTrusted(tool);
+    await this.assertPackagePermits(tool, arguments_, options.signal);
     await this.emit(AgentEventTypes.MCP_CALL_STARTED, { tool: name });
     const result = normalizeResult(
       await this.request('tools/call', { name, arguments: arguments_ }, options.signal),
@@ -232,6 +273,53 @@ export class MCPClient {
     });
   }
 
+  /**
+   * Decide this call against the package boundary, on a descriptor re-resolved
+   * after the asynchronous trust callback.
+   *
+   * The trust policy is an `await`, so the descriptor the caller resolved may
+   * have been replaced (a `list_changed` notification, or a refresh that found
+   * a different list) while it ran. The decision is therefore taken on the
+   * fresh descriptor and the dispatch below is pinned to it: a descriptor
+   * swapped between decision and dispatch is refused rather than executed on
+   * a stale verdict. The re-resolution is the parent's synchronous registry
+   * lookup ((parent) connector.py L387-395): it reads the cache this call
+   * resolved from even if its TTL has since lapsed, and fetches again only
+   * when an invalidation dropped that cache -- so the pin fires on a real
+   * change, never on a timer. With no boundary active this method returns
+   * before resolving anything.
+   */
+  private async assertPackagePermits(
+    tool: MCPTool,
+    arguments_: Readonly<Record<string, unknown>>,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    if (activePermissions().length === 0) return;
+    const registry = this.toolsCache?.tools ?? (await this.listTools({ signal }));
+    const fresh = registry.find((candidate) => candidate.name === tool.name);
+    if (fresh === undefined) {
+      throw new MCPError(`MCP tool '${tool.name}' is not visible on '${this.server.name}'.`, {
+        code: 'mcp_tool_not_found',
+      });
+    }
+    const request = mcpPolicyRequest(this.server, fresh, arguments_);
+    const decision = packageDecision(request);
+    if (
+      decision.verdict === 'deny' ||
+      (decision.verdict === 'require_approval' && !packageCallApproved(request))
+    ) {
+      await this.emit(AgentEventTypes.TOOL_CHOICE_REJECTED, {
+        name: request.action,
+        reason: decision.reason,
+        checkpoint: 'before_mcp_call',
+      });
+      throw new MCPError(decision.reason ?? 'Package permission denied MCP tool.');
+    }
+    if (fresh !== tool) {
+      throw new MCPError('MCP tool changed during policy evaluation; retry required.');
+    }
+  }
+
   private async assertTrusted(tool?: MCPTool): Promise<void> {
     const decision = await this.trust.evaluate(this.server, tool);
     await this.emit(AgentEventTypes.MCP_TRUST_EVALUATED, {
@@ -280,11 +368,12 @@ export function mcpToolCacheKey(server: MCPServerSpec, authCacheIdentity?: strin
 export function mcpToolDefinitions(client: MCPClient): Promise<readonly ToolDefinition[]> {
   return client.listTools().then((tools) =>
     tools.map((tool) => ({
-      name: `mcp:${client.server.name}.${tool.name}`,
+      name: mcpToolRef(client.server.name, tool.name),
       description: tool.description,
       input_schema: tool.inputSchema,
       risk: tool.risk,
-      scopes: tool.scopes,
+      scopes: operationScopes(tool),
+      metadata: mcpToolMetadata(client.server.name, tool),
       handler: async (arguments_, context) => {
         const result = await client.callTool(tool.name, arguments_, { signal: context.signal });
         const content = result.content.map(contentText).join('\n');
@@ -296,6 +385,98 @@ export function mcpToolDefinitions(client: MCPClient): Promise<readonly ToolDefi
       },
     })),
   );
+}
+
+/** The canonical package ref for one MCP tool, shared by every gate on the hop. */
+function mcpToolRef(server: string, tool: string): string {
+  return `mcp:${server}.${tool}`;
+}
+
+/**
+ * The parent's operation-scope ladder ((parent) src/blackbox/mcp/connector.py
+ * L1072-1080): an explicit `permission_scopes` wins, then a destructive tool
+ * is `delete`, a read-only tool is `read`, and anything else is `execute`.
+ *
+ * Divergence: a descriptor that already declares a `scopes` array keeps it,
+ * as an extra rung between `permission_scopes` and `destructive` with no
+ * parent counterpart -- the pre-existing registration behaviour of this port
+ * (the array is filtered to strings by {@link readTool} before it gets here).
+ * So `scopes: ['read'], destructive: true` yields `read` here where the
+ * parent, which has no such field, yields `delete`.
+ */
+function operationScopes(tool: MCPTool): readonly string[] {
+  const explicit = tool.metadata?.permission_scopes;
+  if (Array.isArray(explicit) && explicit.length > 0) return explicit.map(scopeText);
+  if (tool.scopes !== undefined && tool.scopes.length > 0) return [...tool.scopes];
+  if (tool.metadata?.destructive === true) return ['delete'];
+  if (tool.metadata?.read_only === true) return ['read'];
+  return ['execute'];
+}
+
+/**
+ * Registration metadata for one MCP tool.
+ *
+ * The descriptor's own metadata is copied first and the fields a permission
+ * decision reads are written after it, so a server cannot claim connector
+ * scopes it did not declare through `required_scopes`. `connector` is copied
+ * from the descriptor, exactly as the parent reads it back off the registered
+ * definition ((parent) connector.py L346-352, L876-879).
+ */
+function mcpToolMetadata(server: string, tool: MCPTool): Readonly<Record<string, unknown>> {
+  return {
+    ...tool.metadata,
+    connector_scopes: stringList(tool.metadata?.required_scopes),
+    mcp: true,
+    server,
+    tool: tool.name,
+    ref: mcpToolRef(server, tool.name),
+  };
+}
+
+/**
+ * The policy request for an MCP call, carrying the parent's `_policy_metadata`
+ * fields ((parent) connector.py L876-879).
+ *
+ * Ref, permission scopes, connector and connector scopes are computed exactly
+ * as {@link mcpToolDefinitions} computes them, so an approval recorded for the
+ * registered tool covers this nested checkpoint too.
+ */
+function mcpPolicyRequest(
+  server: MCPServerSpec,
+  tool: MCPTool,
+  arguments_: Readonly<Record<string, unknown>>,
+): PolicyRequest {
+  const metadata = mcpToolMetadata(server.name, tool);
+  const connectorScopes = stringList(metadata.connector_scopes);
+  return {
+    checkpoint: 'before_mcp_call',
+    action: mcpToolRef(server.name, tool.name),
+    arguments: { ...arguments_ },
+    metadata: {
+      ...metadata,
+      server_label: server.name,
+      name: tool.name,
+      transport: server.transport,
+      scopes: connectorScopes,
+      permission_scopes: operationScopes(tool),
+      connector: metadata.connector ?? null,
+      tool_ref: metadata.ref,
+    },
+  };
+}
+
+/**
+ * Total, order-preserving scope list. A non-string member is kept in a stable
+ * textual form rather than dropped, so an unexpected member still fails a
+ * subset check instead of disappearing from it.
+ */
+function stringList(value: unknown): readonly string[] {
+  if (Array.isArray(value)) return value.map(scopeText);
+  return value === undefined || value === null || value === '' ? [] : [scopeText(value)];
+}
+
+function scopeText(value: unknown): string {
+  return typeof value === 'string' ? value : (JSON.stringify(value) ?? '');
 }
 
 function latestCommonVersion(
@@ -324,8 +505,33 @@ function readTool(value: unknown): MCPTool {
     scopes: Array.isArray(record.scopes)
       ? record.scopes.filter((scope): scope is string => typeof scope === 'string')
       : undefined,
-    metadata: asOptionalRecord(record.metadata),
+    metadata: withAnnotationHints(asOptionalRecord(record.metadata), record.annotations),
   };
+}
+
+/**
+ * Standard MCP tool annotations feed the scope ladder ((parent)
+ * src/blackbox/mcp/connector.py L534-540): `readOnlyHint` -> `read_only`,
+ * `destructiveHint` -> `destructive`. Only a boolean hint is mapped and an
+ * explicit `metadata` key wins over it; a descriptor without annotations is
+ * returned as-is. The parent lets any hint value overwrite the metadata key
+ * and copies the whole `annotations` object into it -- neither is ported.
+ */
+function withAnnotationHints(
+  metadata: Readonly<Record<string, unknown>> | undefined,
+  annotations: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  const hints = asOptionalRecord(annotations);
+  if (hints === undefined) return metadata;
+  const mapped: Record<string, unknown> = {};
+  for (const [hint, key] of [
+    ['readOnlyHint', 'read_only'],
+    ['destructiveHint', 'destructive'],
+  ] as const) {
+    if (typeof hints[hint] === 'boolean' && !(metadata !== undefined && key in metadata))
+      mapped[key] = hints[hint];
+  }
+  return Object.keys(mapped).length === 0 ? metadata : { ...metadata, ...mapped };
 }
 
 function normalizeResult(value: unknown): MCPToolResult {

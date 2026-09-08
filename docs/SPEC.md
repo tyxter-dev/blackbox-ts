@@ -1,66 +1,68 @@
-# blackbox-ts Provider Runtime Spec
+# Blackbox Runtime Spec
 
-## Goals
+## Scope
 
-`blackbox-ts` is the TypeScript adapter layer for provider-facing model execution. It keeps
-provider protocol details outside product repositories and exposes stable runtime contracts
-that product APIs can depend on before public release.
+`blackbox-ts` is the canonical TypeScript Blackbox runtime. It provides model execution,
+the agent loop, agent sessions, tools, structured output, policy/approvals, persistence,
+workspaces, MCP, realtime protocols, workers, skills/workspace-agent packages, schedules,
+pricing/cache, prompt planning, configuration and observability. [FEATURES.md](../FEATURES.md)
+is the current feature catalog; [capabilities](CAPABILITIES.md) records adapter limits.
 
-## Non-Goals
+The package has no runtime dependencies and does not wrap Python. Python Blackbox is a
+pinned historical compatibility reference. CI/releases verify this repository's offline
+artifacts; the optional cross-language suite is described in
+[parity maintenance](PARITY_MAINTENANCE.md).
 
-- It is not an agent product.
-- It does not own tenant scoping, billing, encryption, rate limits, audit logs, or channel
-  safety policies.
-- It does not wrap Python Blackbox at runtime.
-- It does not import official provider SDKs in v0.1.
+Tenant identity, secret storage, bill collection, compliance retention and channel-specific
+policies belong in the host product. Generic estimates, event stores and policy hooks are
+library primitives, not product billing or compliance systems.
 
-## Provider References
+## Provider references and protocols
 
-Model references use the canonical form:
-
-```text
-provider:model
-```
-
-Examples:
+Model references use `provider:model`. Bundled examples include:
 
 ```text
-openai:gpt-4.1-mini
-anthropic:claude-sonnet-4-5
-gemini:gemini-2.5-flash
-xai:grok-4-fast
-openrouter:openai/gpt-4.1-mini
+openai:gpt-5.6-sol
+anthropic:claude-sonnet-4-6
+google:gemini-3-flash-preview
+xai:grok-4.6
 ```
 
-Consumers may pass a fallback provider when accepting legacy model-only inputs. Libraries and
-public API docs should prefer canonical provider-qualified references.
+OpenRouter uses its aggregator model IDs, for example `openrouter:openai/gpt-4.1-mini`.
+Legacy slash references and model-only inputs with a fallback provider remain compatibility
+inputs. Model, agent and realtime providers have separate protocols and registry namespaces.
 
-## Capability Honesty
+## Capabilities and normalized turns
 
-Every provider exposes a `CapabilityProfile`. If a request includes unsupported tools, hosted
-tools, MCP connections, workspaces, provider state, or structured output, the adapter must throw
-`UnsupportedCapabilityError` before making a network request.
+Model adapters expose a `CapabilityProfile`. Unsupported request features and controls
+must fail with typed errors before dispatch. `passthrough` forwards a feature without
+normalizing its semantics and is weaker than `supported` for deterministic behavior.
+Agent and realtime adapters expose their own capability contracts.
 
-`passthrough` means the adapter forwards a feature without normalizing its semantics. Products
-that require deterministic behavior should treat passthrough as weaker than `supported`.
+`TurnRequest` includes the model, input, instructions, tools/MCP/workspace specifications,
+provider state, controls, trace ID and provider-specific `extra`. `TurnResult` carries
+normalized text, usage, optional state/events/items/artifacts and raw provider payloads.
+`runtime.models.run` collects the canonical model stream. `runtime.run/stream` adds the
+model/tool loop, output strategies, policy, approvals and run-state handling.
 
-## Normalized Turns
+`complete(provider, input)` is the compatibility helper for `LLMCompletionInput`: it maps
+messages/system/model/token controls to a turn and returns
+`{ content, tokens_in, tokens_out, model, provider, raw_response }`.
 
-`TurnRequest` is the canonical provider runtime input. It includes model, input messages, optional
-instructions, tool/MCP/workspace specifications, provider state, generation controls, trace ID, and
-an `extra` bag for provider-specific escape hatches.
+## Adapters and package boundaries
 
-`TurnResult` returns normalized output text, usage, provider state, normalized events, and raw
-provider response payloads.
+OpenAI, Anthropic, Google Gemini, xAI and OpenRouter model adapters use built-in `fetch`
+and accept `fetchImpl` for offline tests. Echo is deterministic and offline. Agent SDKs,
+SQLite drivers and realtime duplex transports are injected behind interfaces; SDKs are not
+installed by this package. Codex is an injected app-server contract port with explicit
+limitations documented in [capabilities](CAPABILITIES.md#codex-agent-provider).
 
-## Completion Compatibility
+`runWorkspaceAgent` enters a package permission boundary for `allowlist_v1` grants and
+composes it with an existing boundary. Agent providers unable to enforce package permissions are
+rejected for restricted runs; model runs enforce the boundary in the runtime. Loading or lowering a package alone does not establish a
+runtime boundary. TypeScript and Python package fields differ; see
+[migration](MIGRATION.md#workspace-agent-package-interchange).
 
-`complete(provider, input)` maps Tyxter's current text completion shape onto `TurnRequest` and
-normalizes the result back to `{ content, tokens_in, tokens_out, model, provider, raw_response }`.
-This keeps current product behavior stable while the provider runtime evolves.
-
-## Provider Adapters
-
-All v0.1 adapters use built-in `fetch`. They accept `fetchImpl` for deterministic tests and
-non-standard runtimes. Network smoke tests are gated by provider API key environment variables and
-are skipped by default.
+The ESM package targets Node 20.11+. The tarball includes compiled JavaScript/declarations,
+README/CHANGELOG/FEATURES/LICENSE and examples, with no sourcemaps or `docs/`. Releases use
+tag-triggered npm trusted publishing; editing the version does not publish a release.

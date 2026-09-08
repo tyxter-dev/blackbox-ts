@@ -163,20 +163,22 @@ export class GeminiGenerateContentProvider implements AgentModelProvider {
       );
       if (!response.ok) await throwResponseError(this.id, response);
       const mapper = new GeminiEventMapper(request);
-      let finalRaw: unknown;
+      // Fallback raw for streams that never carried a candidate; the mapper
+      // latches the terminal candidate chunk and prefers it (see complete()).
+      let lastPayload: unknown;
       if (response.headers.get('content-type')?.includes('text/event-stream')) {
         for await (const message of decodeSSE(response, timeout.signal)) {
           const payload = parseSSEJson(message);
           if (payload === undefined) continue;
-          finalRaw = payload;
+          lastPayload = payload;
           yield* mapper.map(payload);
         }
       } else {
         const { json } = await readJson(response);
-        finalRaw = json;
+        lastPayload = json;
         yield* mapper.map(json);
       }
-      yield mapper.complete(finalRaw);
+      yield mapper.complete(lastPayload);
     } finally {
       timeout.cancel();
     }
@@ -197,6 +199,9 @@ class GeminiEventMapper {
   private readonly nativeParts: unknown[] = [];
   private readonly thoughtSignatures: string[] = [];
   private readonly sources: unknown[] = [];
+  private finishReason: string | undefined;
+  private terminalChunk: unknown;
+  private lastCandidateChunk: unknown;
 
   constructor(private readonly request: TurnRequest) {}
 
@@ -212,6 +217,16 @@ class GeminiEventMapper {
     const candidates: readonly unknown[] = Array.isArray(payload.candidates)
       ? payload.candidates
       : [];
+    if (candidates.length > 0) {
+      this.lastCandidateChunk = payload;
+      // Usage-only tail chunks must not erase the candidate terminal metadata
+      // that actually ended generation.
+      const reason = geminiFinishReason(candidates[0]);
+      if (reason !== undefined) {
+        this.terminalChunk = payload;
+        this.finishReason = reason;
+      }
+    }
     for (const candidate of candidates) {
       if (!isRecord(candidate)) continue;
       if (candidate.groundingMetadata !== undefined) this.sources.push(candidate.groundingMetadata);
@@ -222,7 +237,7 @@ class GeminiEventMapper {
     if (isRecord(payload.error)) throw new ProviderExecutionError('google', 502, payload.error);
   }
 
-  complete(raw: unknown): AgentEvent {
+  complete(fallbackRaw: unknown): AgentEvent {
     const state = createProviderState({
       provider: 'google',
       model: this.request.model,
@@ -240,13 +255,20 @@ class GeminiEventMapper {
         sources: this.sources,
       },
     });
-    return this.event(AgentEventTypes.MODEL_COMPLETED, raw, {
-      output_text: this.text,
-      usage: this.usage,
-      items: this.items,
-      provider_state: state,
-      sources: this.sources,
-    });
+    // Raw is the exact candidate-zero chunk the finish reason was derived from,
+    // not a later usage-only stream envelope.
+    return this.event(
+      AgentEventTypes.MODEL_COMPLETED,
+      this.terminalChunk ?? this.lastCandidateChunk ?? fallbackRaw,
+      {
+        output_text: this.text,
+        usage: this.usage,
+        items: this.items,
+        provider_state: state,
+        sources: this.sources,
+        finish_reason: this.finishReason ?? null,
+      },
+    );
   }
 
   private *mapPart(part: unknown, raw: unknown): Iterable<AgentEvent> {
@@ -537,6 +559,26 @@ function mapGenerationConfig(request: TurnRequest): Readonly<Record<string, unkn
   };
   removeUndefined(value);
   return Object.keys(value).length === 0 ? undefined : value;
+}
+
+/**
+ * Return the given candidate's stable terminal reason without flattening raw payload data.
+ *
+ * Mirrors the parent adapter: the caller passes candidate zero, string reasons
+ * are upper-cased, and enum-shaped values are read through `name`/`value`.
+ */
+function geminiFinishReason(candidate: unknown): string | undefined {
+  if (!isRecord(candidate)) return undefined;
+  const value = candidate.finishReason ?? candidate.finish_reason;
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string') return value.toUpperCase();
+  if (typeof value === 'number') return String(value);
+  if (isRecord(value)) {
+    if (typeof value.name === 'string') return value.name.toUpperCase();
+    if (typeof value.value === 'string') return value.value.toUpperCase();
+  }
+  // Shapes without a readable reason report none rather than a stringified object.
+  return undefined;
 }
 
 function mapCachedContent(cache: unknown): string | undefined {

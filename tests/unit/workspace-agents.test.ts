@@ -97,6 +97,111 @@ describe('skills and workspace agents', () => {
     });
   });
 
+  it('parses block-list frontmatter and round-trips it through the inline exporter', () => {
+    // Hand-written SKILL.md in the parent's fallback grammar ((parent)
+    // tests/unit/skills/test_skills.py L16-51): block lists of scalars, a
+    // list of maps with continuation lines, a nested block mapping, and a
+    // bare `-` item. Only fields `skillToMarkdown` emits are used so the
+    // re-parse can be compared for equality.
+    const parsed = parseSkillMarkdown(
+      [
+        '---',
+        'name: review-pr',
+        'description: "Review pull requests."',
+        'version: 0.2.0',
+        'tools:',
+        '  - get_diff',
+        '  - "post_comment"',
+        'hosted_tools:',
+        '  - type: web_search',
+        '',
+        'mcp_connections:',
+        '  - id: github',
+        '    transport: provider_native',
+        '    server_label: github',
+        '  # a comment between items',
+        '  - id: jira',
+        '    transport: provider_native',
+        '    server_label: jira',
+        'workspace:',
+        '  kind: local',
+        '  read_only: true',
+        'output: { "strategy": "posthoc_parse", "schema": { "type": "object" } }',
+        'approval_actions:',
+        '  -',
+        '  - publish',
+        '',
+        '---',
+        '',
+        'Check correctness before style.',
+      ].join('\r\n'),
+    );
+
+    expect(parsed).toEqual({
+      name: 'review-pr',
+      description: 'Review pull requests.',
+      body: 'Check correctness before style.',
+      tools: ['get_diff', 'post_comment'],
+      hosted_tools: [{ type: 'web_search' }],
+      mcp_connections: [
+        { id: 'github', transport: 'provider_native', server_label: 'github' },
+        { id: 'jira', transport: 'provider_native', server_label: 'jira' },
+      ],
+      workspace: { kind: 'local', read_only: true },
+      output: { strategy: 'posthoc_parse', schema: { type: 'object' } },
+      approval_actions: ['publish'],
+      metadata: { version: '0.2.0' },
+    });
+    const exported = skillToMarkdown(parsed);
+    expect(exported).not.toContain('\n  - ');
+    expect(parseSkillMarkdown(exported)).toEqual(parsed);
+  });
+
+  it('keeps the block-list grammar within the parent fallback', () => {
+    const parse = (lines: readonly string[]) =>
+      parseSkillMarkdown(`---\nname: "grammar"\n${lines.join('\n')}\n---\nBody`).metadata;
+
+    // Bare `-` is an empty (null) item; an indented list under it nests.
+    expect(parse(['examples:', '  -', '  - 12', '  - true', '  -', '    - nested'])).toEqual({
+      examples: [null, 12, true, ['nested']],
+    });
+    // A key with nothing after it and no nested block is null, as in the parent.
+    expect(parse(['empty:', 'after: 1'])).toEqual({ empty: null, after: 1 });
+    // A quoted or inline-JSON item is a scalar even when it contains a colon.
+    expect(parse(['items:', '  - "note: quoted"', '  - ["a", "b"]'])).toEqual({
+      items: ['note: quoted', ['a', 'b']],
+    });
+    // The parent's own export of a list-of-maps item carrying nested values:
+    // a bare `-` holding a mapping with a nested mapping and a nested list
+    // ((parent) tests/unit/skills/test_skills.py L51 as frontmatter.py
+    // `_dump_list_item` renders it without PyYAML).
+    expect(
+      parse([
+        'permissions:',
+        '  -',
+        '    approval:',
+        '      mode: always',
+        '    ref: post_comment',
+        '    scopes:',
+        '      - write',
+      ]),
+    ).toEqual({
+      permissions: [{ approval: { mode: 'always' }, ref: 'post_comment', scopes: ['write'] }],
+    });
+    // A list item before any key, a block list after an inline value, and
+    // unexpected indentation all fail closed.
+    for (const lines of [
+      ['- orphan'],
+      ['tools: ["a"]', '  - b'],
+      ['tools:', '    - too-deep'],
+      ['nested:', '  key: 1', '    deeper: 2'],
+    ]) {
+      expect(() => parse(lines)).toThrowError(
+        expect.objectContaining({ code: 'invalid_skill_frontmatter' }),
+      );
+    }
+  });
+
   it('validates references, versions registry records, and round-trips packages', async () => {
     const spec = fixtureAgent();
     assertValidWorkspaceAgent(spec, {
@@ -215,6 +320,46 @@ describe('skills and workspace agents', () => {
     expect(() => new InMemoryWorkspaceAgentRegistry().publish(invalid)).toThrowError(
       expect.objectContaining({ code: 'invalid_workspace_agent' }),
     );
+  });
+
+  it('round-trips allowlist_v1 grants and reports invalid ones fail-closed', () => {
+    const inherited = fixtureAgent();
+    expect(validateWorkspaceAgent(inherited)).toEqual([]);
+    expect(inherited.permission_mode).toBeUndefined();
+
+    const restricted: WorkspaceAgentSpec = {
+      ...inherited,
+      permission_mode: 'allowlist_v1',
+      connectors: [{ name: 'crm', type: 'test', auth: 'api_key', tool_refs: ['search'] }],
+      grants: [{ ref: 'search', scopes: ['execute'], connector: 'crm' }],
+    };
+    expect(validateWorkspaceAgent(restricted)).toEqual([]);
+    expect(unpackWorkspaceAgent(packWorkspaceAgent(restricted)).agent).toEqual(restricted);
+
+    expect(
+      validateWorkspaceAgent({
+        ...restricted,
+        grants: [{ ref: 'search' }, { ref: 'local:search' }],
+      }),
+    ).toEqual([
+      {
+        path: 'grants',
+        code: 'invalid_permission_grants',
+        message: 'Duplicate package permission: local:search.',
+      },
+    ]);
+    expect(
+      validateWorkspaceAgent({
+        ...inherited,
+        permission_mode: 'allow' as WorkspaceAgentSpec['permission_mode'],
+      }).map((finding) => finding.code),
+    ).toEqual(['invalid_permission_mode']);
+    expect(() =>
+      new InMemoryWorkspaceAgentRegistry().publish({
+        ...restricted,
+        grants: [{ ref: 'search', connector: 'unknown' }],
+      }),
+    ).toThrowError(expect.objectContaining({ code: 'invalid_workspace_agent' }));
   });
 
   it('persists versioned workspace agents in a real SQLite registry', async () => {

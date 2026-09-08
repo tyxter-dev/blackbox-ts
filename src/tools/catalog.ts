@@ -1,5 +1,10 @@
 import type { ToolDefinition } from './types.js';
 import { ToolExecutionError } from '../core/errors.js';
+import {
+  activePermissions,
+  definitionAllowed,
+  markInternalDiscoveryTool,
+} from '../core/tool-permissions.js';
 import { toolResult } from './types.js';
 
 export interface ToolSearchResult {
@@ -66,16 +71,30 @@ export class ToolsetRuntime {
     if (selection === 'static') this.load([...this.toolsByName.keys()]);
   }
 
+  /**
+   * Every tool the toolsets contributed, including tools the active package
+   * boundary denies.
+   *
+   * This is the registration feed, not an exposure surface: a denied tool must
+   * still reach the tool registry so a model that names it anyway is refused
+   * at dispatch with `denied_by_policy` instead of `tool_not_found`. The
+   * exposure surfaces -- {@link visibleDefinitions}, {@link visibleNames},
+   * {@link search} and {@link load} -- are the filtered ones.
+   */
   allDefinitions(): readonly ToolDefinition[] {
     return [...this.toolsByName.values()];
   }
 
   visibleDefinitions(): readonly ToolDefinition[] {
-    return [...this.visible].map((name) => this.toolsByName.get(name)!).filter(Boolean);
+    return [...this.visible]
+      .map((name) => this.toolsByName.get(name)!)
+      .filter(Boolean)
+      .filter((tool) => this.exposable(tool));
   }
 
   visibleNames(): readonly string[] {
-    return [...this.visible];
+    if (activePermissions().length === 0) return [...this.visible];
+    return this.visibleDefinitions().map((tool) => tool.name);
   }
 
   metaTools(): readonly ToolDefinition[] {
@@ -90,11 +109,14 @@ export class ToolsetRuntime {
           required: ['query'],
           additionalProperties: false,
         },
-        handler: ({ query, limit }) => {
+        // Marked by identity: discovery stays reachable inside a package
+        // permission boundary, while a registered tool that only borrows the
+        // reserved name is still enforced.
+        handler: markInternalDiscoveryTool(({ query, limit }) => {
           const normalizedQuery = typeof query === 'string' ? query : '';
           const results = this.search(normalizedQuery, typeof limit === 'number' ? limit : 10);
           return toolResult(JSON.stringify(results), { payload: { results } });
-        },
+        }),
       },
       {
         name: this.loadToolName,
@@ -105,21 +127,32 @@ export class ToolsetRuntime {
           required: ['names'],
           additionalProperties: false,
         },
-        handler: ({ names }) => {
+        handler: markInternalDiscoveryTool(({ names }) => {
           const requested = Array.isArray(names)
             ? names.filter((name): name is string => typeof name === 'string')
             : [];
-          this.load(requested);
-          return toolResult(`Loaded ${requested.join(', ') || 'no tools'}.`, {
-            payload: { visible_tools: this.visibleNames() },
+          const denied = this.load(requested);
+          const loaded = requested.filter((name) => !denied.includes(name));
+          return toolResult(`Loaded ${loaded.join(', ') || 'no tools'}.`, {
+            payload: {
+              visible_tools: this.visibleNames(),
+              ...(denied.length === 0 ? {} : { denied, reason: 'denied_by_package' }),
+            },
           });
-        },
+        }),
       },
     ];
   }
 
   search(query: string, limit = 10): readonly Readonly<Record<string, unknown>>[] {
-    return this.catalog.search(query, limit).map(({ tool, score }) => ({
+    // Rebuild the catalog per search inside a boundary: a denied tool must be
+    // invisible to discovery, and the decision can differ between two searches
+    // of the same runtime when the boundaries differ.
+    const catalog =
+      activePermissions().length === 0
+        ? this.catalog
+        : new ToolCatalog(this.allDefinitions().filter((tool) => this.exposable(tool)));
+    return catalog.search(query, limit).map(({ tool, score }) => ({
       name: tool.name,
       description: tool.description,
       score,
@@ -128,15 +161,29 @@ export class ToolsetRuntime {
     }));
   }
 
-  load(names: readonly string[]): void {
+  /**
+   * Make the named tools model-visible and return the names the active package
+   * boundary refused.
+   *
+   * A refused name is skipped rather than thrown on, mirroring the parent's
+   * `load_tools`, which keeps loading the rest and returns the refused ones to
+   * the model in its `invalid` list. The parent additionally emits a
+   * run-visible TOOL_CHOICE_REJECTED event carrying `denied_by_package`; this
+   * port has no per-load event channel, so the `denied` / `denied_by_package`
+   * fields on the `load_tools` payload are its model-visible equivalent.
+   */
+  load(names: readonly string[]): readonly string[] {
+    const denied: string[] = [];
     for (const name of names) {
       if (!this.toolsByName.has(name)) {
         throw new ToolExecutionError(`Cannot load unknown tool '${name}'.`, {
           code: 'tool_not_found',
         });
       }
+      if (!this.exposable(this.toolsByName.get(name)!)) denied.push(name);
     }
-    const next = new Set([...this.visible, ...names]);
+    const admitted = denied.length === 0 ? names : names.filter((name) => !denied.includes(name));
+    const next = new Set([...this.visible, ...admitted]);
     if (this.budget.max_visible !== undefined && next.size > this.budget.max_visible) {
       throw budgetError('visible', this.budget.max_visible);
     }
@@ -149,6 +196,11 @@ export class ToolsetRuntime {
     }
     this.visible.clear();
     for (const name of next) this.visible.add(name);
+    return denied;
+  }
+
+  private exposable(tool: ToolDefinition): boolean {
+    return activePermissions().length === 0 || definitionAllowed(tool);
   }
 
   recordCalls(count: number): void {

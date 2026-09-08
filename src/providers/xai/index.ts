@@ -1,9 +1,21 @@
 import { capability, type CapabilityProfile } from '../../core/capabilities.js';
+import type { TurnRequest } from '../base.js';
 import {
   OpenAIResponsesProvider,
   openAIResponsesCapabilityProfile,
+  validateModelEffort,
   type OpenAIResponsesProviderConfig,
 } from '../openai/responses-provider.js';
+
+/**
+ * Reasoning-effort table for the xAI models that enforce one.
+ *
+ * Models outside this table keep the effort list advertised by the inherited
+ * OpenAI Responses profile.
+ */
+const CURRENT_XAI_EFFORTS: Readonly<Record<string, readonly string[]>> = {
+  'grok-4.6': ['low', 'medium', 'high', 'xhigh'],
+};
 
 export interface XAIProviderConfig extends Omit<
   OpenAIResponsesProviderConfig,
@@ -20,6 +32,16 @@ export class XAIResponsesProvider extends OpenAIResponsesProvider {
       apiBase: config.apiBase ?? 'https://api.x.ai/v1',
       capabilities: config.capabilities ?? xAIResponsesCapabilityProfile,
     });
+  }
+
+  override buildResponsesRequest(request: TurnRequest): {
+    readonly url: string;
+    readonly body: Readonly<Record<string, unknown>>;
+    readonly headers: Readonly<Record<string, string>>;
+  } {
+    const built = super.buildResponsesRequest(request);
+    validateModelEffort(this.id, built.body, CURRENT_XAI_EFFORTS);
+    return built;
   }
 }
 
@@ -41,6 +63,10 @@ export function xAIResponsesCapabilityProfile(model?: string): CapabilityProfile
           }),
     ]),
   );
+  const efforts =
+    model !== undefined && Object.hasOwn(CURRENT_XAI_EFFORTS, model)
+      ? CURRENT_XAI_EFFORTS[model]
+      : undefined;
   return {
     ...profile,
     summary: {
@@ -49,6 +75,16 @@ export function xAIResponsesCapabilityProfile(model?: string): CapabilityProfile
       supports_mcp: false,
     },
     hosted_tools: unsupportedHosted,
+    controls:
+      efforts === undefined
+        ? profile.controls
+        : {
+            ...profile.controls,
+            reasoning_effort: capability('supported', {
+              native_name: 'reasoning.effort',
+              supported_values: efforts,
+            }),
+          },
     integrations: {
       ...profile.integrations,
       mcp: capability('unsupported'),

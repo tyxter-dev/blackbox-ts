@@ -1,5 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 interface Inventory {
   readonly parent: { readonly commit: string; readonly feature_catalog: string };
@@ -61,8 +65,8 @@ describe('Python parity maintenance artifacts', () => {
     const parentFeatures = parentGroups.flatMap((group) => group.features);
     const supplementFeatures = supplements.flatMap((group) => group.features);
 
-    expect(parentFeatures).toHaveLength(143);
-    expect(new Set(parentFeatures.map((feature) => feature.id)).size).toBe(143);
+    expect(parentFeatures).toHaveLength(144);
+    expect(new Set(parentFeatures.map((feature) => feature.id)).size).toBe(144);
     expect(supplementFeatures).toHaveLength(26);
     expect(inventory.extensions).toHaveLength(1);
     expect(inventory.extensions[0]).toMatchObject({
@@ -75,13 +79,13 @@ describe('Python parity maintenance artifacts', () => {
   it('pins the evidence baseline and crosswalk to the same parent commit', () => {
     expect(baseline.parent_commit).toBe(inventory.parent.commit);
     expect(baseline.feature_catalog.path).toBe(inventory.parent.feature_catalog);
-    expect(baseline.evidence_files).toHaveLength(109);
-    expect(baseline.test_files).toHaveLength(108);
+    expect(baseline.evidence_files).toHaveLength(129);
+    expect(baseline.test_files).toHaveLength(118);
     expect(crosswalk.parent_commit).toBe(inventory.parent.commit);
     expect(crosswalk.entries.map((entry) => entry.python_test).sort()).toEqual(
       baseline.test_files.map((entry) => entry.path).sort(),
     );
-    expect(crosswalk.feature_coverage).toHaveLength(143);
+    expect(crosswalk.feature_coverage).toHaveLength(144);
   });
 
   it('keeps both fixture directions and provider/catalog differentials synchronized', () => {
@@ -95,8 +99,8 @@ describe('Python parity maintenance artifacts', () => {
       'openai',
       'xai',
     ]);
-    expect(pythonCatalogs.models).toHaveLength(19);
-    expect(pythonCatalogs.pricing).toHaveLength(21);
+    expect(pythonCatalogs.models).toHaveLength(29);
+    expect(pythonCatalogs.pricing).toHaveLength(36);
     expect(typescriptCore).toMatchObject({
       generated_by: 'blackbox-ts',
       target_parent_commit: inventory.parent.commit,
@@ -107,3 +111,110 @@ describe('Python parity maintenance artifacts', () => {
 function readJson<T>(relativePath: string): T {
   return JSON.parse(readFileSync(new URL(relativePath, import.meta.url), 'utf8')) as T;
 }
+
+describe('offline parity pin guard', () => {
+  let scratch: string;
+  const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+  const carriers = [
+    ['docs/parent-baseline.json', 'parent_commit'],
+    ['docs/parity-test-crosswalk.json', 'parent_commit'],
+    ['docs/catalog-snapshot.json', 'parent_commit'],
+    ['tests/fixtures/python/core-contracts.json', 'parent_commit'],
+    ['tests/fixtures/python/catalogs.json', 'parent_commit'],
+    ['tests/fixtures/python/provider-differential.json', 'parent_commit'],
+    ['tests/fixtures/typescript/core-contracts.json', 'target_parent_commit'],
+  ] as const;
+
+  beforeAll(() => {
+    scratch = mkdtempSync(join(tmpdir(), 'blackbox-parity-pin-'));
+    for (const directory of ['src', 'tests', 'docs']) {
+      cpSync(join(repoRoot, directory), join(scratch, directory), { recursive: true });
+    }
+    mkdirSync(join(scratch, 'scripts'));
+    cpSync(
+      join(repoRoot, 'scripts/check-parity-inventory.mjs'),
+      join(scratch, 'scripts/check-parity-inventory.mjs'),
+    );
+  });
+  afterAll(() => rmSync(scratch, { recursive: true, force: true }));
+
+  function check() {
+    return spawnSync(process.execPath, [join(scratch, 'scripts/check-parity-inventory.mjs')], {
+      encoding: 'utf8',
+      windowsHide: true,
+    });
+  }
+
+  function withCarrier(path: string, contents: string | undefined, assertion: () => void) {
+    const target = join(scratch, path);
+    const original = readFileSync(target, 'utf8');
+    try {
+      if (contents === undefined) rmSync(target);
+      else writeFileSync(target, contents);
+      assertion();
+    } finally {
+      writeFileSync(target, original);
+    }
+  }
+
+  it('accepts synchronized artifacts without any workflow or Python checkout', () => {
+    const result = check();
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('6 fixture/artifact headers');
+  });
+
+  it.each(carriers)('rejects a stale pin in %s', (path, field) => {
+    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as Record<string, unknown>;
+    value[field] = '0'.repeat(40);
+    withCarrier(path, JSON.stringify(value), () => {
+      const result = check();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        path === 'docs/parent-baseline.json'
+          ? 'Parent baseline and parity inventory commits do not match.'
+          : `${path} records ${field}`,
+      );
+    });
+  });
+
+  it('rejects inherited object keys as statuses', () => {
+    const path = 'docs/parity-inventory.json';
+    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
+      groups: { target_status: string }[];
+    };
+    value.groups[0]!.target_status = 'constructor';
+    withCarrier(path, JSON.stringify(value), () => {
+      const result = check();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("Unknown target_status 'constructor'");
+    });
+  });
+
+  it('rejects a baseline from a different repository', () => {
+    const path = 'docs/parent-baseline.json';
+    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as Record<string, unknown>;
+    value.parent_repository = 'different/repository';
+    withCarrier(path, JSON.stringify(value), () => {
+      const result = check();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        'Parent baseline and parity inventory repositories do not match.',
+      );
+    });
+  });
+
+  it.each(carriers)('fails closed for missing or malformed %s', (path) => {
+    for (const contents of [undefined, '{invalid']) {
+      withCarrier(path, contents, () => {
+        const result = check();
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain(
+          contents === undefined
+            ? `Required parity pin carrier '${path}' is missing or unreadable.`
+            : `Parity pin carrier '${path}' is not valid JSON.`,
+        );
+      });
+    }
+  });
+});

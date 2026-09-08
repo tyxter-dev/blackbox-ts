@@ -12,8 +12,11 @@ import {
   ProviderRegistry,
   RuntimeConfig,
   ScriptedModelProvider,
+  cacheUsageFromUsage,
   getWorkflowProfile,
   modelUsage,
+  usageFromAnthropic,
+  usageFromOpenAI,
   workflowProfileDocs,
   workflowProfiles,
 } from '../../src/index.js';
@@ -66,7 +69,174 @@ describe('planning, accounting, cache, and config', () => {
 
     expect(estimate.provider_cost).toBeCloseTo(3.55);
     expect(estimate.user_billable).toBeCloseTo(3.906);
-    expect(estimate).toMatchObject({ source: 'blackbox-bundled', version: '2026-05-06' });
+    expect(estimate).toMatchObject({ source: 'blackbox-bundled', version: '2026-09-05' });
+  });
+
+  it('ships the refreshed standard rates, cache semantics, and per-row provenance', () => {
+    for (const [provider, model, input, output] of [
+      ['openai', 'gpt-6-astra', 10, 50],
+      ['openai', 'gpt-5.6-sol', 4, 20],
+      ['openai', 'gpt-5.6-terra', 2, 12],
+      ['openai', 'gpt-5.6-luna', 0.2, 1.2],
+      ['anthropic', 'claude-fable-5-1', 10, 50],
+      ['anthropic', 'claude-fable-5', 10, 50],
+      ['anthropic', 'claude-opus-5', 5, 25],
+      ['anthropic', 'claude-sonnet-5', 2, 10],
+      ['anthropic', 'claude-opus-4-8', 5, 25],
+      ['xai', 'grok-4.6', 2, 6],
+      ['xai', 'grok-4.3', 1.25, 2.5],
+      ['xai', 'grok-4-1-fast-reasoning', 1.25, 2.5],
+      ['xai', 'grok-4-1-fast-non-reasoning', 1.25, 2.5],
+    ] as const) {
+      const entry = BUNDLED_PRICING.get(provider, model);
+      expect(entry?.rates.input_per_million).toBe(input);
+      expect(entry?.rates.output_per_million).toBe(output);
+      expect(entry?.effective_at).toBe('2026-09-05T00:00:00.000Z');
+    }
+
+    const fable = BUNDLED_PRICING.get('anthropic', 'claude-fable-5-1');
+    expect(fable?.rates.cache_read_per_million).toBe(0.25);
+    expect(fable?.rates.cache_creation_per_million).toBe(12.5);
+    expect(
+      BUNDLED_PRICING.estimate(
+        'anthropic',
+        'claude-fable-5-1',
+        modelUsage({ input_tokens: 1_000_000, cache_read_input_tokens: 1_000_000 }),
+      ).provider_cost,
+    ).toBeCloseTo(0.25, 9);
+    expect(BUNDLED_PRICING.get('anthropic', 'claude-fable-5')?.rates.cache_read_per_million).toBe(
+      1,
+    );
+    expect(BUNDLED_PRICING.get('xai', 'grok-4.6')?.rates.cache_read_per_million).toBe(0.5);
+    // xAI publishes no cache-write rate, so cache creation bills at the input rate.
+    expect(BUNDLED_PRICING.get('xai', 'grok-4.6')?.rates.cache_creation_per_million).toBe(2);
+    expect(BUNDLED_PRICING.get('google', 'gemini-2.5-flash')?.effective_at).toBe(
+      '2026-05-06T00:00:00.000Z',
+    );
+  });
+
+  it('charges inclusive Anthropic input, cache reads, and cache writes exactly once each', () => {
+    const usage = usageFromAnthropic({
+      input_tokens: 1000,
+      output_tokens: 100,
+      cache_read_input_tokens: 200,
+      cache_creation_input_tokens: 300,
+    });
+
+    const estimate = BUNDLED_PRICING.estimate('anthropic', 'claude-sonnet-4-5', usage);
+
+    // Normalized input is inclusive (1500), so ordinary input bills the 1000
+    // uncached tokens while reads and writes bill once at their own rates.
+    expect(usage.input_tokens).toBe(1500);
+    expect(Object.keys(estimate.components).sort()).toEqual([
+      'cache_creation',
+      'cache_read',
+      'input',
+      'output',
+    ]);
+    expect(estimate.components.input).toBeCloseTo(0.003, 9);
+    expect(estimate.components.cache_read).toBeCloseTo(0.00006, 9);
+    expect(estimate.components.cache_creation).toBeCloseTo(0.001125, 9);
+    expect(estimate.components.output).toBeCloseTo(0.0015, 9);
+    expect(estimate.provider_cost).toBeCloseTo(0.005685, 9);
+  });
+
+  it('counts only cache reads as hits across native provider usage', () => {
+    for (const read of [200, 0]) {
+      expect(
+        cacheUsageFromUsage({
+          provider: 'openai',
+          model: 'gpt-5.4',
+          usage: usageFromOpenAI({
+            input_tokens: 1000,
+            output_tokens: 100,
+            input_tokens_details: { cached_tokens: read, cache_write_tokens: 300 },
+          }),
+        }),
+      ).toMatchObject({
+        input_tokens: 1000,
+        cached_input_tokens: read + 300,
+        cache_creation_input_tokens: 300,
+        hit: read > 0,
+        hit_ratio: read / 1000,
+      });
+
+      const inclusiveInput = 1000 + read + 300;
+      expect(
+        cacheUsageFromUsage({
+          provider: 'anthropic',
+          model: 'claude-sonnet-4-5',
+          usage: usageFromAnthropic({
+            input_tokens: 1000,
+            output_tokens: 100,
+            cache_read_input_tokens: read,
+            cache_creation_input_tokens: 300,
+          }),
+        }),
+      ).toMatchObject({
+        input_tokens: inclusiveInput,
+        cached_input_tokens: read + 300,
+        cache_creation_input_tokens: 300,
+        hit: read > 0,
+        hit_ratio: read / inclusiveInput,
+      });
+    }
+  });
+
+  it('excludes cache writes from the hit ratio and keeps the legacy combined fallback', () => {
+    const writeOnly = cacheUsageFromUsage({
+      provider: 'anthropic',
+      model: 'claude-sonnet-4-5',
+      usage: modelUsage({ input_tokens: 1300, cache_creation_input_tokens: 300 }),
+    });
+
+    // Before split counters governed the ratio this reported 300/1300; a write
+    // alone is never a hit.
+    expect(writeOnly).toMatchObject({ hit: false, hit_ratio: 0 });
+    expect(writeOnly?.hit_ratio).not.toBe(300 / 1300);
+
+    // Usage that reports no split counters still divides the combined counter,
+    // and a non-positive input leaves the ratio unreported instead of dividing.
+    for (const inputTokens of [1000, 0, -1]) {
+      const legacy = cacheUsageFromUsage({
+        provider: 'scripted',
+        model: 'legacy',
+        usage: modelUsage({ input_tokens: inputTokens, cached_input_tokens: 200 }),
+      });
+      expect(legacy).toMatchObject({
+        cache_read_input_tokens: 0,
+        cache_creation_input_tokens: 0,
+        hit: true,
+      });
+      expect(legacy?.hit_ratio).toBe(inputTokens > 0 ? 0.2 : undefined);
+    }
+  });
+
+  it('reports cache usage only when caching was requested or observed', () => {
+    expect(
+      cacheUsageFromUsage({
+        provider: 'openai',
+        model: 'gpt-5.4',
+        usage: modelUsage({ input_tokens: 10, output_tokens: 2 }),
+      }),
+    ).toBeUndefined();
+
+    expect(
+      cacheUsageFromUsage({
+        provider: 'openai',
+        model: 'gpt-5.4',
+        usage: modelUsage({ input_tokens: 10, output_tokens: 2 }),
+        requested: true,
+        key: 'stable-prefix',
+        ttl: '5m',
+      }),
+    ).toMatchObject({
+      requested: true,
+      hit: false,
+      hit_ratio: 0,
+      key: 'stable-prefix',
+      ttl: '5m',
+    });
   });
 
   it('tracks cache lifecycle metrics', async () => {
