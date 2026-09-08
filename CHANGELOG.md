@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Feature scoring is now TypeScript-owned: 138 of 145 scoped features are fully supported,
+  including OpenRouter in the denominator. Verification supplements stay separate; frozen
+  Python requirements have explicit compatibility dispositions without imposing a status floor.
+
 - Added explicit Python workspace-agent ZIP import with grant/workspace-ref translation and
   separate execution options for model-loop and local-agent runs. Connector authentication
   must be supplied explicitly; unrepresentable execution settings are rejected. Native

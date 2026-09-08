@@ -77,12 +77,12 @@ const fixture = JSON.parse(
 ) as CoreFixture;
 const inventory = JSON.parse(
   readFileSync(new URL('../../docs/parity-inventory.json', import.meta.url), 'utf8'),
-) as { readonly parent: { readonly commit: string } };
+) as { readonly python_reference: { readonly commit: string } };
 
 describe('Python-generated core contract fixtures', () => {
   it('reproduces serialized events, state, sessions, approvals, artifacts, usage, and results', () => {
     expect(fixture.generated_by).toBe('python-parent');
-    expect(fixture.parent_commit).toBe(inventory.parent.commit);
+    expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
 
     const event = createAgentEvent(compact(fixture.event) as unknown as AgentEventInput);
     const itemFixture = fixture.run_state.items[0];

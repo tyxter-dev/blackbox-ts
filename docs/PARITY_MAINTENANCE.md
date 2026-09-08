@@ -8,7 +8,7 @@ frozen at the recorded pin: the pin records the last parent state this repositor
 synchronized against, not a source of truth that this repository must follow.
 
 The recorded pin is `d5be68e03ca7750920569578710a2ee25d25530c` on the Python repository's
-`master` branch (Python Blackbox 0.2.0). `parent.commit` in `docs/parity-inventory.json` is
+`master` branch (Python Blackbox 0.2.0). `python_reference.commit` in `docs/parity-inventory.json` is
 the authoritative pin site for generators; the current machine-readable carriers listed
 below are checked against it offline. Historical plans, ADRs, and release notes retain
 their original baselines.
@@ -20,22 +20,31 @@ the bidirectional parity suite. `.github/workflows/ci.yml` runs `pnpm check` and
 
 ## What the score records
 
-The parity score keeps three deliberately separate sets, all at the recorded pin:
+Schema v3 records one TypeScript feature score: **138/145 fully supported (95.2%)**.
+The 145 scoped features include OpenRouter and the unsupported namespaced ToolRef row.
+The status histogram is 138 `supported`, 1 `conditional`, 3 `partial`, 2 `contract` and
+1 `unsupported`; only `supported` enters the numerator. The 26 verification supplements
+remain checked evidence outside the denominator.
 
-- 144 features from the Python `FEATURES.md` catalog (137 `Supported`, 1
-  `Supported where advertised`, 3 `Partial`, 2 `Contract only`, 1 `Not supported yet`);
-- 26 verification supplements for shipped Python behavior outside that catalog;
-- TypeScript extensions, currently OpenRouter, which run shared contracts but never count
-  toward the score.
+Each feature owns its TypeScript `status` and evidence references; groups organize features
+without status defaults. Statuses can honestly fall below the frozen Python status. Native
+features need no Python counterpart. Legacy `parent.*` and `extension.*` IDs preserve
+traceability; their spelling does not determine feature ownership or score inclusion.
 
-The inventory vocabulary is unchanged this cycle: `parent_status` is the status the pinned
-Python commit shipped for a group and `target_status` is the TypeScript status. Canonicality
-is expressed by the direction lock in `scripts/check-parity-inventory.mjs`: the TypeScript
-status may equal or exceed the pinned parent status (ranked
-`Not supported yet` < `Contract only` < `Partial` < `Supported where advertised` <
-`Supported`) but never fall below it, and unknown statuses are rejected. The full scoring
-inversion (crosswalk direction, fixture goldenness swap, extension-to-declined-parent-feature
-semantics, a single TypeScript-owned score) is deferred; see "Deferred" below.
+`python_requirements` records a disposition for every frozen catalog requirement: `adopted`
+links a scoped TypeScript feature, `unsupported` retains an unsupported scored feature and a
+reason, and `declined` records a reason for excluding adoption without a scored feature.
+Unsupported is not an automatic scope exclusion. The baseline independently records the
+144 Python catalog names/statuses, parsed from its pinned `FEATURES.md`, alongside
+TypeScript-authored legacy IDs. Existing ID bindings are retained during regeneration; adopted
+and unsupported requirements must map to that canonical TypeScript feature ID. TypeScript
+display names and statuses remain independent. The offline checker
+rejects omitted requirements, unknown dispositions and changes to those historical statuses.
+The frozen Python histogram remains 137 Supported, 1 Supported where advertised, 3 Partial,
+2 Contract only and 1 Not supported yet. It is compatibility evidence, not a score floor.
+
+Crosswalk direction and fixture authority are still the existing compatibility machinery;
+those changes remain separately tracked below.
 
 ## Offline checks in `pnpm check`
 
@@ -45,12 +54,12 @@ the recorded pin are:
 
 1. `pnpm check:parity` runs four scripts, none of which needs a Python checkout:
    - `node scripts/update-parity-inventory.mjs --check` — `docs/parity-inventory.json` is
-     normalized schema v2 with stable feature ids and the evidence tables from
+     normalized schema v3 with authored per-feature statuses/bindings and the evidence tables from
      `scripts/lib/parity-evidence.mjs`.
    - `node scripts/check-parity-inventory.mjs` — the inventory pins a full 40-character
-     commit; it holds exactly 144 parent features and 26 supplements with the expected
-     status histogram; the direction lock above; every evidence record resolves its
-     TypeScript source/test paths and symbols; `docs/parent-baseline.json` is present,
+     commit; feature statuses and Python dispositions are valid; every frozen Python requirement
+     has a disposition; scored features and supplements resolve their TypeScript source/test
+     paths and symbols; native evidence needs no Python side; `docs/parent-baseline.json` is present,
      records the same commit and repository, and lists every parent evidence path; and the
      pin is repeated verbatim in `docs/parity-test-crosswalk.json`,
      `docs/catalog-snapshot.json`, `tests/fixtures/python/core-contracts.json`,
@@ -63,8 +72,8 @@ the recorded pin are:
      is byte-identical to the crosswalk derived from the baseline's 118 Python test modules
      and the inventory, every mapped TypeScript test file exists, and every divergence note
      names a recorded parent module.
-2. `pnpm test` includes `tests/unit/parity-maintenance.test.ts`, which asserts the 144/26
-   feature split, the 129 evidence files and 118 test modules in the baseline, the
+2. `pnpm test` includes `tests/unit/parity-maintenance.test.ts`, which asserts the 145-feature/26-supplement
+   split and 138 fully supported features, the 129 evidence files and 118 test modules in the baseline, the
    29 models and 36 price entries in the Python catalog fixture, and that the baseline,
    crosswalk, and both fixture directions carry the inventory pin. The golden suites
    `tests/golden/core-contracts.test.ts`, `tests/golden/python-provider-differential.test.ts`,
@@ -125,16 +134,17 @@ changes without reviewing the Python implementation and tests. Use the following
    example `../blackbox`). Review every upstream commit and changed file since the recorded
    pin, paying particular attention to `FEATURES.md`, public contracts, serialization,
    provider adapters, bundled catalogs, and tests.
-2. Update `parent.commit` in `docs/parity-inventory.json` first. The checkout-consuming generators and
+2. Update `python_reference.commit` in `docs/parity-inventory.json` first. The checkout-consuming generators and
    validators refuse a checkout whose `HEAD` differs from the inventory pin, and
    `scripts/catalog-snapshot.mjs` reads the pin from the inventory, so the inventory must
    move before anything is regenerated. Register new parent paths and symbol anchors in
    `scripts/lib/parity-evidence.mjs`, update the catalog features in their owning groups, and
-   set `catalog_unique_feature_count` in `docs/parity-inventory.json` to the resulting parent
-   feature count before regeneration. Reclassify changed features honestly: unsupported, partial, and contract-only behavior
-   stays non-full until the TypeScript implementation supports it, and the direction lock
-   still applies.
-3. Normalize the inventory and regenerate the parent baseline:
+   record a disposition in `python_requirements` for each catalog requirement. Reclassify
+   TypeScript features independently: unsupported, partial and contract-only behavior stays
+   non-full until implemented. Declined adoption needs an explicit scope reason.
+3. Normalize the inventory and regenerate the parent baseline. The committed baseline is
+   also a regeneration input: it preserves TypeScript-owned legacy ID bindings. Restore it
+   from version control if missing; Python alone cannot reconstruct those bindings.
 
    ```sh
    pnpm generate:parity:inventory
@@ -151,7 +161,8 @@ changes without reviewing the Python implementation and tests. Use the following
 5. Port the adopted behavior and any bundled model/pricing changes in `src/`, with
    ordinary TypeScript tests alongside the cross-language fixtures, before generating
    artifacts from the TypeScript implementation. Record deliberate divergences as crosswalk
-   `notes` in `scripts/generate-test-crosswalk.mjs`, not as status changes.
+   `notes` in `scripts/generate-test-crosswalk.mjs`; update TypeScript statuses honestly when
+   implementation support changes.
 6. Regenerate the reverse TypeScript fixture, the crosswalk, and the matrix:
 
    ```sh
@@ -162,12 +173,11 @@ changes without reviewing the Python implementation and tests. Use the following
 
    If the bundled catalogs changed, regenerate their snapshot with `pnpm generate:catalog`.
 
-7. Move every hard-coded count: `catalog_unique_feature_count` in
-   `docs/parity-inventory.json` (updated in step 2); the feature and status histogram in
-   `scripts/check-parity-inventory.mjs`; the feature, supplement, evidence-file,
-   test-module, model, and price counts in `tests/unit/parity-maintenance.test.ts`; the
-   model and price counts in `tests/golden/python-catalog-differential.test.ts`; this
-   document; and `CHANGELOG.md`.
+7. Review the regenerated frozen catalog requirements and TypeScript score separately. Update
+   expected feature/status, supplement, evidence-file, test-module, model and price counts in
+   `tests/unit/parity-maintenance.test.ts` and catalog differential tests when their inputs
+   change, together with this document and `CHANGELOG.md`. The checker derives the denominator
+   from scoped TypeScript features rather than a fixed Python count.
 8. Run `pnpm check` and `pnpm pack --dry-run`. Run
    `pnpm parity:python -- --parent ../blackbox` to prove the bidirectional fixtures against
    the checkout before requesting review.
@@ -176,10 +186,8 @@ changes without reviewing the Python implementation and tests. Use the following
 
 ## Deferred
 
-- Full parity-scoring inversion (crosswalk direction, fixture goldenness swap,
-  extension-to-declined-parent-feature semantics, a single TypeScript-owned score).
-  Until it lands, the inventory vocabulary still reads Python-first.
-  Tracked as D1 in [blackbox-ts#2](https://github.com/tyxter-dev/blackbox-ts/issues/2).
+- Crosswalk direction and fixture-authority inversion remain pending; the TypeScript-owned
+  score and compatibility dispositions are implemented. Tracked as remaining D1 work in [blackbox-ts#2](https://github.com/tyxter-dev/blackbox-ts/issues/2).
 - The Python repository's own freeze/archive posture (README banner, archival) lives
   outside this repository; this document does not assert that it is archived.
   Tracked as D2 in [blackbox#22](https://github.com/tyxter-dev/blackbox/issues/22).

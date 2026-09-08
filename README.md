@@ -101,8 +101,8 @@ The tarball contains compiled JavaScript/declarations, this README, CHANGELOG, F
 LICENSE and examples. Repository docs and sourcemaps are not packed;
 `blackbox-ts/package.json` exposes package metadata.
 
-The pinned score covers 144 Python catalog features, with 26 verification supplements and
-TypeScript extensions reported separately. Scoped evidence is in
+The TypeScript-owned score is 138/145 fully supported features, including OpenRouter in
+the denominator. The 26 verification supplements are reported separately. Scoped evidence is in
 [the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
 update workflow is in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
 [features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),

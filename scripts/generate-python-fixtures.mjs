@@ -10,10 +10,14 @@ import { formatGenerated } from './lib/format-generated.mjs';
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const parentDir = resolve(requiredArgument('--parent'));
-const inventory = JSON.parse(await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'));
+const inventory = JSON.parse(
+  await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'),
+);
 const head = await git('rev-parse', 'HEAD');
-if (head !== inventory.parent.commit) {
-  throw new Error(`Parent checkout is ${head}; expected pinned commit ${inventory.parent.commit}.`);
+if (head !== inventory.python_reference.commit) {
+  throw new Error(
+    `Parent checkout is ${head}; expected pinned commit ${inventory.python_reference.commit}.`,
+  );
 }
 
 const check = process.argv.includes('--check');
@@ -55,11 +59,14 @@ try {
   if (check) {
     for (const name of ['core-contracts.json', 'catalogs.json', 'provider-differential.json']) {
       const expected = await readFile(resolve(outputDir, name), 'utf8');
-      const current = await readFile(resolve(repoRoot, 'tests/fixtures/python', name), 'utf8').catch(
-        () => '',
-      );
+      const current = await readFile(
+        resolve(repoRoot, 'tests/fixtures/python', name),
+        'utf8',
+      ).catch(() => '');
       if (current !== expected) {
-        throw new Error(`tests/fixtures/python/${name} is stale. Regenerate from the pinned parent.`);
+        throw new Error(
+          `tests/fixtures/python/${name} is stale. Regenerate from the pinned parent.`,
+        );
       }
     }
     console.log(`Python parity fixtures OK at ${head.slice(0, 12)}.`);

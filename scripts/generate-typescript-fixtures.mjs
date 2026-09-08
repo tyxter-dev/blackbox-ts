@@ -6,7 +6,9 @@ import { formatGenerated } from './lib/format-generated.mjs';
 
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const outputPath = resolve(repoRoot, 'tests/fixtures/typescript/core-contracts.json');
-const inventory = JSON.parse(await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'));
+const inventory = JSON.parse(
+  await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'),
+);
 const {
   RuntimeConfig,
   createAgentEvent,
@@ -97,7 +99,7 @@ const outputSpec = structuredOutput(
 const fixture = {
   schema_version: 1,
   generated_by: 'blackbox-ts',
-  target_parent_commit: inventory.parent.commit,
+  target_parent_commit: inventory.python_reference.commit,
   payloads: {
     event: parentEvent(event),
     run_state: parentRunState(runState),
@@ -147,7 +149,9 @@ const rendered = await formatGenerated(`${JSON.stringify(fixture, null, 2)}\n`, 
 if (process.argv.includes('--check')) {
   const current = await readFile(outputPath, 'utf8').catch(() => '');
   if (current !== rendered) {
-    throw new Error('tests/fixtures/typescript/core-contracts.json is stale. Run pnpm generate:parity:ts.');
+    throw new Error(
+      'tests/fixtures/typescript/core-contracts.json is stale. Run pnpm generate:parity:ts.',
+    );
   }
   console.log('TypeScript reverse parity fixture OK.');
 } else {

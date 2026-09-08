@@ -27,11 +27,11 @@ const fixture = JSON.parse(
 };
 const inventory = JSON.parse(
   readFileSync(new URL('../../docs/parity-inventory.json', import.meta.url), 'utf8'),
-) as { readonly parent: { readonly commit: string } };
+) as { readonly python_reference: { readonly commit: string } };
 
 describe('Python provider differential fixtures', () => {
   it('replays parent protocol scenarios through every common TypeScript adapter', async () => {
-    expect(fixture.parent_commit).toBe(inventory.parent.commit);
+    expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
 
     for (const scenario of fixture.scenarios) {
       const fetchFixture = createSSEFetchFixture(

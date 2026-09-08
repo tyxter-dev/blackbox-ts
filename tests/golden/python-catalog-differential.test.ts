@@ -13,11 +13,11 @@ const fixture = JSON.parse(
 };
 const inventory = JSON.parse(
   readFileSync(new URL('../../docs/parity-inventory.json', import.meta.url), 'utf8'),
-) as { readonly parent: { readonly commit: string } };
+) as { readonly python_reference: { readonly commit: string } };
 
 describe('Python catalog differential fixtures', () => {
   it('keeps every bundled model identical to the pinned parent', () => {
-    expect(fixture.parent_commit).toBe(inventory.parent.commit);
+    expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
     expect(bundledProviderModels().map(normalizeModel)).toEqual(fixture.models);
     expect(fixture.models).toHaveLength(29);
   });

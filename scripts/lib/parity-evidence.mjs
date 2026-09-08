@@ -57,7 +57,10 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Provider State Mapping': evidence(
     ['src/blackbox/core/state.py', 'src/blackbox/providers/base.py'],
-    ['tests/golden/openai/test_responses_event_mapping.py', 'tests/golden/gemini/test_generate_content_event_mapping.py'],
+    [
+      'tests/golden/openai/test_responses_event_mapping.py',
+      'tests/golden/gemini/test_generate_content_event_mapping.py',
+    ],
     ['ProviderState', 'TurnResult'],
     ['src/core/state.ts', 'src/providers/base.ts'],
     ['tests/golden/providers.test.ts'],
@@ -65,7 +68,10 @@ export const DOMAIN_EVIDENCE = {
   ),
   Persistence: evidence(
     ['src/blackbox/core/stores.py', 'src/blackbox/core/serialization.py'],
-    ['tests/unit/core/test_stores_persistent.py', 'tests/runtime/test_resume_run_from_saved_state.py'],
+    [
+      'tests/unit/core/test_stores_persistent.py',
+      'tests/runtime/test_resume_run_from_saved_state.py',
+    ],
     ['RunStore', 'run_state_to_dict'],
     ['src/persistence/stores.ts', 'src/core/serialization.ts'],
     ['tests/unit/persistence-observability.test.ts'],
@@ -73,7 +79,10 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Provider Controls and Catalog': evidence(
     ['src/blackbox/providers/model_catalog.py', 'src/blackbox/providers/catalog.py'],
-    ['tests/unit/providers/test_model_catalog.py', 'tests/unit/providers/test_bundled_model_catalog.py'],
+    [
+      'tests/unit/providers/test_model_catalog.py',
+      'tests/unit/providers/test_bundled_model_catalog.py',
+    ],
     ['ProviderModelCatalog', 'bundled_provider_models'],
     ['src/providers/catalog.ts', 'src/core/capabilities.ts'],
     ['tests/unit/registry-catalog.test.ts', 'tests/unit/capabilities.test.ts'],
@@ -81,15 +90,25 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Accounting and Cache': evidence(
     ['src/blackbox/core/accounting.py', 'src/blackbox/core/cache.py'],
-    ['tests/unit/core/test_model_accounting.py', 'tests/unit/core/test_provider_cache.py', 'tests/runtime/test_cache_metadata.py'],
+    [
+      'tests/unit/core/test_model_accounting.py',
+      'tests/unit/core/test_provider_cache.py',
+      'tests/runtime/test_cache_metadata.py',
+    ],
     ['ModelUsage', 'ProviderCache'],
     ['src/core/usage.ts', 'src/pricing/index.ts', 'src/cache/index.ts'],
     ['tests/unit/planning-accounting-config.test.ts'],
     ['ModelUsage', 'ProviderCache'],
   ),
   'Granular Model Capabilities': evidence(
-    ['src/blackbox/core/capabilities.py', 'src/blackbox/providers/model_adapters/capability_validation.py'],
-    ['tests/unit/providers/model_adapters/test_model_capability_profiles.py', 'tests/runtime/test_model_capability_validation.py'],
+    [
+      'src/blackbox/core/capabilities.py',
+      'src/blackbox/providers/model_adapters/capability_validation.py',
+    ],
+    [
+      'tests/unit/providers/model_adapters/test_model_capability_profiles.py',
+      'tests/runtime/test_model_capability_validation.py',
+    ],
     ['ModelCapabilityProfile', 'validate_turn_request_capabilities'],
     ['src/core/capabilities.ts'],
     ['tests/unit/capabilities.test.ts', 'tests/unit/provider-contracts.test.ts'],
@@ -97,17 +116,41 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Provider Runtime': evidence(
     ['src/blackbox/providers/base.py', 'src/blackbox/runtime/model.py'],
-    ['tests/journey/model_provider/test_model_provider_journeys.py', 'tests/unit/providers/model_adapters/test_model_provider_hardening.py'],
+    [
+      'tests/journey/model_provider/test_model_provider_journeys.py',
+      'tests/unit/providers/model_adapters/test_model_provider_hardening.py',
+    ],
     ['ModelProvider', 'ModelRuntime'],
     ['src/providers/base.ts', 'src/runtime/model-runtime.ts'],
     ['tests/unit/provider-contracts.test.ts', 'tests/unit/model-runtime.test.ts'],
     ['ModelProvider', 'ModelRuntime'],
   ),
   'Native Model Providers': evidence(
-    ['src/blackbox/providers/model_adapters/openai_responses/provider.py', 'src/blackbox/providers/model_adapters/anthropic_messages/provider.py', 'src/blackbox/providers/model_adapters/anthropic_messages/controls.py', 'src/blackbox/providers/model_adapters/gemini_generate_content/provider.py', 'src/blackbox/providers/model_adapters/xai_responses/provider.py'],
-    ['tests/golden/openai/test_responses_event_mapping.py', 'tests/golden/anthropic/test_messages_event_mapping.py', 'tests/golden/gemini/test_generate_content_event_mapping.py', 'tests/unit/providers/model_adapters/test_current_model_controls.py'],
-    ['OpenAIResponsesProvider', 'AnthropicMessagesProvider', 'GeminiGenerateContentProvider', 'XAIResponsesProvider'],
-    ['src/providers/openai/responses-provider.ts', 'src/providers/anthropic/index.ts', 'src/providers/gemini/index.ts', 'src/providers/xai/index.ts'],
+    [
+      'src/blackbox/providers/model_adapters/openai_responses/provider.py',
+      'src/blackbox/providers/model_adapters/anthropic_messages/provider.py',
+      'src/blackbox/providers/model_adapters/anthropic_messages/controls.py',
+      'src/blackbox/providers/model_adapters/gemini_generate_content/provider.py',
+      'src/blackbox/providers/model_adapters/xai_responses/provider.py',
+    ],
+    [
+      'tests/golden/openai/test_responses_event_mapping.py',
+      'tests/golden/anthropic/test_messages_event_mapping.py',
+      'tests/golden/gemini/test_generate_content_event_mapping.py',
+      'tests/unit/providers/model_adapters/test_current_model_controls.py',
+    ],
+    [
+      'OpenAIResponsesProvider',
+      'AnthropicMessagesProvider',
+      'GeminiGenerateContentProvider',
+      'XAIResponsesProvider',
+    ],
+    [
+      'src/providers/openai/responses-provider.ts',
+      'src/providers/anthropic/index.ts',
+      'src/providers/gemini/index.ts',
+      'src/providers/xai/index.ts',
+    ],
     ['tests/golden/providers.test.ts', 'tests/unit/provider-contracts.test.ts'],
     ['OpenAIResponsesProvider', 'AnthropicProvider', 'GeminiProvider', 'XAIProvider'],
   ),
@@ -137,7 +180,10 @@ export const DOMAIN_EVIDENCE = {
   ),
   Workspaces: evidence(
     ['src/blackbox/workspaces/provider.py', 'src/blackbox/workspaces/runtime.py'],
-    ['tests/journey/workspace_provider/test_workspace_provider_journeys.py', 'tests/unit/workspaces/test_workspace_runtime.py'],
+    [
+      'tests/journey/workspace_provider/test_workspace_provider_journeys.py',
+      'tests/unit/workspaces/test_workspace_runtime.py',
+    ],
     ['WorkspaceProvider', 'WorkspaceRuntime'],
     ['src/workspaces/providers.ts', 'src/workspaces/runtime.ts'],
     ['tests/unit/workspaces.test.ts'],
@@ -153,7 +199,10 @@ export const DOMAIN_EVIDENCE = {
   ),
   Observability: evidence(
     ['src/blackbox/observability/sinks.py', 'src/blackbox/observability/traces.py'],
-    ['tests/unit/observability/test_event_sinks.py', 'tests/unit/observability/test_trace_spans.py'],
+    [
+      'tests/unit/observability/test_event_sinks.py',
+      'tests/unit/observability/test_trace_spans.py',
+    ],
     ['EventSink', 'TraceSpan'],
     ['src/observability/sinks.ts', 'src/observability/advanced.ts'],
     ['tests/unit/workers-observability.test.ts', 'tests/unit/persistence-observability.test.ts'],
@@ -184,8 +233,15 @@ export const DOMAIN_EVIDENCE = {
     ['PromptPlan', 'composePrompt'],
   ),
   'Workspace Providers and Security': evidence(
-    ['src/blackbox/workspaces/local.py', 'src/blackbox/workspaces/sandbox.py', 'src/blackbox/workspaces/git.py'],
-    ['tests/unit/workspaces/test_local_workspace_provider.py', 'tests/unit/workspaces/test_sandbox_workspace_provider.py'],
+    [
+      'src/blackbox/workspaces/local.py',
+      'src/blackbox/workspaces/sandbox.py',
+      'src/blackbox/workspaces/git.py',
+    ],
+    [
+      'tests/unit/workspaces/test_local_workspace_provider.py',
+      'tests/unit/workspaces/test_sandbox_workspace_provider.py',
+    ],
     ['LocalWorkspaceProvider', 'SandboxWorkspaceProvider'],
     ['src/workspaces/local.ts', 'src/workspaces/providers.ts', 'src/workspaces/runtime.ts'],
     ['tests/unit/workspaces.test.ts', 'tests/security/boundaries.test.ts'],
@@ -200,7 +256,11 @@ export const DOMAIN_EVIDENCE = {
     ['JSONLEventStore', 'SQLiteRunStore'],
   ),
   'MCP Lifecycle Security': evidence(
-    ['src/blackbox/mcp/client.py', 'src/blackbox/mcp/transports.py', 'src/blackbox/mcp/security.py'],
+    [
+      'src/blackbox/mcp/client.py',
+      'src/blackbox/mcp/transports.py',
+      'src/blackbox/mcp/security.py',
+    ],
     ['tests/unit/mcp/test_mcp_security_validation.py', 'tests/unit/mcp/test_mcp_transports.py'],
     ['MCPClient', 'validate_mcp_server'],
     ['src/mcp/client.ts', 'src/mcp/transports.ts'],
@@ -208,8 +268,16 @@ export const DOMAIN_EVIDENCE = {
     ['MCPClient', 'MCPTrustPresets'],
   ),
   'Runtime Lifecycle Hardening': evidence(
-    ['src/blackbox/runtime/main.py', 'src/blackbox/runtime/output.py', 'src/blackbox/realtime/runtime.py'],
-    ['tests/runtime/test_runtime_retry.py', 'tests/runtime/test_provider_native_output.py', 'tests/runtime/test_realtime_approvals.py'],
+    [
+      'src/blackbox/runtime/main.py',
+      'src/blackbox/runtime/output.py',
+      'src/blackbox/realtime/runtime.py',
+    ],
+    [
+      'tests/runtime/test_runtime_retry.py',
+      'tests/runtime/test_provider_native_output.py',
+      'tests/runtime/test_realtime_approvals.py',
+    ],
     ['AgentRuntime', 'resolve_output_strategy'],
     ['src/runtime/agent-loop.ts', 'src/runtime/realtime-runtime.ts', 'src/tools/runtime.ts'],
     ['tests/unit/agent-loop.test.ts', 'tests/unit/realtime.test.ts'],
@@ -217,24 +285,15 @@ export const DOMAIN_EVIDENCE = {
   ),
   'Package and Worker Hardening': evidence(
     ['src/blackbox/workspace_agents/package.py', 'src/blackbox/workers/worker.py'],
-    ['tests/unit/workspace_agents/test_package.py', 'tests/unit/workers/test_environment_worker.py'],
+    [
+      'tests/unit/workspace_agents/test_package.py',
+      'tests/unit/workers/test_environment_worker.py',
+    ],
     ['pack_workspace_agent_package', 'EnvironmentWorker'],
     ['src/workspace-agents/package.ts', 'src/workers/index.ts'],
     ['tests/unit/workspace-agents.test.ts', 'tests/unit/workers-observability.test.ts'],
     ['packWorkspaceAgent', 'EnvironmentWorker'],
   ),
-};
-
-export const FEATURE_EVIDENCE = {
-  'SQLite workspace agent registry': 'workspace-agent-registry',
-  'Workspace agent validation': 'workspace-agent-validation',
-  'Workspace agent package on disk': 'workspace-agent-package',
-  'Schedule execution (reference executor)': 'schedule-executor',
-  'JSONL/SQLite stores': 'persistent-stores',
-  'Resume run from persisted state': 'resume-run-state',
-  'Anthropic Managed Agents work source': 'anthropic-work-source',
-  'Workspace agent runtime grants': 'workspace-agent-runtime-grants',
-  'Cloud agent providers': 'cloud-agent-providers',
 };
 
 export const SPECIAL_EVIDENCE = {
@@ -343,7 +402,11 @@ export const SPECIAL_EVIDENCE = {
       'tests/integration/codex/test_codex_subscription.py',
     ],
     ['OpenAICloudAgentProvider', 'ClaudeCodeAgentProvider', 'CodexAgentProvider'],
-    ['src/providers/cloud-agents.ts', 'src/providers/codex-agent.ts', 'src/providers/codex-app-server.ts'],
+    [
+      'src/providers/cloud-agents.ts',
+      'src/providers/codex-agent.ts',
+      'src/providers/codex-app-server.ts',
+    ],
     [
       'tests/unit/agent-sessions.test.ts',
       'tests/unit/codex-agent-provider.test.ts',
