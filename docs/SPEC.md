@@ -49,6 +49,16 @@ model/tool loop, output strategies, policy, approvals and run-state handling.
 messages/system/model/token controls to a turn and returns
 `{ content, tokens_in, tokens_out, model, provider, raw_response }`.
 
+## Local session cancellation
+
+After a local session emits `session.cancelled`, subsequent run diagnostics remain in the
+session event log without changing its cancelled status. Draining `runtime.agents.stream`
+or collecting with `runtime.agents.run` persists that status for replay. Cancellation
+signals the active invocation; a model or policy that ignores the signal can delay stream
+completion until it settles. Cancellation during an approval wait stops the protected action
+without requiring an approval decision. Normal success and failure remain distinct terminal
+outcomes.
+
 ## Adapters and package boundaries
 
 OpenAI, Anthropic, Google Gemini, xAI and OpenRouter model adapters use built-in `fetch`

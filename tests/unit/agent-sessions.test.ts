@@ -17,12 +17,15 @@ import {
   approve,
   capability,
   createRunItem,
+  createAgentEvent,
   requireApproval,
   resolveClaudeCodeAuth,
   textCompletionCapabilityProfile,
   type CapabilityProfile,
   type InjectedCloudAgentClient,
   type TaskSpec,
+  type TurnRequest,
+  type TurnResult,
 } from '../../src/index.js';
 
 function toolProfile(model?: string): CapabilityProfile {
@@ -62,6 +65,231 @@ describe('agent sessions runtime', () => {
     expect(sessions.load(session.id)).toMatchObject({
       session: { status: 'completed' },
     });
+  });
+
+  it.each(['continuous', 'resumed'] as const)(
+    'keeps cancellation terminal with a %s consumer',
+    async (consumer) => {
+      let entered!: () => void;
+      let release!: () => void;
+      const modelEntered = new Promise<void>((resolve) => {
+        entered = resolve;
+      });
+      const modelReleased = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      class WaitingModel extends FakeModelProvider {
+        override async turn(request: TurnRequest): Promise<TurnResult> {
+          entered();
+          await modelReleased;
+          return super.turn(request);
+        }
+      }
+      const registry = new ProviderRegistry();
+      registry.registerModelProvider(new WaitingModel());
+      const runtime = new AgentRuntime({ registry });
+      registry.registerAgentProvider(new LocalAgentProvider(runtime));
+      const agent = await runtime.agents.createAgent('local', {
+        name: 'agent',
+        model: 'fake:model',
+      });
+      const session = await runtime.agents.start('local', agent, { input: 'work' });
+      await modelEntered;
+      await runtime.agents.cancel(session);
+      await runtime.agents.cancel(session);
+      let cancellationId: string | undefined;
+      if (consumer === 'resumed') {
+        for await (const event of runtime.agents.stream(session)) {
+          if (event.type === AgentEventTypes.SESSION_CANCELLED) {
+            cancellationId = event.id;
+            break;
+          }
+        }
+        expect(cancellationId).toBeDefined();
+        expect((await runtime.agents.replay(session.id)).events.at(-1)?.id).toBe(cancellationId);
+      }
+      release();
+      if (consumer === 'resumed') {
+        const remaining = [];
+        for await (const event of runtime.agents.stream(session, {
+          after_event_id: cancellationId,
+        })) {
+          remaining.push(event);
+        }
+        expect(remaining.map((event) => event.type)).toEqual([AgentEventTypes.RUN_FAILED]);
+      }
+
+      const result = await runtime.agents.run(session);
+      expect(result.status).toBe('cancelled');
+      expect(
+        result.events.filter((event) => event.type === AgentEventTypes.SESSION_CANCELLED),
+      ).toHaveLength(1);
+      expect(result.events.at(-1)?.type).toBe(AgentEventTypes.RUN_FAILED);
+      expect(result.events.some((event) => event.type === AgentEventTypes.SESSION_FAILED)).toBe(
+        false,
+      );
+      expect((await runtime.agents.replay(session.id)).session.status).toBe('cancelled');
+      expect(await runtime.agents.run(session)).toEqual(result);
+    },
+  );
+
+  it.each(['allow', 'approval'] as const)(
+    'retains trailing %s diagnostics after cancellation during final-output policy',
+    async (verdict) => {
+      let entered!: () => void;
+      let release!: () => void;
+      const policyEntered = new Promise<void>((resolve) => {
+        entered = resolve;
+      });
+      const policyReleased = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const registry = new ProviderRegistry();
+      registry.registerModelProvider(new FakeModelProvider());
+      const runtime = new AgentRuntime({
+        registry,
+        policy: {
+          check: async ({ checkpoint }) => {
+            if (checkpoint !== 'before_final_output') return allow();
+            entered();
+            await policyReleased;
+            return verdict === 'allow' ? allow() : requireApproval('review output');
+          },
+        },
+      });
+      const local = new LocalAgentProvider(runtime);
+      registry.registerAgentProvider(local);
+      const agent = await runtime.agents.createAgent('local', {
+        name: 'agent',
+        model: 'fake:model',
+      });
+      const session = await runtime.agents.start('local', agent, { input: 'work' });
+      await policyEntered;
+      await runtime.agents.cancel(session);
+      release();
+      const streamed = [];
+      for await (const event of runtime.agents.stream(session)) streamed.push(event);
+      const providerEvents = [];
+      for await (const event of local.streamEvents(session)) providerEvents.push(event);
+      expect(streamed).toEqual(providerEvents);
+      expect(streamed.some((event) => event.raw !== undefined)).toBe(true);
+      const cancelledIndex = streamed.findIndex(
+        (event) => event.type === AgentEventTypes.SESSION_CANCELLED,
+      );
+      expect(cancelledIndex).toBeGreaterThanOrEqual(0);
+      expect(streamed.slice(cancelledIndex + 1).map((event) => event.type)).toEqual(
+        verdict === 'allow'
+          ? [AgentEventTypes.RUN_COMPLETED]
+          : [AgentEventTypes.APPROVAL_REQUESTED, AgentEventTypes.RUN_FAILED],
+      );
+      const result = await runtime.agents.run(session);
+      expect(result.status).toBe('cancelled');
+      expect(result.events).toEqual(streamed);
+      expect((await runtime.agents.replay(session.id)).session.status).toBe('cancelled');
+    },
+  );
+
+  it('cancels an outstanding approval without executing the protected action', async () => {
+    const registry = new ProviderRegistry();
+    const model = new FakeModelProvider();
+    registry.registerModelProvider(model);
+    const runtime = new AgentRuntime({
+      registry,
+      policy: {
+        check: ({ checkpoint }) =>
+          checkpoint === 'before_model_request' ? requireApproval('review model') : allow(),
+      },
+    });
+    registry.registerAgentProvider(new LocalAgentProvider(runtime));
+    const agent = await runtime.agents.createAgent('local', { name: 'agent', model: 'fake:model' });
+    const session = await runtime.agents.start('local', agent, { input: 'work' });
+    const events = [];
+    for await (const event of runtime.agents.stream(session)) {
+      events.push(event);
+      if (event.type === AgentEventTypes.APPROVAL_REQUESTED) await runtime.agents.cancel(session);
+    }
+    expect(events.map((event) => event.type)).toContain(AgentEventTypes.SESSION_CANCELLED);
+    expect(events.at(-1)?.type).toBe(AgentEventTypes.RUN_FAILED);
+    expect(model.turns).toHaveLength(0);
+    const replay = await runtime.agents.replay(session.id);
+    expect(replay.session.status).toBe('cancelled');
+    expect(Object.values(replay.approvals)).toHaveLength(1);
+    expect(Object.values(replay.approvals)[0]?.decision).toBeUndefined();
+    expect((await runtime.agents.run(session)).status).toBe('cancelled');
+  });
+
+  it('keeps genuine local model failures distinct from cancellation', async () => {
+    class FailingModel extends FakeModelProvider {
+      override async turn(): Promise<TurnResult> {
+        throw new Error('model failed');
+      }
+    }
+    const registry = new ProviderRegistry();
+    registry.registerModelProvider(new FailingModel());
+    const runtime = new AgentRuntime({ registry });
+    registry.registerAgentProvider(new LocalAgentProvider(runtime));
+    const agent = await runtime.agents.createAgent('local', { name: 'agent', model: 'fake:model' });
+    const session = await runtime.agents.start('local', agent, { input: 'work' });
+    const result = await runtime.agents.run(session);
+    expect(result.status).toBe('failed');
+    expect(result.events.at(-1)).toMatchObject({
+      type: AgentEventTypes.SESSION_FAILED,
+      data: { error: 'model failed' },
+    });
+    expect(result.events.some((event) => event.type === AgentEventTypes.SESSION_CANCELLED)).toBe(
+      false,
+    );
+    expect(await runtime.agents.run(session)).toEqual(result);
+  });
+
+  it.each(['fresh-local', 'no-provider'] as const)(
+    'replays persisted cancellation with a %s runtime',
+    async (providerState) => {
+      const store = new InMemorySessionStore();
+      const registry = new ProviderRegistry();
+      const runtime = new AgentRuntime({ registry, session_store: store });
+      registry.registerModelProvider(new FakeModelProvider());
+      registry.registerAgentProvider(new LocalAgentProvider(runtime));
+      const agent = await runtime.agents.createAgent('local', {
+        name: 'agent',
+        model: 'fake:model',
+      });
+      const session = await runtime.agents.start('local', agent, { input: 'work' });
+      await runtime.agents.cancel(session);
+      const original = await runtime.agents.run(session);
+      const freshRegistry = new ProviderRegistry();
+      const fresh = new AgentRuntime({ registry: freshRegistry, session_store: store });
+      if (providerState === 'fresh-local')
+        freshRegistry.registerAgentProvider(new LocalAgentProvider(fresh));
+      const replayed = [];
+      for await (const event of fresh.agents.stream(session)) replayed.push(event);
+      expect(replayed).toEqual(original.events);
+      expect(await fresh.agents.replay(session.id)).toEqual(
+        await runtime.agents.replay(session.id),
+      );
+    },
+  );
+
+  it.each([
+    AgentEventTypes.SESSION_CANCELLED,
+    AgentEventTypes.SESSION_COMPLETED,
+    AgentEventTypes.SESSION_FAILED,
+  ])('replays remote %s without reopening its stream', async (terminal) => {
+    let opened = 0;
+    class TerminalProvider extends FakeAgentProvider {
+      override async *streamEvents() {
+        opened += 1;
+        yield createAgentEvent({ type: terminal, provider: this.id });
+      }
+    }
+    const registry = new ProviderRegistry();
+    registry.registerAgentProvider(new TerminalProvider());
+    const runtime = new AgentRuntime({ registry });
+    const agent = await runtime.agents.createAgent('fake-agent', { name: 'remote' });
+    const session = await runtime.agents.start('fake-agent', agent, { input: 'work' });
+    const result = await runtime.agents.run(session);
+    expect(await runtime.agents.run(session)).toEqual(result);
+    expect(opened).toBe(1);
   });
 
   it('deduplicates follow-up invocation keys and keeps the Vertex stub honest', async () => {

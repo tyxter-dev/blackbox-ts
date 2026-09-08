@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Local session cancellation remains terminal when an in-flight run emits trailing failure,
+  completion or approval diagnostics. Session streams preserve those events for durable replay
+  without raising a terminal-transition error.
+
 ## 0.2.0-alpha.0
 
 Canonical TypeScript runtime with compatibility refreshed to the pinned Python Blackbox

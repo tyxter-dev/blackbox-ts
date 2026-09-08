@@ -15,6 +15,7 @@ import { activePermissions, permissionBoundaryIterator } from '../core/tool-perm
 import type { SessionSnapshot, SessionStore } from '../persistence/stores.js';
 import { createSessionSnapshot, InMemorySessionStore } from '../persistence/stores.js';
 import type { AgentProvider, AgentSpec, TaskSpec } from '../providers/agent.js';
+import { hasLocalSession } from '../providers/local-agent-state.js';
 import { ProviderRegistry } from '../providers/registry.js';
 
 export class AgentSessionsRuntime {
@@ -69,7 +70,18 @@ export class AgentSessionsRuntime {
     let snapshot = await this.requireSnapshot(session.id);
     const stored = eventsAfter(snapshot.events, options.after_event_id);
     for (const event of stored) yield event;
-    if (isTerminal(snapshot.session.status)) return;
+    // Local cancellation precedes invocation shutdown. A consumer may stop at
+    // the cancellation event, so reconnect to its live log to drain the tail.
+    // After provider recreation, only the persisted log remains available.
+    const drainLocalCancellation =
+      snapshot.session.status === 'cancelled' &&
+      this.registry
+        .listAgentProviders()
+        .some(
+          (provider) =>
+            provider.id === snapshot.session.provider && hasLocalSession(provider, session.id),
+        );
+    if (isTerminal(snapshot.session.status) && !drainLocalCancellation) return;
 
     const after = stored.at(-1)?.id ?? options.after_event_id;
     const provider = this.registry.getAgentProvider(snapshot.session.provider);
@@ -251,6 +263,9 @@ function eventsAfter(
 }
 
 function transitionFromEvent(session: AgentSession, event: AgentEvent): AgentSession {
+  // Cancellation is session authority; trailing invocation events remain in the
+  // durable log but cannot replace its terminal state.
+  if (session.status === 'cancelled') return session;
   if (
     event.type === AgentEventTypes.SESSION_COMPLETED ||
     event.type === AgentEventTypes.RUN_COMPLETED
