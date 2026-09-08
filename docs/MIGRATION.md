@@ -22,12 +22,12 @@ The runtime retains the model-provider family while adding separate execution su
 Pricing is a replaceable snapshot pinned to the Python baseline. Do not treat an estimate as
 an invoice or omit its `source` and `version` metadata.
 
-## 0.2.0-alpha.0 source candidate
+## 0.2.0-alpha.0
 
 TypeScript is now the canonical implementation. The Python pin records the historical
 state used for compatibility checks. CI/releases keep offline fixture checks but require
 no Python checkout; manual bidirectional checks remain available. Install the published
-prerelease through `blackbox-ts@alpha`, or build this checkout's tarball before publishing.
+prerelease through `blackbox-ts@alpha`, or build this checkout's tarball to install from source.
 The tarball drops repository docs and sourcemaps and adds `blackbox-ts/package.json`.
 Documentation links in README/CHANGELOG point to GitHub.
 

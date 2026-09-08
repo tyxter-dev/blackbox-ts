@@ -14,8 +14,7 @@ Node 20.11 or newer is required. The package is ESM-only; network smoke tests sk
 pnpm add blackbox-ts@alpha
 ```
 
-The current source candidate is `0.2.0-alpha.0`. To install it before a release is published,
-build a local tarball from this checkout:
+This checkout targets `0.2.0-alpha.0`. To install from source, build a local tarball:
 
 ```sh
 pnpm install

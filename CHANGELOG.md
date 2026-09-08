@@ -3,7 +3,7 @@
 ## 0.2.0-alpha.0
 
 Canonical TypeScript runtime with compatibility refreshed to the pinned Python Blackbox
-0.2.0 baseline. This version heading describes the source candidate, not a published tag.
+0.2.0 baseline.
 
 - CI and release verification no longer check out Python or run bidirectional parity;
   offline parity checks remain in `pnpm check`. Automated drift checks are removed;
