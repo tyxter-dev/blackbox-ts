@@ -54,14 +54,14 @@ const DIVERGENCE_NOTES = {
     "Custom workspace prefixes compose against the TS operation names `read|list|write|command`, not the parent's `read_file|list_files|write_file|run_command`.",
   ],
   'tests/unit/workspace_agents/test_permission_enforcement.py': [
-    "The parent stores grants under `permissions`; TS stores them under `grants` (R15), so a parent-written allowlist_v1 package fails closed in TS.",
+    "Native readers keep TS `grants` separate from the `permissions` record; explicit Python ZIP import translates parent grants and workspace refs for model-loop/local-agent execution and rejects unrepresentable settings.",
     "MCP descriptor `annotations.readOnlyHint`/`destructiveHint` map to `metadata.read_only`/`destructive` as booleans only (an explicit metadata key wins; the parent's whole-object `annotations` copy is not ported); the descriptor `scopes` array is an extra scope-ladder rung with no parent counterpart.",
   ],
   'tests/contracts/test_package_permission_capabilities.py': [
     "Any agent adapter not advertising `supports_package_permissions` (including test fakes) is refused under a boundary; `AgentSessionsRuntime.stream` under a boundary resolves the provider eagerly (ProviderNotFoundError at call rather than SessionNotFoundError at first pull).",
   ],
   'tests/e2e/test_permissioned_package.py': [
-    "Portable-package interchange differs (`grants` vs parent `permissions`); the agent-provider path of `runWorkspaceAgent` carries tools, hosted tools, workspace, and policy on `AgentSpec.metadata.run_request` and writes the effective model/instructions onto the spec (TS-only local-adapter convention).",
+    "Explicit one-way Python ZIP import translates supported declarations (`grants` vs parent `permissions`); other agent selectors, MCP, skills, schedules and active memory/publication settings require host conversion; the agent-provider path of `runWorkspaceAgent` carries tools, hosted tools, workspace, and policy on `AgentSpec.metadata.run_request` and writes the effective model/instructions onto the spec (TS-only local-adapter convention).",
   ],
   'tests/runtime/test_codex_agent_provider.py': [
     "Contract port only (ruling F4): the TS client boundary is connection-level (`connect` -> `send`/`messages`/`close`) while the parent `CodexAppServerClient` protocol is session-level; the provider owns thread/turn requests and the normalization table. No child-process/SDK runtime: inherited-env stripping, bundled PATH, `codex_bin`/SDK version check, kill grace, stderr tail, and the include-normalization compat registry are honestly N/A.",

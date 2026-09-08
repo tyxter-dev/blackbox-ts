@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added explicit Python workspace-agent ZIP import with grant/workspace-ref translation and
+  separate execution options for model-loop and local-agent runs. Connector authentication
+  must be supplied explicitly; unrepresentable execution settings are rejected. Native
+  package readers and writers retain their format.
+
 - Pricing now accounts for legacy combined cache counters and resolves registered model aliases
   with exact-row precedence. Independent cached-input and supplemental reasoning-output rates,
   plus source URLs, are preserved; bundled pricing retains 36 rows and its existing effective

@@ -68,7 +68,7 @@
         "tests/unit/workspace-agent-runtime.test.ts"
       ],
       "notes": [
-        "Portable-package interchange differs (`grants` vs parent `permissions`); the agent-provider path of `runWorkspaceAgent` carries tools, hosted tools, workspace, and policy on `AgentSpec.metadata.run_request` and writes the effective model/instructions onto the spec (TS-only local-adapter convention)."
+        "Explicit one-way Python ZIP import translates supported declarations (`grants` vs parent `permissions`); other agent selectors, MCP, skills, schedules and active memory/publication settings require host conversion; the agent-provider path of `runWorkspaceAgent` carries tools, hosted tools, workspace, and policy on `AgentSpec.metadata.run_request` and writes the effective model/instructions onto the spec (TS-only local-adapter convention)."
       ]
     },
     {
@@ -1342,7 +1342,7 @@
         "tests/unit/workspace-agent-runtime.test.ts"
       ],
       "notes": [
-        "The parent stores grants under `permissions`; TS stores them under `grants` (R15), so a parent-written allowlist_v1 package fails closed in TS.",
+        "Native readers keep TS `grants` separate from the `permissions` record; explicit Python ZIP import translates parent grants and workspace refs for model-loop/local-agent execution and rejects unrepresentable settings.",
         "MCP descriptor `annotations.readOnlyHint`/`destructiveHint` map to `metadata.read_only`/`destructive` as booleans only (an explicit metadata key wins; the parent's whole-object `annotations` copy is not ported); the descriptor `scopes` array is an extra scope-ladder rung with no parent counterpart."
       ]
     },
