@@ -1,7 +1,7 @@
 ---
 gdi_schema: 2
 gdi_version: 0.4.0
-status: implemented
+status: verified
 approval: User 2026-09-08 requested checking and finishing issue 2; this authorizes the listed compatibility fixes and regression coverage. Existing zero-dependency and stable-contract constraints remain in force.
 harness: codex
 ---
@@ -80,11 +80,18 @@ Execution realm: local repository and offline test doubles; GitHub only for issu
 
 | Gate | Consumes / invalidated by | Planned runs (impl / orch) | Preflight | Actual runs | Why this count is safe |
 | --- | --- | --- | --- | --- | --- |
-| Focused regression suites | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | A1: 3 failing reproductions and 3 passing iterations; final 43 tests. A2: 1 failing reproduction + 29 passing Codex tests + 43 shared-reader tests. B1: failing estimator/normalizer probes, 36 passing tests + 2 title-refinement tests; artifact checks passed. C1: 95 focused tests, actual Python ZIP generation and grant-removal sensitivity passed; affected API/typecheck/parity/lint/format checks passed. D1: old-floor probe and 3 golden reader failures, 39 initial tests, 35 corrected maintenance tests (scope review also ran 35); 6 unaffected golden tests retained; generator integrity probe and checks passed. D2: 168 tests across 9 suites; fixture drift and missing-crosswalk-entry rejection; native catalog additions admitted while changed/missing adopted rows fail; four Python samples reproduce in UTC and America/Los_Angeles; no-listener probe, typecheck, parity, lint and format pass | distinct regression paths, share evidence |
-| Full pnpm check | final source/tests/scripts/artifacts/docs | 0 / 1 | proven at released baseline | 0 | after final review; includes clean package consumer |
-| pnpm pack --dry-run | final package/source/docs | 0 / 1 | proven at released baseline | 0 | final publishable tarball without publishing |
-| Full optional Python compatibility suite | fixtures/scripts and frozen checkout | 0 / 1 | proven in previous parity refresh with Python 3.11 | 0 (section fixture generation/probes recorded separately in focused evidence) | verify integrated compatibility mappings once at final candidate |
-| Push and PR CI | reviewed branch and final gate evidence | 0 / 1 push, automatic push/PR CI | GitHub access proven | 0 | no merge/tag/publish implied by this task |
+| Focused regression campaigns | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | 6 | counted as six section campaigns; individual executions and correction reruns recorded below and in ledger |
+| Full pnpm check | final source/tests/scripts/artifacts/docs | 0 / 1 | proven at released baseline | 1 | after final review; includes clean package consumer |
+| pnpm pack --dry-run | final package/source/docs | 0 / 1 | proven at released baseline | 1 | final publishable tarball without publishing |
+| Full optional Python compatibility suite | fixtures/scripts and frozen checkout | 0 / 1 | proven in previous parity refresh with Python 3.11 | 1 | verify integrated compatibility mappings once at final candidate |
+| Push and PR CI | reviewed branch and final gate evidence | 0 / 1 push, automatic push/PR CI | GitHub access proven | 2 | implementation push then final ledger push after PR/issue URLs exist; automatic CI result attached to PR 5; no merge/tag/publish |
+
+Actual-run evidence:
+
+- Focused campaigns (one per section; individual commands and correction reruns included): A1: 3 failing reproductions and 3 passing iterations; final 43 tests. A2: 1 failing reproduction + 29 passing Codex tests + 43 shared-reader tests. B1: failing estimator/normalizer probes, 36 passing tests + 2 title-refinement tests; artifact checks passed. C1: 95 focused tests, actual Python ZIP generation and grant-removal sensitivity passed; affected API/typecheck/parity/lint/format checks passed. D1: old-floor probe and 3 golden reader failures, 39 initial tests, 35 corrected maintenance tests (scope review also ran 35); 6 unaffected golden tests retained; generator integrity probe and checks passed. D2: 168 tests across 9 suites; fixture drift and missing-crosswalk-entry rejection; native catalog additions admitted while changed/missing adopted rows fail; four Python samples reproduce in UTC and America/Los_Angeles; no-listener probe, typecheck, parity, lint and format pass.
+- Full check: 1 orchestrator run passed at 06a21ce: 372 tests, 5 network-gated skips; all formatting/parity/types/API/lint/build/catalog/package-consumer checks passed.
+- Pack: 1 orchestrator run passed at 06a21ce; no task tarball left in repository.
+- Integrated Python: 1 orchestrator run passed at 06a21ce using Python 3.11 and frozen d5be68e checkout; baseline, all samples, crosswalk and native projection accepted; parent clean.
 
 ### Rulings
 
@@ -136,7 +143,7 @@ One implementer at a time; no unrelated changes. Use focused before/after eviden
 
 - [x] Explicit Python/TypeScript package conversion handles grants, refs and execution configuration or rejects unsupported/ambiguous combinations before dispatch; native package round trips and restrictive boundaries remain correct.
 - [x] One TypeScript-owned feature score includes native extensions; Python compatibility and explicitly declined adoption are reported separately without forcing TypeScript status to follow Python.
-- [ ] TypeScript golden fixtures and TypeScript-first test crosswalk are authoritative; Python fixtures remain reproducible compatibility evidence. Documentation and issue checkboxes match verified behavior.
+- [x] TypeScript golden fixtures and TypeScript-first test crosswalk are authoritative; Python fixtures remain reproducible compatibility evidence. Documentation and issue checkboxes match verified behavior in https://github.com/tyxter-dev/blackbox-ts/issues/2 and PR 5.
 
 ## 2. Topology graph and recommended order
 
@@ -181,7 +188,7 @@ flowchart LR
 - Scope/contracts: issue-specific additive behavior is authorized; removal of native APIs, new error codes, version release and unrelated parity gaps are excluded.
 - Plan-as-evidence and evaluator soundness: validate anchors and plan; use reproduced D7/D8 paths and meaningful pricing/package/scorer counterexamples, not snapshot self-agreement alone.
 - Accepted risk: pinned Python formats may express runtime behavior TypeScript cannot safely implement; conversion must reject those explicitly and any intentional decline needs an explicit disposition, not silent loss.
-- At completion: record confirmed, absent and missed findings here.
+- Whole-branch review at 06a21ce: all three independent integration lenses CLEAN. Confirmed risks were terminal readers, frozen mapping identity, finite source-loader lifecycle and catalog extension admissibility; section corrections addressed each. No cycle, auth widening, silent foreign-setting loss, untracked in-scope deferral, production rollout, dependency or retirement finding remained. All three final local gates passed once; no broad gate repeated solely for review. Missed budget detail: terminal bookkeeping needs a second push to include the final ledger after PR/issue URLs exist, exceeding the planned single push; automatic CI reruns on that ledger commit. No extra local full gate is needed because plans are mechanically validated and excluded from product formatting/packaging.
 
 ### Corrections in force
 
@@ -518,18 +525,18 @@ Read the complete diff and claim anchors; verify actual tests, no unauthorized f
 - [x] D1 TypeScript-owned feature score — Goal 2 score exit passed — accepted 2026-09-08 44b74fb — rounds: 1 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers — env-retries: 0
   - R1 traceability: reject rewritten frozen legacy IDs and redirected adopted mappings; correct root README score. Initial validated reviews preserved in /tmp/blackbox-issue2-D1-data-r1.md and /tmp/blackbox-issue2-D1-doc-r1.md. Both new tests failed before correction; corrected mutation now fails validation.
   - Evidence: 35 corrected maintenance tests plus 6 unaffected golden tests, parity, deterministic regeneration, affected fixture/catalog/drift readers, formatting and lint pass. Main compared all 170 legacy IDs/evidence bindings (preserved), two deliberate TS display-name changes and frozen baseline fields (unchanged except added requirements/ID provenance). Three independent lenses approved final diff; main completed reader/claim/retirement sweep and all seven acceptance checks. Native features and lower honest statuses remain admitted; full gates and fixture/crosswalk inversion remain scheduled.
-- [x] D2 TypeScript golden fixtures and test crosswalk — Goal 2 fixture/crosswalk behavior passed; external issue bookkeeping follows final gates — accepted 2026-09-08 in this commit — rounds: 0 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers across 4 lenses — env-retries: 0
+- [x] D2 TypeScript golden fixtures and test crosswalk — Goal 2 fixture/crosswalk behavior passed; external issue bookkeeping follows final gates — accepted 2026-09-08 06a21ce — rounds: 0 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers across 4 lenses — env-retries: 0
   - Evidence: 168 focused tests across 9 suites; current-source native fixture check, all 33 executable TypeScript tests, 118 frozen Python module dispositions and 145 feature rows validated. Four Python samples reproduce in two timezones; no-listener probe and 683 local documentation targets pass. Main read full diff and validated implementation/reviewer reports and all seven acceptance checks. Data, reliability, scope and doc-truth approved. Full gates remain scheduled.
 
 ## Completion
 
 - [x] Every section committed with reviewed evidence and ledger.
-- [ ] Re-baselined on current origin/main before independent whole-branch final review.
-- [ ] Whole-branch seams, contracts, claim decay, reader sweep and debris review clean.
-- [ ] Goals and global/optional compatibility gates pass on final reviewed candidate.
-- [ ] Gate budget actual runs and Graph Findings updated; temporary artifacts retired.
-- [ ] Issue 2 checklist and PR accurately reflect completed behavior, with any residual explicit disposition.
-- [ ] Graph/ledger validation and routing evidence complete; token counts reported if available.
+- [x] Re-baselined on current origin/main before independent whole-branch final review — fetched 2026-09-08; origin/main remains 771d76e, merge already up to date; reviewed candidate 06a21ce.
+- [x] Whole-branch seams, contracts, claim decay, reader sweep and debris review clean — three independent final reports at 06a21ce, validated; no findings or correction round.
+- [x] Functional goals and global/optional compatibility gates pass on final reviewed candidate 06a21ce — full check 372 passed/5 expected skips, package dry run and integrated pinned Python suite passed once each; issue bookkeeping follows as terminal action.
+- [x] Gate budget actual runs and Graph Findings updated; no task artifacts remain in the repository. Review reports, logs and graph remain in /tmp as non-shipped working evidence.
+- [x] Issue 2 checklist and PR accurately reflect completed behavior, with explicit Python import limits and missing-canonical-price behavior — https://github.com/tyxter-dev/blackbox-ts/pull/5 closes issue 2 on merge; issue remains open awaiting merge.
+- [x] Graph/ledger validation and routing evidence complete; token counts unavailable from the harness. Final graph rendered to /tmp/goal-driven-plans/issue-2-compatibility-plan.graph.html.
 
 ## Deferrals
 
