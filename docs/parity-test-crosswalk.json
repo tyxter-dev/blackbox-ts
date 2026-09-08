@@ -1,9 +1,15 @@
 {
-  "schema_version": 1,
-  "parent_repository": "tyxter-dev/blackbox",
-  "parent_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
-  "generated_from": "docs/parent-baseline.json",
+  "schema_version": 2,
+  "authority": "typescript",
+  "python_reference_repository": "tyxter-dev/blackbox",
+  "python_reference_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
+  "generated_from": {
+    "typescript_tests": "tests/**/*.test.ts",
+    "python_compatibility": "docs/parent-baseline.json"
+  },
   "summary": {
+    "typescript_test_files": 33,
+    "typescript_only": 6,
     "python_test_modules": 118,
     "direct_evidence": 64,
     "semantic_projections": 54,
@@ -17,6 +23,452 @@
     "entries_with_notes": 15
   },
   "entries": [
+    {
+      "id": "typescript-test.compatibility.python.catalog.test.ts",
+      "typescript_test": "tests/compatibility/python-catalog.test.ts",
+      "classification": "compatibility",
+      "python_tests": ["tests/unit/core/test_pricing_catalog.py"]
+    },
+    {
+      "id": "typescript-test.compatibility.python.core.test.ts",
+      "typescript_test": "tests/compatibility/python-core.test.ts",
+      "classification": "compatibility",
+      "python_tests": ["tests/unit/core/test_state.py", "tests/unit/core/test_stores_persistent.py"]
+    },
+    {
+      "id": "typescript-test.compatibility.python.providers.test.ts",
+      "typescript_test": "tests/compatibility/python-providers.test.ts",
+      "classification": "compatibility",
+      "python_tests": [
+        "tests/golden/gemini_live/test_event_mapping.py",
+        "tests/golden/openai/test_hosted_tools_v2_event_mapping.py",
+        "tests/golden/openai_realtime/test_event_mapping.py"
+      ]
+    },
+    {
+      "id": "typescript-test.golden.codex.app.server.events.test.ts",
+      "typescript_test": "tests/golden/codex-app-server-events.test.ts",
+      "classification": "golden",
+      "python_tests": [
+        "tests/golden/codex/test_app_server_event_mapping.py",
+        "tests/integration/codex/test_codex_subscription.py",
+        "tests/runtime/test_agent_session_run.py",
+        "tests/runtime/test_claude_code_agent_provider.py",
+        "tests/runtime/test_codex_agent_provider.py"
+      ]
+    },
+    {
+      "id": "typescript-test.golden.core.contracts.test.ts",
+      "typescript_test": "tests/golden/core-contracts.test.ts",
+      "classification": "golden",
+      "python_tests": [
+        "tests/unit/core/test_errors.py",
+        "tests/unit/core/test_multimodal_content.py",
+        "tests/unit/core/test_state.py",
+        "tests/unit/core/test_stores.py",
+        "tests/unit/core/test_stores_persistent.py",
+        "tests/unit/core/test_streams.py"
+      ]
+    },
+    {
+      "id": "typescript-test.golden.providers.test.ts",
+      "typescript_test": "tests/golden/providers.test.ts",
+      "classification": "golden",
+      "python_tests": [
+        "tests/golden/anthropic/test_messages_event_mapping.py",
+        "tests/golden/gemini/test_generate_content_event_mapping.py",
+        "tests/golden/gemini_live/test_event_mapping.py",
+        "tests/golden/openai/test_hosted_tools_v2_event_mapping.py",
+        "tests/golden/openai/test_responses_event_mapping.py",
+        "tests/golden/openai_realtime/test_event_mapping.py",
+        "tests/runtime/test_hosted_tool_loop.py",
+        "tests/unit/providers/model_adapters/test_current_model_controls.py",
+        "tests/unit/tools/test_hosted_tool_capabilities.py",
+        "tests/unit/tools/test_hosted_tools.py",
+        "tests/unit/tools/test_hosted_tools_v2.py"
+      ]
+    },
+    {
+      "id": "typescript-test.journey.runtime.journey.test.ts",
+      "typescript_test": "tests/journey/runtime-journey.test.ts",
+      "classification": "journey",
+      "python_tests": [
+        "tests/e2e/test_diet_coach_example.py",
+        "tests/integration/anthropic/test_cache_and_cost.py",
+        "tests/integration/anthropic/test_messages_smoke.py",
+        "tests/integration/gemini/test_cache_and_cost.py",
+        "tests/integration/gemini/test_generate_content_smoke.py",
+        "tests/integration/openai/test_cache_and_cost.py",
+        "tests/integration/openai/test_responses_smoke.py",
+        "tests/integration/xai/test_cost_tracking.py",
+        "tests/integration/xai/test_responses_smoke.py",
+        "tests/journey/business_cases/test_bella_cucina_returning_guest.py",
+        "tests/perf/test_benchmarks.py",
+        "tests/runtime/test_agent_webhook_ingress.py",
+        "tests/runtime/test_loop_input_shapes.py",
+        "tests/runtime/test_maia_business_case_example.py",
+        "tests/runtime/test_runtime_run.py",
+        "tests/runtime/test_runtime_skills.py",
+        "tests/runtime/test_runtime_stream.py",
+        "tests/unit/compat/test_chat_compat.py",
+        "tests/unit/integrations/test_google_integrations.py"
+      ]
+    },
+    {
+      "id": "typescript-test.perf.runtime.budget.test.ts",
+      "typescript_test": "tests/perf/runtime-budget.test.ts",
+      "classification": "perf",
+      "python_tests": [],
+      "na_reason": "TypeScript runtime performance budgets; no matching frozen Python performance suite."
+    },
+    {
+      "id": "typescript-test.security.boundaries.test.ts",
+      "typescript_test": "tests/security/boundaries.test.ts",
+      "classification": "security",
+      "python_tests": [
+        "tests/runtime/test_mcp_toolset_runtime.py",
+        "tests/unit/mcp/test_mcp_auth.py",
+        "tests/unit/mcp/test_mcp_client.py",
+        "tests/unit/mcp/test_mcp_connector.py",
+        "tests/unit/mcp/test_mcp_security_validation.py",
+        "tests/unit/mcp/test_mcp_server.py",
+        "tests/unit/mcp/test_mcp_spec.py",
+        "tests/unit/mcp/test_mcp_toolset.py",
+        "tests/unit/mcp/test_mcp_transports.py",
+        "tests/unit/mcp/test_mcp_trust_policy.py",
+        "tests/unit/workspace_agents/test_package.py",
+        "tests/unit/workspaces/test_local_workspace_provider.py",
+        "tests/unit/workspaces/test_sandbox_workspace_provider.py",
+        "tests/unit/workspaces/test_workspace_provider_contracts.py"
+      ]
+    },
+    {
+      "id": "typescript-test.smoke.providers.smoke.test.ts",
+      "typescript_test": "tests/smoke/providers-smoke.test.ts",
+      "classification": "smoke",
+      "python_tests": [],
+      "na_reason": "Opt-in live smoke for TypeScript fetch adapters; inventory presence does not mean network-gated cases ran."
+    },
+    {
+      "id": "typescript-test.unit.agent.loop.test.ts",
+      "typescript_test": "tests/unit/agent-loop.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_capability_honesty.py",
+        "tests/runtime/test_agent_webhook_ingress.py",
+        "tests/runtime/test_dynamic_tool_routing.py",
+        "tests/runtime/test_dynamic_toolsets.py",
+        "tests/runtime/test_hosted_tool_loop.py",
+        "tests/runtime/test_loop_input_shapes.py",
+        "tests/runtime/test_maia_business_case_example.py",
+        "tests/runtime/test_provider_native_output.py",
+        "tests/runtime/test_realtime_approvals.py",
+        "tests/runtime/test_runtime_retry.py",
+        "tests/runtime/test_runtime_run.py",
+        "tests/runtime/test_runtime_skills.py",
+        "tests/runtime/test_runtime_stream.py",
+        "tests/runtime/test_workspace_tool_loop.py",
+        "tests/unit/output/test_output_schema.py",
+        "tests/unit/output/test_output_validation.py",
+        "tests/unit/tools/test_hosted_tool_capabilities.py",
+        "tests/unit/tools/test_hosted_tools.py",
+        "tests/unit/tools/test_hosted_tools_v2.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.agent.sessions.test.ts",
+      "typescript_test": "tests/unit/agent-sessions.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/golden/codex/test_app_server_event_mapping.py",
+        "tests/integration/codex/test_codex_subscription.py",
+        "tests/runtime/test_agent_session_persistence.py",
+        "tests/runtime/test_agent_session_run.py",
+        "tests/runtime/test_claude_code_agent_provider.py",
+        "tests/runtime/test_codex_agent_provider.py",
+        "tests/unit/core/test_session_state_serialization.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.capabilities.test.ts",
+      "typescript_test": "tests/unit/capabilities.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_model_capability_validation.py",
+        "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+        "tests/unit/providers/test_bundled_model_catalog.py",
+        "tests/unit/providers/test_model_catalog.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.codex.agent.provider.test.ts",
+      "typescript_test": "tests/unit/codex-agent-provider.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/golden/codex/test_app_server_event_mapping.py",
+        "tests/integration/codex/test_codex_subscription.py",
+        "tests/runtime/test_agent_session_run.py",
+        "tests/runtime/test_claude_code_agent_provider.py",
+        "tests/runtime/test_codex_agent_provider.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.completion.and.fakes.test.ts",
+      "typescript_test": "tests/unit/completion-and-fakes.test.ts",
+      "classification": "unit",
+      "python_tests": [],
+      "na_reason": "TypeScript completion facade and offline provider helpers; no dedicated frozen Python test mapping."
+    },
+    {
+      "id": "typescript-test.unit.core.contracts.test.ts",
+      "typescript_test": "tests/unit/core-contracts.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_capability_honesty.py",
+        "tests/runtime/test_realtime_approvals.py",
+        "tests/unit/core/test_data_models.py",
+        "tests/unit/core/test_errors.py",
+        "tests/unit/core/test_multimodal_content.py",
+        "tests/unit/core/test_state.py",
+        "tests/unit/core/test_stores_persistent.py",
+        "tests/unit/core/test_streams.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.http.streaming.test.ts",
+      "typescript_test": "tests/unit/http-streaming.test.ts",
+      "classification": "unit",
+      "python_tests": [],
+      "na_reason": "Fetch/SSE transport, retry and cancellation tests for the TypeScript platform implementation."
+    },
+    {
+      "id": "typescript-test.unit.mcp.test.ts",
+      "typescript_test": "tests/unit/mcp.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_package_permission_capabilities.py",
+        "tests/e2e/test_permissioned_package.py",
+        "tests/runtime/test_mcp_toolset_runtime.py",
+        "tests/runtime/test_package_permission_regressions.py",
+        "tests/runtime/test_package_permissions.py",
+        "tests/unit/mcp/test_mcp_auth.py",
+        "tests/unit/mcp/test_mcp_client.py",
+        "tests/unit/mcp/test_mcp_connector.py",
+        "tests/unit/mcp/test_mcp_security_validation.py",
+        "tests/unit/mcp/test_mcp_server.py",
+        "tests/unit/mcp/test_mcp_spec.py",
+        "tests/unit/mcp/test_mcp_toolset.py",
+        "tests/unit/mcp/test_mcp_transports.py",
+        "tests/unit/mcp/test_mcp_trust_policy.py",
+        "tests/unit/workspace_agents/test_permission_enforcement.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.model.runtime.test.ts",
+      "typescript_test": "tests/unit/model-runtime.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/journey/agent_provider/test_agent_provider_journeys.py",
+        "tests/journey/model_provider/test_model_provider_journeys.py",
+        "tests/runtime/test_local_agent_provider.py",
+        "tests/runtime/test_openai_agents_provider.py",
+        "tests/runtime/test_provider_fallback.py",
+        "tests/unit/compat/test_compat_providers.py",
+        "tests/unit/providers/model_adapters/test_echo_model.py",
+        "tests/unit/providers/model_adapters/test_model_provider_hardening.py",
+        "tests/unit/providers/model_adapters/test_model_request_controls.py",
+        "tests/unit/providers/model_adapters/test_multimodal_input.py",
+        "tests/unit/providers/test_registry.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.parity.maintenance.test.ts",
+      "typescript_test": "tests/unit/parity-maintenance.test.ts",
+      "classification": "unit",
+      "python_tests": [],
+      "na_reason": "TypeScript-owned inventory, generator and artifact integrity checks; Python has no equivalent repository workflow."
+    },
+    {
+      "id": "typescript-test.unit.permission.spine.test.ts",
+      "typescript_test": "tests/unit/permission-spine.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_package_permission_capabilities.py",
+        "tests/e2e/test_permissioned_package.py",
+        "tests/runtime/test_package_permission_regressions.py",
+        "tests/runtime/test_package_permissions.py",
+        "tests/unit/workspace_agents/test_permission_enforcement.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.persistence.observability.test.ts",
+      "typescript_test": "tests/unit/persistence-observability.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_observability_presets.py",
+        "tests/runtime/test_resume_run_from_saved_state.py",
+        "tests/unit/core/test_session_store.py",
+        "tests/unit/core/test_stores.py",
+        "tests/unit/core/test_stores_persistent.py",
+        "tests/unit/observability/test_event_sinks.py",
+        "tests/unit/observability/test_metrics.py",
+        "tests/unit/observability/test_observability_workflows.py",
+        "tests/unit/observability/test_presets.py",
+        "tests/unit/observability/test_trace_spans.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.planning.accounting.config.test.ts",
+      "typescript_test": "tests/unit/planning-accounting-config.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_cache_metadata.py",
+        "tests/runtime/test_prompt_composition.py",
+        "tests/runtime/test_runtime_config.py",
+        "tests/unit/core/test_model_accounting.py",
+        "tests/unit/core/test_pricing_catalog.py",
+        "tests/unit/core/test_provider_cache.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.provider.contracts.test.ts",
+      "typescript_test": "tests/unit/provider-contracts.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/golden/anthropic/test_messages_event_mapping.py",
+        "tests/golden/gemini/test_generate_content_event_mapping.py",
+        "tests/golden/openai/test_responses_event_mapping.py",
+        "tests/journey/agent_provider/test_agent_provider_journeys.py",
+        "tests/journey/model_provider/test_model_provider_journeys.py",
+        "tests/runtime/test_local_agent_provider.py",
+        "tests/runtime/test_model_capability_validation.py",
+        "tests/runtime/test_openai_agents_provider.py",
+        "tests/runtime/test_provider_fallback.py",
+        "tests/unit/compat/test_compat_providers.py",
+        "tests/unit/providers/model_adapters/test_current_model_controls.py",
+        "tests/unit/providers/model_adapters/test_echo_model.py",
+        "tests/unit/providers/model_adapters/test_model_capability_profiles.py",
+        "tests/unit/providers/model_adapters/test_model_provider_hardening.py",
+        "tests/unit/providers/model_adapters/test_model_request_controls.py",
+        "tests/unit/providers/model_adapters/test_multimodal_input.py",
+        "tests/unit/providers/test_registry.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.realtime.test.ts",
+      "typescript_test": "tests/unit/realtime.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_provider_native_output.py",
+        "tests/runtime/test_realtime_approvals.py",
+        "tests/runtime/test_realtime_runtime.py",
+        "tests/runtime/test_realtime_tool_loop.py",
+        "tests/runtime/test_runtime_retry.py",
+        "tests/unit/realtime/test_realtime_capabilities.py",
+        "tests/unit/realtime/test_realtime_event_types.py",
+        "tests/unit/realtime/test_realtime_registry.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.refs.test.ts",
+      "typescript_test": "tests/unit/refs.test.ts",
+      "classification": "unit",
+      "python_tests": [],
+      "na_reason": "TypeScript provider-reference parsing and legacy slash compatibility cases; no dedicated frozen Python test mapping."
+    },
+    {
+      "id": "typescript-test.unit.registry.catalog.test.ts",
+      "typescript_test": "tests/unit/registry-catalog.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/unit/core/test_pricing_catalog.py",
+        "tests/unit/providers/test_bundled_model_catalog.py",
+        "tests/unit/providers/test_model_catalog.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.tool.permissions.test.ts",
+      "typescript_test": "tests/unit/tool-permissions.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_package_permission_capabilities.py",
+        "tests/e2e/test_permissioned_package.py",
+        "tests/runtime/test_package_permission_regressions.py",
+        "tests/runtime/test_package_permissions.py",
+        "tests/unit/workspace_agents/test_permission_enforcement.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.tools.output.test.ts",
+      "typescript_test": "tests/unit/tools-output.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_dynamic_tool_routing.py",
+        "tests/runtime/test_dynamic_toolsets.py",
+        "tests/runtime/test_workspace_tool_loop.py",
+        "tests/unit/output/test_output_schema.py",
+        "tests/unit/output/test_output_validation.py",
+        "tests/unit/tools/test_tool_routing.py",
+        "tests/unit/tools/test_tool_runtime.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.workers.observability.test.ts",
+      "typescript_test": "tests/unit/workers-observability.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/runtime/test_observability_presets.py",
+        "tests/unit/observability/test_event_sinks.py",
+        "tests/unit/observability/test_metrics.py",
+        "tests/unit/observability/test_observability_workflows.py",
+        "tests/unit/observability/test_presets.py",
+        "tests/unit/observability/test_trace_spans.py",
+        "tests/unit/workers/test_anthropic_work_source.py",
+        "tests/unit/workers/test_environment_worker.py",
+        "tests/unit/workers/test_work_source.py",
+        "tests/unit/workspace_agents/test_package.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.workspace.agent.runtime.test.ts",
+      "typescript_test": "tests/unit/workspace-agent-runtime.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/contracts/test_package_permission_capabilities.py",
+        "tests/e2e/test_permissioned_package.py",
+        "tests/runtime/test_package_permission_regressions.py",
+        "tests/runtime/test_package_permissions.py",
+        "tests/unit/workspace_agents/test_permission_enforcement.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.workspace.agents.test.ts",
+      "typescript_test": "tests/unit/workspace-agents.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/unit/skills/test_skills.py",
+        "tests/unit/workers/test_environment_worker.py",
+        "tests/unit/workspace_agents/test_package.py",
+        "tests/unit/workspace_agents/test_schedule_executor.py",
+        "tests/unit/workspace_agents/test_sqlite_registry.py",
+        "tests/unit/workspace_agents/test_validation.py",
+        "tests/unit/workspace_agents/test_workspace_agents.py"
+      ]
+    },
+    {
+      "id": "typescript-test.unit.workspaces.test.ts",
+      "typescript_test": "tests/unit/workspaces.test.ts",
+      "classification": "unit",
+      "python_tests": [
+        "tests/journey/workspace_provider/test_workspace_provider_journeys.py",
+        "tests/unit/workspaces/test_local_workspace_provider.py",
+        "tests/unit/workspaces/test_sandbox_workspace_provider.py",
+        "tests/unit/workspaces/test_workspace_provider_contracts.py",
+        "tests/unit/workspaces/test_workspace_runtime.py"
+      ]
+    }
+  ],
+  "python_compatibility": [
     {
       "id": "python-test.contracts.test.capability.honesty",
       "python_test": "tests/contracts/test_capability_honesty.py",
@@ -122,7 +574,7 @@
       "domains": ["Native Model Providers"],
       "evidence_refs": [],
       "typescript_tests": [
-        "tests/golden/python-provider-differential.test.ts",
+        "tests/compatibility/python-providers.test.ts",
         "tests/golden/providers.test.ts"
       ],
       "notes": []
@@ -135,7 +587,7 @@
       "domains": ["Native Model Providers"],
       "evidence_refs": [],
       "typescript_tests": [
-        "tests/golden/python-provider-differential.test.ts",
+        "tests/compatibility/python-providers.test.ts",
         "tests/golden/providers.test.ts"
       ],
       "notes": []
@@ -161,7 +613,7 @@
       "domains": ["Native Model Providers"],
       "evidence_refs": [],
       "typescript_tests": [
-        "tests/golden/python-provider-differential.test.ts",
+        "tests/compatibility/python-providers.test.ts",
         "tests/golden/providers.test.ts"
       ],
       "notes": []
@@ -782,7 +1234,7 @@
       "domains": ["Provider Controls and Catalog", "Accounting and Cache"],
       "evidence_refs": [],
       "typescript_tests": [
-        "tests/golden/python-catalog-differential.test.ts",
+        "tests/compatibility/python-catalog.test.ts",
         "tests/unit/registry-catalog.test.ts",
         "tests/unit/planning-accounting-config.test.ts"
       ],
@@ -828,6 +1280,7 @@
       "domains": ["Core Events and State"],
       "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
+        "tests/compatibility/python-core.test.ts",
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts"
       ],
@@ -859,6 +1312,7 @@
         "persistent-stores"
       ],
       "typescript_tests": [
+        "tests/compatibility/python-core.test.ts",
         "tests/golden/core-contracts.test.ts",
         "tests/unit/core-contracts.test.ts",
         "tests/unit/persistence-observability.test.ts"
@@ -1431,989 +1885,1191 @@
     {
       "feature_id": "parent.high-level-runtime.complete-blackbox-agent-loop",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.complete-blackbox-agent-loop"]
     },
     {
       "feature_id": "parent.high-level-runtime.streaming-blackbox-loop",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.streaming-blackbox-loop"]
     },
     {
       "feature_id": "parent.high-level-runtime.typed-agent-result",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.typed-agent-result"]
     },
     {
       "feature_id": "parent.high-level-runtime.text-only-runs",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.text-only-runs"]
     },
     {
       "feature_id": "parent.high-level-runtime.max-iteration-guard",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.max-iteration-guard"]
     },
     {
       "feature_id": "parent.high-level-runtime.provider-fallback-routing",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.provider-fallback-routing"]
     },
     {
       "feature_id": "parent.high-level-runtime.mock-tool-execution",
       "domain": "High-Level Runtime",
-      "evidence_ref": "high-level-runtime",
-      "typescript_tests": ["tests/unit/agent-loop.test.ts", "tests/journey/runtime-journey.test.ts"]
+      "evidence_refs": ["high-level-runtime"],
+      "typescript_tests": [
+        "tests/unit/agent-loop.test.ts",
+        "tests/journey/runtime-journey.test.ts"
+      ],
+      "python_requirements": ["parent.high-level-runtime.mock-tool-execution"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.portable-skill-packs",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "skills-and-workspace-agents",
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "evidence_refs": ["skills-and-workspace-agents"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "python_requirements": ["parent.skills-and-workspace-agents.portable-skill-packs"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.workspace-agent-package-contracts",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "skills-and-workspace-agents",
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "evidence_refs": ["skills-and-workspace-agents"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "python_requirements": [
+        "parent.skills-and-workspace-agents.workspace-agent-package-contracts"
+      ]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.workspace-agent-runtime-grants",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "workspace-agent-runtime-grants",
+      "evidence_refs": ["workspace-agent-runtime-grants"],
       "typescript_tests": [
         "tests/unit/tool-permissions.test.ts",
         "tests/unit/permission-spine.test.ts",
         "tests/unit/workspace-agent-runtime.test.ts",
         "tests/unit/mcp.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.skills-and-workspace-agents.workspace-agent-runtime-grants"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.workspace-agent-validation",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "workspace-agent-validation",
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "evidence_refs": ["workspace-agent-validation"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "python_requirements": ["parent.skills-and-workspace-agents.workspace-agent-validation"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.sqlite-workspace-agent-registry",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "workspace-agent-registry",
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "evidence_refs": ["workspace-agent-registry"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "python_requirements": ["parent.skills-and-workspace-agents.sqlite-workspace-agent-registry"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.workspace-agent-package-on-disk",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "workspace-agent-package",
+      "evidence_refs": ["workspace-agent-package"],
       "typescript_tests": [
         "tests/unit/workspace-agents.test.ts",
         "tests/security/boundaries.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.skills-and-workspace-agents.workspace-agent-package-on-disk"]
     },
     {
       "feature_id": "parent.skills-and-workspace-agents.schedule-execution-reference-executor",
       "domain": "Skills and Workspace Agents",
-      "evidence_ref": "schedule-executor",
-      "typescript_tests": ["tests/unit/workspace-agents.test.ts"]
+      "evidence_refs": ["schedule-executor"],
+      "typescript_tests": ["tests/unit/workspace-agents.test.ts"],
+      "python_requirements": [
+        "parent.skills-and-workspace-agents.schedule-execution-reference-executor"
+      ]
     },
     {
       "feature_id": "parent.structured-output.pydantic-structured-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.pydantic-structured-output"]
     },
     {
       "feature_id": "parent.structured-output.dataclass-structured-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.dataclass-structured-output"]
     },
     {
       "feature_id": "parent.structured-output.string-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.string-output"]
     },
     {
       "feature_id": "parent.structured-output.fail-fast-validation-errors",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.fail-fast-validation-errors"]
     },
     {
       "feature_id": "parent.structured-output.provider-native-structured-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.provider-native-structured-output"]
     },
     {
       "feature_id": "parent.structured-output.finalizer-tool-structured-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.finalizer-tool-structured-output"]
     },
     {
       "feature_id": "parent.structured-output.raw-json-schema-post-hoc-output",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.raw-json-schema-post-hoc-output"]
     },
     {
       "feature_id": "parent.structured-output.structured-output-retry-repair",
       "domain": "Structured Output",
-      "evidence_ref": "structured-output",
-      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["structured-output"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.structured-output.structured-output-retry-repair"]
     },
     {
       "feature_id": "parent.local-tools.local-tool-registration",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.local-tool-registration"]
     },
     {
       "feature_id": "parent.local-tools.dynamic-tool-sessions",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.dynamic-tool-sessions"]
     },
     {
       "feature_id": "parent.local-tools.tool-lookup-listing",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-lookup-listing"]
     },
     {
       "feature_id": "parent.local-tools.provider-neutral-tool-schema-export",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.provider-neutral-tool-schema-export"]
     },
     {
       "feature_id": "parent.local-tools.manual-json-schema-override",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.manual-json-schema-override"]
     },
     {
       "feature_id": "parent.local-tools.tool-metadata",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-metadata"]
     },
     {
       "feature_id": "parent.local-tools.blocking-tool-offload",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.blocking-tool-offload"]
     },
     {
       "feature_id": "parent.local-tools.async-tool-execution",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.async-tool-execution"]
     },
     {
       "feature_id": "parent.local-tools.tool-timeouts",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-timeouts"]
     },
     {
       "feature_id": "parent.local-tools.tool-concurrency-cap",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-concurrency-cap"]
     },
     {
       "feature_id": "parent.local-tools.high-level-tool-controls",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.high-level-tool-controls"]
     },
     {
       "feature_id": "parent.local-tools.multiple-tool-calls-in-one-turn",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.multiple-tool-calls-in-one-turn"]
     },
     {
       "feature_id": "parent.local-tools.tool-result-coercion",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-result-coercion"]
     },
     {
       "feature_id": "parent.local-tools.tool-payload-separation",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-payload-separation"]
     },
     {
       "feature_id": "parent.local-tools.context-injection",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.context-injection"]
     },
     {
       "feature_id": "parent.local-tools.context-schema-privacy",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.context-schema-privacy"]
     },
     {
       "feature_id": "parent.local-tools.tool-catalog-search",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.tool-catalog-search"]
     },
     {
       "feature_id": "parent.local-tools.runtime-toolsets-and-dynamic-loading",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.runtime-toolsets-and-dynamic-loading"]
     },
     {
       "feature_id": "parent.local-tools.dynamic-tool-surface-persistence",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.dynamic-tool-surface-persistence"]
     },
     {
       "feature_id": "parent.local-tools.workspace-tool-backend",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.workspace-tool-backend"]
     },
     {
       "feature_id": "parent.local-tools.namespaced-toolref-ids",
       "domain": "Local Tools",
-      "evidence_ref": "local-tools",
-      "typescript_tests": ["tests/unit/tools-output.test.ts"]
+      "evidence_refs": ["local-tools"],
+      "typescript_tests": ["tests/unit/tools-output.test.ts"],
+      "python_requirements": ["parent.local-tools.namespaced-toolref-ids"]
     },
     {
       "feature_id": "parent.hosted-tools.typed-hosted-tool-specs",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.typed-hosted-tool-specs"]
     },
     {
       "feature_id": "parent.hosted-tools.openai-hosted-tool-mapping",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.openai-hosted-tool-mapping"]
     },
     {
       "feature_id": "parent.hosted-tools.openai-hosted-tool-events",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.openai-hosted-tool-events"]
     },
     {
       "feature_id": "parent.hosted-tools.hosted-tool-result-metadata",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.hosted-tool-result-metadata"]
     },
     {
       "feature_id": "parent.hosted-tools.provider-native-remote-mcp",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.provider-native-remote-mcp"]
     },
     {
       "feature_id": "parent.hosted-tools.mcp-result-metadata",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.mcp-result-metadata"]
     },
     {
       "feature_id": "parent.hosted-tools.gemini-hosted-web-search",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.gemini-hosted-web-search"]
     },
     {
       "feature_id": "parent.hosted-tools.raw-hosted-tool-passthrough",
       "domain": "Hosted Tools",
-      "evidence_ref": "hosted-tools",
-      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["hosted-tools"],
+      "typescript_tests": ["tests/golden/providers.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.hosted-tools.raw-hosted-tool-passthrough"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.allow-all-default-policy",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.allow-all-default-policy"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.policy-allow-deny-gate",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.policy-allow-deny-gate"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.approval-required-gate",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.approval-required-gate"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.approval-resume",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.approval-resume"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.approval-denial",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.approval-denial"]
     },
     {
       "feature_id": "parent.policy-approvals-and-safety.typed-approval-errors",
       "domain": "Policy, Approvals, and Safety",
-      "evidence_ref": "policy-approvals-and-safety",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"]
+      "evidence_refs": ["policy-approvals-and-safety"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts", "tests/unit/agent-loop.test.ts"],
+      "python_requirements": ["parent.policy-approvals-and-safety.typed-approval-errors"]
     },
     {
       "feature_id": "parent.core-events-and-state.canonical-event-taxonomy",
       "domain": "Core Events and State",
-      "evidence_ref": "core-events-and-state",
+      "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
         "tests/unit/core-contracts.test.ts",
-        "tests/golden/core-contracts.test.ts"
-      ]
+        "tests/golden/core-contracts.test.ts",
+        "tests/compatibility/python-core.test.ts"
+      ],
+      "python_requirements": ["parent.core-events-and-state.canonical-event-taxonomy"]
     },
     {
       "feature_id": "parent.core-events-and-state.run-ids",
       "domain": "Core Events and State",
-      "evidence_ref": "core-events-and-state",
+      "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
         "tests/unit/core-contracts.test.ts",
-        "tests/golden/core-contracts.test.ts"
-      ]
+        "tests/golden/core-contracts.test.ts",
+        "tests/compatibility/python-core.test.ts"
+      ],
+      "python_requirements": ["parent.core-events-and-state.run-ids"]
     },
     {
       "feature_id": "parent.core-events-and-state.monotonic-event-sequence",
       "domain": "Core Events and State",
-      "evidence_ref": "core-events-and-state",
+      "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
         "tests/unit/core-contracts.test.ts",
-        "tests/golden/core-contracts.test.ts"
-      ]
+        "tests/golden/core-contracts.test.ts",
+        "tests/compatibility/python-core.test.ts"
+      ],
+      "python_requirements": ["parent.core-events-and-state.monotonic-event-sequence"]
     },
     {
       "feature_id": "parent.core-events-and-state.provider-native-continuation-state",
       "domain": "Core Events and State",
-      "evidence_ref": "core-events-and-state",
+      "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
         "tests/unit/core-contracts.test.ts",
-        "tests/golden/core-contracts.test.ts"
-      ]
+        "tests/golden/core-contracts.test.ts",
+        "tests/compatibility/python-core.test.ts"
+      ],
+      "python_requirements": ["parent.core-events-and-state.provider-native-continuation-state"]
     },
     {
       "feature_id": "parent.core-events-and-state.raw-provider-payload-preservation",
       "domain": "Core Events and State",
-      "evidence_ref": "core-events-and-state",
+      "evidence_refs": ["core-events-and-state"],
       "typescript_tests": [
         "tests/unit/core-contracts.test.ts",
-        "tests/golden/core-contracts.test.ts"
-      ]
+        "tests/golden/core-contracts.test.ts",
+        "tests/compatibility/python-core.test.ts"
+      ],
+      "python_requirements": ["parent.core-events-and-state.raw-provider-payload-preservation"]
     },
     {
       "feature_id": "parent.provider-state-mapping.openai-previous-response-continuation",
       "domain": "Provider State Mapping",
-      "evidence_ref": "provider-state-mapping",
-      "typescript_tests": ["tests/golden/providers.test.ts"]
+      "evidence_refs": ["provider-state-mapping"],
+      "typescript_tests": ["tests/golden/providers.test.ts"],
+      "python_requirements": ["parent.provider-state-mapping.openai-previous-response-continuation"]
     },
     {
       "feature_id": "parent.provider-state-mapping.provider-tool-source-state-preservation",
       "domain": "Provider State Mapping",
-      "evidence_ref": "provider-state-mapping",
-      "typescript_tests": ["tests/golden/providers.test.ts"]
+      "evidence_refs": ["provider-state-mapping"],
+      "typescript_tests": ["tests/golden/providers.test.ts"],
+      "python_requirements": [
+        "parent.provider-state-mapping.provider-tool-source-state-preservation"
+      ]
     },
     {
       "feature_id": "parent.persistence.event-store-protocol",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.event-store-protocol"]
     },
     {
       "feature_id": "parent.persistence.in-memory-event-store",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.in-memory-event-store"]
     },
     {
       "feature_id": "parent.persistence.run-store-protocol",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.run-store-protocol"]
     },
     {
       "feature_id": "parent.persistence.in-memory-run-store",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.in-memory-run-store"]
     },
     {
       "feature_id": "parent.persistence.session-store-protocol",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.session-store-protocol"]
     },
     {
       "feature_id": "parent.persistence.in-memory-session-store",
       "domain": "Persistence",
-      "evidence_ref": "persistence",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistence"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.in-memory-session-store"]
     },
     {
       "feature_id": "parent.persistence.resume-run-from-persisted-state",
       "domain": "Persistence",
-      "evidence_ref": "resume-run-state",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["resume-run-state"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.resume-run-from-persisted-state"]
     },
     {
       "feature_id": "parent.persistence.jsonl-sqlite-stores",
       "domain": "Persistence",
-      "evidence_ref": "persistent-stores",
-      "typescript_tests": ["tests/unit/persistence-observability.test.ts"]
+      "evidence_refs": ["persistent-stores"],
+      "typescript_tests": ["tests/unit/persistence-observability.test.ts"],
+      "python_requirements": ["parent.persistence.jsonl-sqlite-stores"]
     },
     {
       "feature_id": "parent.provider-controls-and-catalog.provider-native-request-controls",
       "domain": "Provider Controls and Catalog",
-      "evidence_ref": "provider-controls-and-catalog",
-      "typescript_tests": ["tests/unit/registry-catalog.test.ts", "tests/unit/capabilities.test.ts"]
+      "evidence_refs": ["provider-controls-and-catalog"],
+      "typescript_tests": [
+        "tests/unit/registry-catalog.test.ts",
+        "tests/unit/capabilities.test.ts"
+      ],
+      "python_requirements": [
+        "parent.provider-controls-and-catalog.provider-native-request-controls"
+      ]
     },
     {
       "feature_id": "parent.provider-controls-and-catalog.provider-model-catalog",
       "domain": "Provider Controls and Catalog",
-      "evidence_ref": "provider-controls-and-catalog",
-      "typescript_tests": ["tests/unit/registry-catalog.test.ts", "tests/unit/capabilities.test.ts"]
+      "evidence_refs": ["provider-controls-and-catalog"],
+      "typescript_tests": [
+        "tests/unit/registry-catalog.test.ts",
+        "tests/unit/capabilities.test.ts"
+      ],
+      "python_requirements": ["parent.provider-controls-and-catalog.provider-model-catalog"]
     },
     {
       "feature_id": "parent.accounting-and-cache.model-usage-and-cost-accounting",
       "domain": "Accounting and Cache",
-      "evidence_ref": "accounting-and-cache",
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "python_requirements": ["parent.accounting-and-cache.model-usage-and-cost-accounting"]
     },
     {
       "feature_id": "parent.accounting-and-cache.native-provider-cache-controls",
       "domain": "Accounting and Cache",
-      "evidence_ref": "accounting-and-cache",
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "python_requirements": ["parent.accounting-and-cache.native-provider-cache-controls"]
     },
     {
       "feature_id": "parent.accounting-and-cache.provider-cache-registry",
       "domain": "Accounting and Cache",
-      "evidence_ref": "accounting-and-cache",
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "python_requirements": ["parent.accounting-and-cache.provider-cache-registry"]
     },
     {
       "feature_id": "parent.accounting-and-cache.provider-side-cache-lifecycle",
       "domain": "Accounting and Cache",
-      "evidence_ref": "accounting-and-cache",
-      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"]
+      "evidence_refs": ["accounting-and-cache"],
+      "typescript_tests": ["tests/unit/planning-accounting-config.test.ts"],
+      "python_requirements": ["parent.accounting-and-cache.provider-side-cache-lifecycle"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.model-capability-profile",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.model-capability-profile"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.hosted-tool-capability-validation",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
+      ],
+      "python_requirements": [
+        "parent.granular-model-capabilities.hosted-tool-capability-validation"
       ]
     },
     {
       "feature_id": "parent.granular-model-capabilities.output-strategy-fallback-resolution",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
+      ],
+      "python_requirements": [
+        "parent.granular-model-capabilities.output-strategy-fallback-resolution"
       ]
     },
     {
       "feature_id": "parent.granular-model-capabilities.control-capability-validation",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.control-capability-validation"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.state-mode-validation",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.state-mode-validation"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.compatibility-profile-derivation",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.compatibility-profile-derivation"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.openai-tool-search-control",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.openai-tool-search-control"]
     },
     {
       "feature_id": "parent.granular-model-capabilities.provider-native-compaction-control",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
+      ],
+      "python_requirements": [
+        "parent.granular-model-capabilities.provider-native-compaction-control"
       ]
     },
     {
       "feature_id": "parent.granular-model-capabilities.multimodal-model-input-content-parts",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
+      ],
+      "python_requirements": [
+        "parent.granular-model-capabilities.multimodal-model-input-content-parts"
       ]
     },
     {
       "feature_id": "parent.granular-model-capabilities.modalities-control",
       "domain": "Granular Model Capabilities",
-      "evidence_ref": "granular-model-capabilities",
+      "evidence_refs": ["granular-model-capabilities"],
       "typescript_tests": [
         "tests/unit/capabilities.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.granular-model-capabilities.modalities-control"]
     },
     {
       "feature_id": "parent.provider-runtime.provider-registry",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.provider-registry"]
     },
     {
       "feature_id": "parent.provider-runtime.provider-reference-parsing",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.provider-reference-parsing"]
     },
     {
       "feature_id": "parent.provider-runtime.model-provider-protocol",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.model-provider-protocol"]
     },
     {
       "feature_id": "parent.provider-runtime.agent-provider-protocol",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.agent-provider-protocol"]
     },
     {
       "feature_id": "parent.provider-runtime.chat-compatibility-facade",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.chat-compatibility-facade"]
     },
     {
       "feature_id": "parent.provider-runtime.capability-flags",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.capability-flags"]
     },
     {
       "feature_id": "parent.provider-runtime.granular-model-capability-profile",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.granular-model-capability-profile"]
     },
     {
       "feature_id": "parent.provider-runtime.direct-model-run",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.direct-model-run"]
     },
     {
       "feature_id": "parent.provider-runtime.direct-model-stream",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.direct-model-stream"]
     },
     {
       "feature_id": "parent.provider-runtime.echo-model-provider",
       "domain": "Provider Runtime",
-      "evidence_ref": "provider-runtime",
+      "evidence_refs": ["provider-runtime"],
       "typescript_tests": [
         "tests/unit/provider-contracts.test.ts",
         "tests/unit/model-runtime.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.provider-runtime.echo-model-provider"]
     },
     {
       "feature_id": "parent.native-model-providers.openai-responses-model-provider",
       "domain": "Native Model Providers",
-      "evidence_ref": "native-model-providers",
+      "evidence_refs": ["native-model-providers"],
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.native-model-providers.openai-responses-model-provider"]
     },
     {
       "feature_id": "parent.native-model-providers.xai-responses-model-provider",
       "domain": "Native Model Providers",
-      "evidence_ref": "native-model-providers",
+      "evidence_refs": ["native-model-providers"],
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.native-model-providers.xai-responses-model-provider"]
     },
     {
       "feature_id": "parent.native-model-providers.anthropic-messages-model-provider",
       "domain": "Native Model Providers",
-      "evidence_ref": "native-model-providers",
+      "evidence_refs": ["native-model-providers"],
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.native-model-providers.anthropic-messages-model-provider"]
     },
     {
       "feature_id": "parent.native-model-providers.gemini-generatecontent-model-provider",
       "domain": "Native Model Providers",
-      "evidence_ref": "native-model-providers",
+      "evidence_refs": ["native-model-providers"],
       "typescript_tests": [
         "tests/golden/providers.test.ts",
         "tests/unit/provider-contracts.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.native-model-providers.gemini-generatecontent-model-provider"]
     },
     {
       "feature_id": "parent.agent-sessions.local-agent-provider",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.local-agent-provider"]
     },
     {
       "feature_id": "parent.agent-sessions.create-agent",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.create-agent"]
     },
     {
       "feature_id": "parent.agent-sessions.create-start-session",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.create-start-session"]
     },
     {
       "feature_id": "parent.agent-sessions.stream-session-events",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.stream-session-events"]
     },
     {
       "feature_id": "parent.agent-sessions.durable-session-persistence",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.durable-session-persistence"]
     },
     {
       "feature_id": "parent.agent-sessions.durable-session-replay",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.durable-session-replay"]
     },
     {
       "feature_id": "parent.agent-sessions.send-message-to-session",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.send-message-to-session"]
     },
     {
       "feature_id": "parent.agent-sessions.cancel-session",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.cancel-session"]
     },
     {
       "feature_id": "parent.agent-sessions.list-session-artifacts",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.list-session-artifacts"]
     },
     {
       "feature_id": "parent.agent-sessions.session-approval-pause-resume-deny",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.session-approval-pause-resume-deny"]
     },
     {
       "feature_id": "parent.agent-sessions.openai-agents-sdk-provider",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.openai-agents-sdk-provider"]
     },
     {
       "feature_id": "parent.agent-sessions.claude-code-agent-sdk-provider",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.claude-code-agent-sdk-provider"]
     },
     {
       "feature_id": "parent.agent-sessions.claude-code-subscription-auth",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.claude-code-subscription-auth"]
     },
     {
       "feature_id": "parent.agent-sessions.provider-native-live-resume",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.provider-native-live-resume"]
     },
     {
       "feature_id": "parent.agent-sessions.cloud-agent-providers",
       "domain": "Agent Sessions",
-      "evidence_ref": "cloud-agent-providers",
+      "evidence_refs": ["cloud-agent-providers"],
       "typescript_tests": [
         "tests/unit/agent-sessions.test.ts",
         "tests/unit/codex-agent-provider.test.ts",
         "tests/golden/codex-app-server-events.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.agent-sessions.cloud-agent-providers"]
     },
     {
       "feature_id": "parent.agent-sessions.cloud-agent-webhook-ingress",
       "domain": "Agent Sessions",
-      "evidence_ref": "agent-sessions",
-      "typescript_tests": ["tests/unit/agent-sessions.test.ts"]
+      "evidence_refs": ["agent-sessions"],
+      "typescript_tests": ["tests/unit/agent-sessions.test.ts"],
+      "python_requirements": ["parent.agent-sessions.cloud-agent-webhook-ingress"]
     },
     {
       "feature_id": "parent.environment-workers.lab-neutral-work-queue-contract",
       "domain": "Environment Workers",
-      "evidence_ref": "environment-workers",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.lab-neutral-work-queue-contract"]
     },
     {
       "feature_id": "parent.environment-workers.in-memory-reference-work-source",
       "domain": "Environment Workers",
-      "evidence_ref": "environment-workers",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.in-memory-reference-work-source"]
     },
     {
       "feature_id": "parent.environment-workers.environment-worker-daemon",
       "domain": "Environment Workers",
-      "evidence_ref": "environment-workers",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.environment-worker-daemon"]
     },
     {
       "feature_id": "parent.environment-workers.inbound-work-policy-gate",
       "domain": "Environment Workers",
-      "evidence_ref": "environment-workers",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.inbound-work-policy-gate"]
     },
     {
       "feature_id": "parent.environment-workers.scoped-worker-credentials",
       "domain": "Environment Workers",
-      "evidence_ref": "environment-workers",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["environment-workers"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.scoped-worker-credentials"]
     },
     {
       "feature_id": "parent.environment-workers.anthropic-managed-agents-work-source",
       "domain": "Environment Workers",
-      "evidence_ref": "anthropic-work-source",
-      "typescript_tests": ["tests/unit/workers-observability.test.ts"]
+      "evidence_refs": ["anthropic-work-source"],
+      "typescript_tests": ["tests/unit/workers-observability.test.ts"],
+      "python_requirements": ["parent.environment-workers.anthropic-managed-agents-work-source"]
     },
     {
       "feature_id": "parent.artifacts.artifact-data-contracts",
       "domain": "Artifacts",
-      "evidence_ref": "artifacts",
-      "typescript_tests": ["tests/unit/core-contracts.test.ts"]
+      "evidence_refs": ["artifacts"],
+      "typescript_tests": ["tests/unit/core-contracts.test.ts"],
+      "python_requirements": ["parent.artifacts.artifact-data-contracts"]
     },
     {
       "feature_id": "parent.workspaces.workspace-runtime-facade",
       "domain": "Workspaces",
-      "evidence_ref": "workspaces",
-      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+      "evidence_refs": ["workspaces"],
+      "typescript_tests": ["tests/unit/workspaces.test.ts"],
+      "python_requirements": ["parent.workspaces.workspace-runtime-facade"]
     },
     {
       "feature_id": "parent.workspaces.local-workspace-runtime",
       "domain": "Workspaces",
-      "evidence_ref": "workspaces",
-      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+      "evidence_refs": ["workspaces"],
+      "typescript_tests": ["tests/unit/workspaces.test.ts"],
+      "python_requirements": ["parent.workspaces.local-workspace-runtime"]
     },
     {
       "feature_id": "parent.workspaces.workspace-data-contracts",
       "domain": "Workspaces",
-      "evidence_ref": "workspaces",
-      "typescript_tests": ["tests/unit/workspaces.test.ts"]
+      "evidence_refs": ["workspaces"],
+      "typescript_tests": ["tests/unit/workspaces.test.ts"],
+      "python_requirements": ["parent.workspaces.workspace-data-contracts"]
     },
     {
       "feature_id": "parent.mcp.mcp-server-spec",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-server-spec"]
     },
     {
       "feature_id": "parent.mcp.mcp-server-authoring",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-server-authoring"]
     },
     {
       "feature_id": "parent.mcp.mcp-protocol-compatibility-matrix",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-protocol-compatibility-matrix"]
     },
     {
       "feature_id": "parent.mcp.remote-mcp-auth-refresh",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.remote-mcp-auth-refresh"]
     },
     {
       "feature_id": "parent.mcp.mcp-trust-policy-presets",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-trust-policy-presets"]
     },
     {
       "feature_id": "parent.mcp.local-mcp-dispatch-connector",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.local-mcp-dispatch-connector"]
     },
     {
       "feature_id": "parent.mcp.mcp-runtime-tool-bridge",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-runtime-tool-bridge"]
     },
     {
       "feature_id": "parent.mcp.mcp-toolset-routing",
       "domain": "MCP",
-      "evidence_ref": "mcp",
-      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"]
+      "evidence_refs": ["mcp"],
+      "typescript_tests": ["tests/unit/mcp.test.ts", "tests/security/boundaries.test.ts"],
+      "python_requirements": ["parent.mcp.mcp-toolset-routing"]
     },
     {
       "feature_id": "parent.observability.observability-sink-protocol",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.observability-sink-protocol"]
     },
     {
       "feature_id": "parent.observability.production-observability-presets",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.production-observability-presets"]
     },
     {
       "feature_id": "parent.observability.event-trace-context",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.event-trace-context"]
     },
     {
       "feature_id": "parent.observability.workflow-trace-spans",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.workflow-trace-spans"]
     },
     {
       "feature_id": "parent.observability.opentelemetry-trace-export",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.opentelemetry-trace-export"]
     },
     {
       "feature_id": "parent.observability.standard-production-metrics",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.standard-production-metrics"]
     },
     {
       "feature_id": "parent.observability.replay-and-run-diffing",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.replay-and-run-diffing"]
     },
     {
       "feature_id": "parent.observability.evaluator-hooks",
       "domain": "Observability",
-      "evidence_ref": "observability",
+      "evidence_refs": ["observability"],
       "typescript_tests": [
         "tests/unit/workers-observability.test.ts",
         "tests/unit/persistence-observability.test.ts"
-      ]
+      ],
+      "python_requirements": ["parent.observability.evaluator-hooks"]
+    },
+    {
+      "feature_id": "extension.openrouter",
+      "domain": "Native Providers",
+      "evidence_refs": ["openrouter"],
+      "typescript_tests": [
+        "tests/golden/providers.test.ts",
+        "tests/unit/provider-contracts.test.ts"
+      ],
+      "python_requirements": []
     }
   ]
 }

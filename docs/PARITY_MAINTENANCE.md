@@ -14,7 +14,7 @@ below are checked against it offline. Historical plans, ADRs, and release notes 
 their original baselines.
 
 No workflow in this repository checks the Python repository out, installs Python, or runs
-the bidirectional parity suite. `.github/workflows/ci.yml` runs `pnpm check` and
+the optional Python compatibility suite. `.github/workflows/ci.yml` runs `pnpm check` and
 `pnpm pack --dry-run` on the Node/OS matrix; `.github/workflows/release.yml` runs
 `pnpm check` and then publishes. A release is provable from this repository alone.
 
@@ -43,85 +43,84 @@ rejects omitted requirements, unknown dispositions and changes to those historic
 The frozen Python histogram remains 137 Supported, 1 Supported where advertised, 3 Partial,
 2 Contract only and 1 Not supported yet. It is compatibility evidence, not a score floor.
 
-Crosswalk direction and fixture authority are still the existing compatibility machinery;
-those changes remain separately tracked below.
+## Canonical expectations and compatibility evidence
+
+`tests/fixtures/typescript/core-contracts.json` is generated from fixed native inputs in
+`tests/fixtures/typescript/build-core-fixture.ts`. It carries TypeScript authority without a
+Python pin or `_kind` tags. `pnpm generate:parity:ts` deliberately updates the expectations;
+review the diff before accepting it. The generator loads current source through the existing
+Vite dev dependency with HTTP/WebSocket listeners and file watching disabled, then closes the
+loader. It does not depend on a previous `dist` build.
+
+`tests/golden/core-contracts.test.ts` compares current output with committed expectations,
+replays constructors and durable serialization, and pins explicit configuration/output/error
+semantics, pricing components and native package round trips. Frozen Python samples remain
+under `tests/fixtures/python`; `tests/compatibility` replays their adopted contracts offline.
+Those samples do not define the TypeScript score or canonical fixture values.
+
+The schema-v2 test crosswalk enumerates `tests/**/*.test.ts`, matching Vitest's executable-test
+pattern, including new files before staging. Its `entries` list TypeScript tests first with
+Python mappings or explicit N/A reasons. `python_compatibility` retains all 118 frozen Python
+module dispositions and divergence notes. `feature_coverage` follows the 145 scoped TypeScript
+features. Currently 33 TypeScript test files are listed; enumeration is not a claim that gated
+smoke tests ran. A new test without a mapping or explicit N/A reason fails generation.
 
 ## Offline checks in `pnpm check`
 
-`pnpm check` is the CI and release gate. It runs `format:check`, `check:parity`, `typecheck`,
-`typecheck:examples`, `check:api`, `lint`, `test`, and `test:package`. The steps that guard
-the recorded pin are:
+`pnpm check` runs formatting, `check:parity`, source/example typechecks, public API checking,
+ESLint, Vitest and package verification. No Python interpreter or checkout is required.
+`pnpm check:parity` runs five checks:
 
-1. `pnpm check:parity` runs four scripts, none of which needs a Python checkout:
-   - `node scripts/update-parity-inventory.mjs --check` — `docs/parity-inventory.json` is
-     normalized schema v3 with authored per-feature statuses/bindings and the evidence tables from
-     `scripts/lib/parity-evidence.mjs`.
-   - `node scripts/check-parity-inventory.mjs` — the inventory pins a full 40-character
-     commit; feature statuses and Python dispositions are valid; every frozen Python requirement
-     has a disposition; scored features and supplements resolve their TypeScript source/test
-     paths and symbols; native evidence needs no Python side; `docs/parent-baseline.json` is present,
-     records the same commit and repository, and lists every parent evidence path; and the
-     pin is repeated verbatim in `docs/parity-test-crosswalk.json`,
-     `docs/catalog-snapshot.json`, `tests/fixtures/python/core-contracts.json`,
-     `tests/fixtures/python/catalogs.json`, `tests/fixtures/python/provider-differential.json`
-     (`parent_commit`), and `tests/fixtures/typescript/core-contracts.json`
-     (`target_parent_commit`). A missing carrier fails the check.
-   - `node scripts/generate-parity-matrix.mjs --check` — `docs/PARITY_MATRIX.md` is
-     byte-identical to the rendering of the inventory.
-   - `node scripts/generate-test-crosswalk.mjs --check` — `docs/parity-test-crosswalk.json`
-     is byte-identical to the crosswalk derived from the baseline's 118 Python test modules
-     and the inventory, every mapped TypeScript test file exists, and every divergence note
-     names a recorded parent module.
-2. `pnpm test` includes `tests/unit/parity-maintenance.test.ts`, which asserts the 145-feature/26-supplement
-   split and 138 fully supported features, the 129 evidence files and 118 test modules in the baseline, the
-   29 models and 36 price entries in the Python catalog fixture, and that the baseline,
-   crosswalk, and both fixture directions carry the inventory pin. The golden suites
-   `tests/golden/core-contracts.test.ts`, `tests/golden/python-provider-differential.test.ts`,
-   and `tests/golden/python-catalog-differential.test.ts` replay the committed Python
-   fixtures through the TypeScript contracts, the fetch-first OpenAI, Anthropic, Gemini, and
-   xAI adapters, and the bundled catalogs.
-3. `pnpm test:package` runs `node scripts/catalog-snapshot.mjs --check`, which regenerates
-   `docs/catalog-snapshot.json` from the built bundled catalogs stamped with the inventory
-   pin and fails when the committed snapshot differs.
+1. Normalize inventory schema v3 and evidence definitions without rewriting authored status
+   or feature bindings.
+2. Validate TypeScript statuses, evidence and complete frozen Python dispositions. The baseline
+   must share the pin and repository, retain legacy-ID bindings and contain Python evidence paths.
+3. Compare the feature matrix with deterministic rendering of the inventory.
+4. Compare the TypeScript-first crosswalk with current executable tests and frozen mappings.
+5. Compare the canonical TypeScript fixture with current-source generation, without rewriting it.
 
-`format:check` covers non-ignored JSON and Markdown artifacts; the matrix and catalog
-snapshot are excluded by `.prettierignore` and checked by their generators. The remaining steps
-(`typecheck`, `typecheck:examples`, `check:api`, `lint`) are not parity checks.
+The pin checker covers `docs/parent-baseline.json`, the crosswalk's `python_reference_commit`,
+`docs/catalog-snapshot.json`, and all four Python JSON samples: `core-contracts.json`,
+`catalogs.json`, `provider-differential.json` and `workspace-agent-package.json`. These latter
+artifacts use `parent_commit`. The canonical TypeScript fixture intentionally has no Python pin.
+Missing, malformed or stale carriers fail closed.
+
+`tests/unit/parity-maintenance.test.ts` exercises native-only features, honest lower statuses,
+invalid evidence, lost dispositions/bindings, stale pins, missing test dispositions and a
+changed canonical expectation. `pnpm test:package` also compares the built catalog snapshot
+(29 models, 36 pricing rows) and installs a clean tarball consumer. Matrix/catalog formatting
+is checked by their generators; current guides and JSON artifacts are covered by
+`format:check`. Historical plans are excluded from Prettier and use structural plan validation.
+Frozen catalog compatibility requires each adopted Python row to remain unchanged and present,
+while allowing additional TypeScript-native rows; the native catalog snapshot covers the full lists.
 
 ## Optional local tools
 
-Both tools below are manual. No CI or release workflow schedules or requires them.
-A baseline-update review can require the bidirectional suite as described below.
+### Frozen Python compatibility suite
 
-### Bidirectional suite
+`pnpm parity:python -- --parent <checkout>` requires a checkout whose `HEAD` exactly matches
+the recorded pin. It checks the baseline, regenerates frozen Python samples into a temporary
+directory, checks the crosswalk against the checkout's test list, checks the canonical
+TypeScript fixture, and validates an explicit Python-serializer projection of its native
+values. Python tags and null defaults are introduced only in that optional projection;
+Python cannot rewrite the canonical expectations.
 
-`pnpm parity:python -- --parent <checkout>` needs a Python checkout whose `HEAD` is exactly
-the recorded pin (the checkout-consuming scripts refuse any other commit). It builds
-TypeScript and then runs:
+The Python generator includes the actual workspace-agent save/ZIP writer. Its file mtimes
+represent a fixed local wall time, so ZIP timestamps do not depend on the host timezone.
+`--check` formats and compares temporary output and leaves committed samples untouched.
+The interpreter is selected with `PYTHON` (`python` on Windows, `python3` elsewhere by default).
+Use Python 3.11 to reproduce the recorded samples:
 
-1. `scripts/update-parent-baseline.mjs --check` — the recorded parent tree, evidence files,
-   symbols, and test modules are unchanged;
-2. `scripts/generate-python-fixtures.mjs --check` — the pinned Python code regenerates the
-   committed core, provider, model-catalog, and pricing fixtures byte-for-byte;
-3. `scripts/generate-test-crosswalk.mjs --check` with checkout validation — the tracked
-   Python test modules still match the baseline;
-4. `scripts/generate-typescript-fixtures.mjs --check` — TypeScript regenerates its reverse
-   fixture byte-for-byte;
-5. `scripts/validate-typescript-fixtures.mjs` — the pinned Python serializers accept and
-   round-trip the TypeScript fixture.
-
-The Python steps use the interpreter named by the `PYTHON` environment variable
-(`python` on Windows, `python3` elsewhere by default). The committed Python fixture bytes
-were generated under Python 3.11;
-regenerate under 3.11 to reproduce them byte-for-byte.
+```sh
+PYTHON=python3.11 pnpm parity:python -- --parent ../blackbox
+```
 
 ### Drift report
 
-`pnpm parity:drift` compares the recorded pin with the Python repository's default branch
-through the GitHub API (read-only; `GITHUB_TOKEN` is optional, `--output <file>` writes the
-JSON report). Parent movement alone does not fail the script by default and affects no
-automated CI or release gate. Pass `--fail-on-drift` to opt into a non-zero exit on drift.
-API or report-writing failures still fail the command. No workflow runs this script.
+`pnpm parity:drift` reads the Python default branch through the GitHub API (`GITHUB_TOKEN`
+is optional). `--output <file>` writes its report; `--fail-on-drift` opts into failure when
+the branch moved. Network/report-writing failures still fail. Drift alone changes no score,
+fixture or release gate. No CI or release workflow runs this command.
 
 ## Bumping the recorded pin
 
@@ -151,7 +150,7 @@ changes without reviewing the Python implementation and tests. Use the following
    pnpm parity:update-parent-baseline -- --parent ../blackbox
    ```
 
-4. Regenerate the Python fixtures under Python 3.11. The generator honours `PYTHON`; the
+4. Regenerate the frozen Python compatibility fixtures, including the ZIP sample, under Python 3.11. The generator honours `PYTHON`; the
    0.2.0 sync used a `uv`-managed interpreter:
 
    ```sh
@@ -163,7 +162,8 @@ changes without reviewing the Python implementation and tests. Use the following
    artifacts from the TypeScript implementation. Record deliberate divergences as crosswalk
    `notes` in `scripts/generate-test-crosswalk.mjs`; update TypeScript statuses honestly when
    implementation support changes.
-6. Regenerate the reverse TypeScript fixture, the crosswalk, and the matrix:
+6. Regenerate the TypeScript-first crosswalk and matrix. Update canonical TypeScript
+   expectations only for reviewed TypeScript behavior changes, independently of the Python pin:
 
    ```sh
    pnpm generate:parity:ts
@@ -179,15 +179,14 @@ changes without reviewing the Python implementation and tests. Use the following
    change, together with this document and `CHANGELOG.md`. The checker derives the denominator
    from scoped TypeScript features rather than a fixed Python count.
 8. Run `pnpm check` and `pnpm pack --dry-run`. Run
-   `pnpm parity:python -- --parent ../blackbox` to prove the bidirectional fixtures against
+   `pnpm parity:python -- --parent ../blackbox` to check frozen compatibility against
    the checkout before requesting review.
 9. In the pull request, summarize upstream commits, feature/status changes, public API
    impact, fixture changes, and any deliberately declined parent behavior.
 
-## Deferred
+## Remaining external work
 
-- Crosswalk direction and fixture-authority inversion remain pending; the TypeScript-owned
-  score and compatibility dispositions are implemented. Tracked as remaining D1 work in [blackbox-ts#2](https://github.com/tyxter-dev/blackbox-ts/issues/2).
-- The Python repository's own freeze/archive posture (README banner, archival) lives
-  outside this repository; this document does not assert that it is archived.
-  Tracked as D2 in [blackbox#22](https://github.com/tyxter-dev/blackbox/issues/22).
+The Python repository's own freeze/archive posture remains outside this repository, tracked
+in [blackbox#22](https://github.com/tyxter-dev/blackbox/issues/22). This document does not assert
+that the repository is archived. The prior TypeScript deferrals D1 and D3–D8 have implementation
+resolution notes and focused evidence in the [completed refresh plan](plans/parity-refresh-plan.md#deferrals).

@@ -52,7 +52,11 @@ export const DOMAIN_EVIDENCE = {
     ['tests/unit/core/test_state.py', 'tests/unit/core/test_stores_persistent.py'],
     ['AgentEvent', 'ProviderState'],
     ['src/core/events.ts', 'src/core/state.ts'],
-    ['tests/unit/core-contracts.test.ts', 'tests/golden/core-contracts.test.ts'],
+    [
+      'tests/unit/core-contracts.test.ts',
+      'tests/golden/core-contracts.test.ts',
+      'tests/compatibility/python-core.test.ts',
+    ],
     ['AgentEvent', 'ProviderState'],
   ),
   'Provider State Mapping': evidence(

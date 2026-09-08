@@ -81,7 +81,7 @@ lines.push(
   '',
   '- [Maintenance procedures](PARITY_MAINTENANCE.md)',
   '- [Frozen Python baseline](parent-baseline.json)',
-  '- [Compatibility test crosswalk](parity-test-crosswalk.json)',
+  '- [TypeScript-first test crosswalk](parity-test-crosswalk.json)',
   '- [Public API snapshot](public-api.json)',
   '- [Catalog snapshot](catalog-snapshot.json)',
   '- [Package smoke check](../scripts/package-smoke.mjs)',

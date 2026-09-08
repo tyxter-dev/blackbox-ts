@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
+  readdirSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -46,8 +47,13 @@ interface Baseline {
 }
 
 interface Crosswalk {
-  readonly parent_commit: string;
-  readonly entries: readonly { readonly python_test: string }[];
+  readonly python_reference_commit: string;
+  readonly entries: readonly {
+    readonly typescript_test: string;
+    readonly python_tests: readonly string[];
+    readonly na_reason?: string;
+  }[];
+  readonly python_compatibility: readonly { readonly python_test: string }[];
   readonly feature_coverage: readonly unknown[];
 }
 
@@ -67,7 +73,7 @@ interface CatalogFixture extends PythonFixture {
 
 interface TypeScriptFixture {
   readonly generated_by: string;
-  readonly target_parent_commit: string;
+  readonly authority: string;
 }
 
 const inventory = readJson<Inventory>('../../docs/parity-inventory.json');
@@ -76,6 +82,7 @@ const crosswalk = readJson<Crosswalk>('../../docs/parity-test-crosswalk.json');
 const pythonCore = readJson<PythonFixture>('../fixtures/python/core-contracts.json');
 const pythonCatalogs = readJson<CatalogFixture>('../fixtures/python/catalogs.json');
 const pythonProviders = readJson<ProviderFixture>('../fixtures/python/provider-differential.json');
+const pythonPackage = readJson<PythonFixture>('../fixtures/python/workspace-agent-package.json');
 const typescriptCore = readJson<TypeScriptFixture>('../fixtures/typescript/core-contracts.json');
 
 describe('Python parity maintenance artifacts', () => {
@@ -106,15 +113,36 @@ describe('Python parity maintenance artifacts', () => {
     expect(baseline.feature_catalog.path).toBe(inventory.python_reference.feature_catalog);
     expect(baseline.evidence_files).toHaveLength(129);
     expect(baseline.test_files).toHaveLength(118);
-    expect(crosswalk.parent_commit).toBe(inventory.python_reference.commit);
-    expect(crosswalk.entries.map((entry) => entry.python_test).sort()).toEqual(
+    expect(crosswalk.python_reference_commit).toBe(inventory.python_reference.commit);
+    expect(crosswalk.python_compatibility.map((entry) => entry.python_test).sort()).toEqual(
       baseline.test_files.map((entry) => entry.path).sort(),
     );
-    expect(crosswalk.feature_coverage).toHaveLength(144);
+    expect(crosswalk.feature_coverage).toHaveLength(145);
   });
 
-  it('keeps both fixture directions and provider/catalog differentials synchronized', () => {
-    for (const fixture of [pythonCore, pythonCatalogs, pythonProviders]) {
+  it('enumerates every executable TypeScript test before compatibility mappings', () => {
+    function enumerate(directory: string): string[] {
+      return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(directory, entry.name);
+        return entry.isDirectory()
+          ? enumerate(path)
+          : entry.name.endsWith('.test.ts')
+            ? [path]
+            : [];
+      });
+    }
+    const root = fileURLToPath(new URL('../../', import.meta.url));
+    const actual = enumerate(join(root, 'tests'))
+      .map((path) => path.slice(root.length).replaceAll('\\', '/'))
+      .sort();
+    expect(crosswalk.entries.map((entry) => entry.typescript_test)).toEqual(actual);
+    for (const entry of crosswalk.entries)
+      if (entry.python_tests.length === 0) expect(entry.na_reason?.length).toBeGreaterThan(0);
+    expect(typescriptCore).not.toHaveProperty('target_parent_commit');
+  });
+
+  it('keeps native fixture authority separate from frozen compatibility pins', () => {
+    for (const fixture of [pythonCore, pythonCatalogs, pythonProviders, pythonPackage]) {
       expect(fixture.generated_by).toBe('python-parent');
       expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
     }
@@ -128,7 +156,7 @@ describe('Python parity maintenance artifacts', () => {
     expect(pythonCatalogs.pricing).toHaveLength(36);
     expect(typescriptCore).toMatchObject({
       generated_by: 'blackbox-ts',
-      target_parent_commit: inventory.python_reference.commit,
+      authority: 'typescript',
     });
   });
 });
@@ -142,12 +170,12 @@ describe('offline parity pin guard', () => {
   const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
   const carriers = [
     ['docs/parent-baseline.json', 'parent_commit'],
-    ['docs/parity-test-crosswalk.json', 'parent_commit'],
+    ['docs/parity-test-crosswalk.json', 'python_reference_commit'],
     ['docs/catalog-snapshot.json', 'parent_commit'],
     ['tests/fixtures/python/core-contracts.json', 'parent_commit'],
     ['tests/fixtures/python/catalogs.json', 'parent_commit'],
     ['tests/fixtures/python/provider-differential.json', 'parent_commit'],
-    ['tests/fixtures/typescript/core-contracts.json', 'target_parent_commit'],
+    ['tests/fixtures/python/workspace-agent-package.json', 'parent_commit'],
   ] as const;
 
   beforeAll(() => {
@@ -156,6 +184,10 @@ describe('offline parity pin guard', () => {
       cpSync(join(repoRoot, directory), join(scratch, directory), { recursive: true });
     }
     mkdirSync(join(scratch, 'scripts'));
+    cpSync(
+      join(repoRoot, 'scripts/generate-typescript-fixtures.mjs'),
+      join(scratch, 'scripts/generate-typescript-fixtures.mjs'),
+    );
     cpSync(
       join(repoRoot, 'scripts/generate-test-crosswalk.mjs'),
       join(scratch, 'scripts/generate-test-crosswalk.mjs'),
@@ -187,6 +219,41 @@ describe('offline parity pin guard', () => {
       writeFileSync(target, original);
     }
   }
+
+  it('checks canonical TypeScript expectations without rewriting drifted committed values', () => {
+    const path = 'tests/fixtures/typescript/core-contracts.json';
+    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
+      values: { usage: { total_tokens: number } };
+    };
+    value.values.usage.total_tokens += 1;
+    const changed = JSON.stringify(value);
+    withCarrier(path, changed, () => {
+      const result = spawnSync(
+        process.execPath,
+        [join(scratch, 'scripts/generate-typescript-fixtures.mjs'), '--check'],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('core-contracts.json is stale');
+      expect(readFileSync(join(scratch, path), 'utf8')).toBe(changed);
+    });
+  });
+
+  it('rejects a new executable TypeScript test without a mapping or explicit N/A reason', () => {
+    const path = join(scratch, 'tests/unit/undispositioned.test.ts');
+    writeFileSync(path, "import { it } from 'vitest'; it('new', () => {});\n");
+    try {
+      const result = spawnSync(
+        process.execPath,
+        [join(scratch, 'scripts/generate-test-crosswalk.mjs')],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('tests/unit/undispositioned.test.ts');
+    } finally {
+      rmSync(path);
+    }
+  });
 
   it('accepts synchronized artifacts without any workflow or Python checkout', () => {
     const result = check();
@@ -297,7 +364,7 @@ describe('offline parity pin guard', () => {
           expect(generated.stderr).toBe('');
           expect(generated.status).toBe(0);
           const document = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
-            entries: {
+            python_compatibility: {
               python_test: string;
               coverage: string;
               typescript_tests: string[];
@@ -305,7 +372,7 @@ describe('offline parity pin guard', () => {
             }[];
           };
           expect(
-            document.entries.find(
+            document.python_compatibility.find(
               (entry) =>
                 entry.python_test === 'tests/unit/workspace_agents/test_sqlite_registry.py',
             ),

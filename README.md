@@ -94,7 +94,8 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   transports are injected.
 
 Use `runWorkspaceAgent` from `blackbox-ts/workspace-agents` to execute `allowlist_v1`
-packages with their grants enforced. Cross-language package fields differ; see
+packages with their grants enforced. `importPythonWorkspaceAgentPackage` explicitly translates
+supported Python ZIP packages; it returns the native spec and separate run options. See
 [0.2 migration notes](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md).
 
 The tarball contains compiled JavaScript/declarations, this README, CHANGELOG, FEATURES,
@@ -103,8 +104,8 @@ LICENSE and examples. Repository docs and sourcemaps are not packed;
 
 The TypeScript-owned score is 138/145 fully supported features, including OpenRouter in
 the denominator. The 26 verification supplements are reported separately. Scoped evidence is in
-[the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the bidirectional fixture, drift, and baseline
-update workflow is in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
+[the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the workflow for native fixture checks, optional frozen Python compatibility, drift, and baseline
+updates is documented in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
 [features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),
 [migration](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).
 The [documentation index](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/README.md)

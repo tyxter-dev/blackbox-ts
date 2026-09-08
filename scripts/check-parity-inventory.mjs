@@ -145,12 +145,12 @@ for (const ref of evidenceRefs) {
 }
 
 const PIN_CARRIERS = [
-  ['docs/parity-test-crosswalk.json', 'parent_commit'],
+  ['docs/parity-test-crosswalk.json', 'python_reference_commit'],
   ['docs/catalog-snapshot.json', 'parent_commit'],
   ['tests/fixtures/python/core-contracts.json', 'parent_commit'],
   ['tests/fixtures/python/catalogs.json', 'parent_commit'],
   ['tests/fixtures/python/provider-differential.json', 'parent_commit'],
-  ['tests/fixtures/typescript/core-contracts.json', 'target_parent_commit'],
+  ['tests/fixtures/python/workspace-agent-package.json', 'parent_commit'],
 ];
 for (const [path, field] of PIN_CARRIERS) {
   const carrier = await readJson(new URL(`../${path}`, import.meta.url), path);

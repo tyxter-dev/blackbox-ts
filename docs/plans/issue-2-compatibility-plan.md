@@ -1,7 +1,7 @@
 ---
 gdi_schema: 2
 gdi_version: 0.4.0
-status: executing
+status: implemented
 approval: User 2026-09-08 requested checking and finishing issue 2; this authorizes the listed compatibility fixes and regression coverage. Existing zero-dependency and stable-contract constraints remain in force.
 harness: codex
 ---
@@ -80,7 +80,7 @@ Execution realm: local repository and offline test doubles; GitHub only for issu
 
 | Gate | Consumes / invalidated by | Planned runs (impl / orch) | Preflight | Actual runs | Why this count is safe |
 | --- | --- | --- | --- | --- | --- |
-| Focused regression suites | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | A1: 3 failing reproductions and 3 passing iterations; final 43 tests. A2: 1 failing reproduction + 29 passing Codex tests + 43 shared-reader tests. B1: failing estimator/normalizer probes, 36 passing tests + 2 title-refinement tests; artifact checks passed. C1: 95 focused tests, actual Python ZIP generation and grant-removal sensitivity passed; affected API/typecheck/parity/lint/format checks passed. D1: old-floor probe and 3 golden reader failures, 39 initial tests, 35 corrected maintenance tests (scope review also ran 35); 6 unaffected golden tests retained; generator integrity probe and checks passed | distinct regression paths, share evidence |
+| Focused regression suites | active section source/tests | 1 per section / 0; repeat affected tests on correction | proven by baseline toolchain and probes | A1: 3 failing reproductions and 3 passing iterations; final 43 tests. A2: 1 failing reproduction + 29 passing Codex tests + 43 shared-reader tests. B1: failing estimator/normalizer probes, 36 passing tests + 2 title-refinement tests; artifact checks passed. C1: 95 focused tests, actual Python ZIP generation and grant-removal sensitivity passed; affected API/typecheck/parity/lint/format checks passed. D1: old-floor probe and 3 golden reader failures, 39 initial tests, 35 corrected maintenance tests (scope review also ran 35); 6 unaffected golden tests retained; generator integrity probe and checks passed. D2: 168 tests across 9 suites; fixture drift and missing-crosswalk-entry rejection; native catalog additions admitted while changed/missing adopted rows fail; four Python samples reproduce in UTC and America/Los_Angeles; no-listener probe, typecheck, parity, lint and format pass | distinct regression paths, share evidence |
 | Full pnpm check | final source/tests/scripts/artifacts/docs | 0 / 1 | proven at released baseline | 0 | after final review; includes clean package consumer |
 | pnpm pack --dry-run | final package/source/docs | 0 / 1 | proven at released baseline | 0 | final publishable tarball without publishing |
 | Full optional Python compatibility suite | fixtures/scripts and frozen checkout | 0 / 1 | proven in previous parity refresh with Python 3.11 | 0 (section fixture generation/probes recorded separately in focused evidence) | verify integrated compatibility mappings once at final candidate |
@@ -149,7 +149,7 @@ flowchart LR
   IP(["Issue 2 D3-D5"]) -.-> B1["B1 ✅ pricing compatibility"]
   IW(["Issue 2 D6"]) -.-> C1["C1 ✅ package interchange"]
   IS(["Issue 2 D1"]) -.-> D1["D1 🔁×1 TypeScript feature score"]
-  IS -.-> D2["D2 TypeScript golden evidence"]
+  IS -.-> D2["D2 ✅ TypeScript golden evidence"]
   D1 --> D2
   B1 --> D2
   C1 --> D2
@@ -197,6 +197,10 @@ flowchart LR
 - 2026-09-08 — D1 reader sweep — inventory pin migration includes the three existing golden consumers as well as maintenance scripts. Their fixture authority changes later in D2, but their schema readers must already work at D1. Declined Python-only evidence must traverse the crosswalk without invented TypeScript tests; status histogram accompanies the full/total score.
 
 - 2026-09-08 — D1 review correction — preserve frozen legacy requirement identity and adopted-feature mapping in validation, not merely the current migrated values. An unrelated TypeScript feature must not satisfy an adopted Python requirement by changing its ID/link. This is traceability validation, not a Python status floor. The current README score paragraph must match the matrix at the D1 commit.
+
+- 2026-09-08 — D2 lifecycle audit — canonical fixture generation loads current source using the existing dev-only Vite dependency, so no stale dist dependency or extra build is required. Installed Vite6 middleware mode with hmr:false can still create a WebSocket listener; explicitly disable server.ws and close the loader in finally. The no-listener preload probe verifies this offline CLI boundary. Test crosswalk enumeration matches Vitest filesystem pattern tests/**/*.test.ts, avoiding omission of new untracked tests.
+
+- 2026-09-08 — D2 ownership audit — frozen Python catalog compatibility must preserve assertions for every adopted row while admitting additional TypeScript-native rows. Whole-list equality against Python would still make it the catalog authority after a directory rename. The canonical TS catalog snapshot/native tests cover full TS enumeration; changed or missing adopted compatibility rows still fail.
 
 ### Hard dependencies
 
@@ -324,7 +328,7 @@ IMPLEMENTER PROFILE:
 goal-implementer-terra / gpt-6-astra / low via direct pinned generic fallback.
 
 CONTEXT TO AGGREGATE:
-src/pricing/index.ts:4; src/pricing/index.ts:37; src/pricing/index.ts:72; src/providers/catalog.ts:1; tests/golden/python-catalog-differential.test.ts:1
+src/pricing/index.ts:4; src/pricing/index.ts:37; src/pricing/index.ts:72; src/providers/catalog.ts:1; tests/compatibility/python-catalog.test.ts:1
 
 WRITERS:
 PricingCatalog.set/get/estimate and bundled pricing builders; catalog/fixture generators serialize rates and provenance; runtime consumes estimates.
@@ -511,14 +515,15 @@ Read the complete diff and claim anchors; verify actual tests, no unauthorized f
   - Evidence: 36 focused tests passed after observed estimator failures and normalizer field-loss reproduction; 2 golden tests rerun after title refinement. Typecheck/API/catalog/parity/lint/format and pinned Python fixture regeneration/check passed. Main recursively compared both catalog artifacts to 2c1bb8a: all existing fields/order/counts unchanged; each adds exactly 36 URLs and 15 cached rates. Five independent lenses approved; full ten-file diff, sibling sweep and all seven acceptance checks verified. No new rates or runtime billing; optional-absence/default limits documented.
 - [x] C1 Explicit portable-package interchange — Goal 2 package exit passed — accepted 2026-09-08 e27c25e — rounds: 0 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers across 6 lenses — env-retries: 0
   - Evidence: 95 focused tests, typecheck/API/parity/lint/format passed. Three actual pinned-Python ZIPs exercise explicit ingress and supported model/local consumers; grant-removal sensitivity failed both admitted-read assertions and restored tests passed. Six independent lenses approved; main read full source/test/docs/generator diff, validated reports, reviewed all seven acceptance checks and confirmed native readers/writers remain unchanged. Unsupported foreign execution semantics have documented scoped dispositions. Integrated fixture regeneration and final gates remain assigned to D2/final review.
-- [x] D1 TypeScript-owned feature score — Goal 2 score exit passed — accepted 2026-09-08 (commit containing this ledger; SHA recorded next section) — rounds: 1 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers — env-retries: 0
+- [x] D1 TypeScript-owned feature score — Goal 2 score exit passed — accepted 2026-09-08 44b74fb — rounds: 1 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers — env-retries: 0
   - R1 traceability: reject rewritten frozen legacy IDs and redirected adopted mappings; correct root README score. Initial validated reviews preserved in /tmp/blackbox-issue2-D1-data-r1.md and /tmp/blackbox-issue2-D1-doc-r1.md. Both new tests failed before correction; corrected mutation now fails validation.
   - Evidence: 35 corrected maintenance tests plus 6 unaffected golden tests, parity, deterministic regeneration, affected fixture/catalog/drift readers, formatting and lint pass. Main compared all 170 legacy IDs/evidence bindings (preserved), two deliberate TS display-name changes and frozen baseline fields (unchanged except added requirements/ID provenance). Three independent lenses approved final diff; main completed reader/claim/retirement sweep and all seven acceptance checks. Native features and lower honest statuses remain admitted; full gates and fixture/crosswalk inversion remain scheduled.
-- [ ] D2 TypeScript golden fixtures and test crosswalk — matching Goal exit tests
+- [x] D2 TypeScript golden fixtures and test crosswalk — Goal 2 fixture/crosswalk behavior passed; external issue bookkeeping follows final gates — accepted 2026-09-08 in this commit — rounds: 0 — review: independent — routing: requested=Astra low / Terra high; role=generic; runtime=unknown; attestation=none — cost: unavailable / 1 implementer and 3 reviewers across 4 lenses — env-retries: 0
+  - Evidence: 168 focused tests across 9 suites; current-source native fixture check, all 33 executable TypeScript tests, 118 frozen Python module dispositions and 145 feature rows validated. Four Python samples reproduce in two timezones; no-listener probe and 683 local documentation targets pass. Main read full diff and validated implementation/reviewer reports and all seven acceptance checks. Data, reliability, scope and doc-truth approved. Full gates remain scheduled.
 
 ## Completion
 
-- [ ] Every section committed with reviewed evidence and ledger.
+- [x] Every section committed with reviewed evidence and ledger.
 - [ ] Re-baselined on current origin/main before independent whole-branch final review.
 - [ ] Whole-branch seams, contracts, claim decay, reader sweep and debris review clean.
 - [ ] Goals and global/optional compatibility gates pass on final reviewed candidate.

@@ -99,7 +99,11 @@
       },
       "typescript": {
         "sources": ["src/core/events.ts", "src/core/state.ts"],
-        "tests": ["tests/unit/core-contracts.test.ts", "tests/golden/core-contracts.test.ts"],
+        "tests": [
+          "tests/unit/core-contracts.test.ts",
+          "tests/golden/core-contracts.test.ts",
+          "tests/compatibility/python-core.test.ts"
+        ],
         "symbols": ["AgentEvent", "ProviderState"]
       }
     },

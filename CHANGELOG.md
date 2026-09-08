@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Canonical TypeScript fixtures now use native contracts and are checked against current source
+  offline. The crosswalk lists all executable TypeScript tests first; frozen Python samples
+  and module dispositions remain explicit compatibility evidence. Python ZIP sample generation
+  joins optional checked regeneration and normalizes local ZIP timestamps.
+
 - Feature scoring is now TypeScript-owned: 138 of 145 scoped features are fully supported,
   including OpenRouter in the denominator. Verification supplements stay separate; frozen
   Python requirements have explicit compatibility dispositions without imposing a status floor.

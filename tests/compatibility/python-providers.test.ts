@@ -29,8 +29,8 @@ const inventory = JSON.parse(
   readFileSync(new URL('../../docs/parity-inventory.json', import.meta.url), 'utf8'),
 ) as { readonly python_reference: { readonly commit: string } };
 
-describe('Python provider differential fixtures', () => {
-  it('replays parent protocol scenarios through every common TypeScript adapter', async () => {
+describe('Frozen Python provider compatibility samples', () => {
+  it('replays frozen protocol samples through the corresponding TypeScript adapters', async () => {
     expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
 
     for (const scenario of fixture.scenarios) {

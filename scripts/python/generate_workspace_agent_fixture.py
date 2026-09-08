@@ -1,16 +1,13 @@
-"""Generate Python ZIP fixtures with the pinned parent src on PYTHONPATH.
+"""Generate real Python ZIP samples via generate-python-fixtures.mjs."""
 
-From the TypeScript repository root:
-PYTHONPATH=/path/to/blackbox/src python3 scripts/python/generate_workspace_agent_fixture.py
-pnpm exec prettier --write tests/fixtures/python/workspace-agent-package.json
-"""
-
+import argparse
 import base64
 import json
 import os
 import subprocess
 import tempfile
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 
 import blackbox
@@ -21,20 +18,24 @@ from blackbox.workspace_agents.package import (
 from blackbox.workspace_agents.permissions import ConnectorSpec, ToolPermission
 from blackbox.workspace_agents.spec import WorkspaceAgentSpec, WorkspaceAgentVersion
 
-PIN = "d5be68e03ca7750920569578710a2ee25d25530c"
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", required=True, type=Path)
+parser.add_argument("--parent-commit", required=True)
+args = parser.parse_args()
 parent = Path(blackbox.__file__).resolve().parents[2]
 pin = subprocess.check_output(
     ["git", "-C", str(parent), "rev-parse", "HEAD"], text=True
 ).strip()
-if pin != PIN:
-    raise RuntimeError(f"Expected parent {PIN}, got {pin}")
+if pin != args.parent_commit:
+    raise RuntimeError(f"Expected parent {args.parent_commit}, got {pin}")
 
 
 def package(spec: WorkspaceAgentSpec, root: Path) -> str:
     save_workspace_agent_package(spec, root)
-    # Python's real writer uses file mtimes; freeze them for reproducible ZIP bytes.
+    # ZIP stores local wall time; derive the epoch locally so every timezone writes midnight.
+    timestamp = datetime(2000, 1, 1).timestamp()
     for path in root.rglob("*"):
-        os.utime(path, (946684800, 946684800))
+        os.utime(path, (timestamp, timestamp))
     archive = pack_workspace_agent_package(root, root.with_suffix(".zip"))
     return base64.b64encode(archive.read_bytes()).decode()
 
@@ -57,7 +58,7 @@ with tempfile.TemporaryDirectory() as tmp:
         )],
         version=WorkspaceAgentVersion(version="1.2.3"),
     )
-    data = {"parent_commit": pin, "archive_base64": package(spec, root)}
+    data = {"generated_by": "python-parent", "parent_commit": pin, "archive_base64": package(spec, root)}
     data["manifest"] = json.loads((root / "agent.json").read_text())
     for route in ["local", None]:
         configured = replace(
@@ -67,7 +68,8 @@ with tempfile.TemporaryDirectory() as tmp:
         )
         name = "local" if route else "model"
         data[f"{name}_options_archive"] = package(configured, Path(tmp) / name)
-    Path("tests/fixtures/python/workspace-agent-package.json").write_text(
+    args.output.mkdir(parents=True, exist_ok=True)
+    (args.output / "workspace-agent-package.json").write_text(
         json.dumps(data, indent=2) + "\n"
     )
     print("Generated pinned Python package fixture with restricted, local-options and model-options ZIPs.")

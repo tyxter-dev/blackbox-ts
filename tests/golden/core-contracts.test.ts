@@ -2,13 +2,6 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
-  AgentRuntimeError,
-  CapabilityError,
-  ConfigurationError,
-  ProviderExecutionError,
-  RuntimeConfig,
-  UnsupportedFeatureError,
-  artifactPage,
   createAgentEvent,
   createAgentSession,
   createApprovalRequest,
@@ -16,192 +9,105 @@ import {
   createProviderState,
   createRunItem,
   createRunState,
+  deserializeDurable,
   modelUsage,
-  structuredOutput,
-  type AgentEventInput,
-  type AgentSessionInput,
-  type ArtifactInput,
-  type ModelUsageInput,
-  type ProviderStateInput,
-  type RunItemInput,
-  type RunStateInput,
+  serializeDurable,
+  packWorkspaceAgent,
+  unpackWorkspaceAgent,
 } from '../../src/index.js';
-
-type JsonRecord = Record<string, unknown>;
-
-interface CoreFixture {
-  readonly generated_by: string;
-  readonly parent_commit: string;
-  readonly event: JsonRecord;
-  readonly run_state: JsonRecord & {
-    readonly items: readonly JsonRecord[];
-    readonly provider_state: JsonRecord;
-  };
-  readonly session: JsonRecord;
-  readonly approval_request: {
-    readonly action: string;
-    readonly id: string;
-    readonly reason: string;
-    readonly data: JsonRecord;
-  };
-  readonly artifact: JsonRecord;
-  readonly artifact_page: { readonly has_more: boolean };
-  readonly usage: ModelUsageInput;
-  readonly result: {
-    readonly output: unknown;
-    readonly text: string;
-    readonly payloads: readonly unknown[];
-    readonly metadata: JsonRecord;
-    readonly [key: string]: unknown;
-  };
-  readonly runtime_config: {
-    readonly overrides: JsonRecord;
-    readonly [key: string]: unknown;
-  };
-  readonly output_spec: {
-    readonly schema: unknown;
-    readonly name: string;
-    readonly [key: string]: unknown;
-  };
-  readonly error_semantics: readonly {
-    readonly name: string;
-    readonly message: string;
-    readonly is_agent_runtime_error: boolean;
-    readonly is_configuration_error: boolean;
-    readonly is_capability_error: boolean;
-  }[];
-}
+import { buildTypeScriptFixture } from '../fixtures/typescript/build-core-fixture.js';
 
 const fixture = JSON.parse(
-  readFileSync(new URL('../fixtures/python/core-contracts.json', import.meta.url), 'utf8'),
-) as CoreFixture;
-const inventory = JSON.parse(
-  readFileSync(new URL('../../docs/parity-inventory.json', import.meta.url), 'utf8'),
-) as { readonly python_reference: { readonly commit: string } };
+  readFileSync(new URL('../fixtures/typescript/core-contracts.json', import.meta.url), 'utf8'),
+) as ReturnType<typeof buildTypeScriptFixture>;
 
-describe('Python-generated core contract fixtures', () => {
-  it('reproduces serialized events, state, sessions, approvals, artifacts, usage, and results', () => {
-    expect(fixture.generated_by).toBe('python-parent');
-    expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
-
-    const event = createAgentEvent(compact(fixture.event) as unknown as AgentEventInput);
-    const itemFixture = fixture.run_state.items[0];
-    if (itemFixture === undefined) throw new Error('Python run-state fixture has no item.');
-    const item = createRunItem(compact(itemFixture) as unknown as RunItemInput);
-    const state = createProviderState(
-      compact(fixture.run_state.provider_state) as unknown as ProviderStateInput,
-    );
-    const runState = createRunState({
-      ...(compact(fixture.run_state) as unknown as RunStateInput),
-      provider_state: state,
-      items: [item],
-    });
-    const session = createAgentSession(compact(fixture.session) as unknown as AgentSessionInput);
-    const approval = createApprovalRequest(fixture.approval_request.action, {
-      id: fixture.approval_request.id,
-      reason: fixture.approval_request.reason,
-      data: fixture.approval_request.data,
-    });
-    const artifact = createArtifact(compact(fixture.artifact) as unknown as ArtifactInput<unknown>);
-    const page = artifactPage([artifact]);
-    const usage = modelUsage(fixture.usage);
-
-    expect(event).toEqual(compact(fixture.event));
-    expect(item).toEqual(compact(itemFixture));
-    expect(state).toEqual(compact(fixture.run_state.provider_state));
-    expect(runState).toEqual({
-      ...compact(fixture.run_state),
-      provider_state: state,
-      items: [item],
-    });
-    expect(session).toEqual(compact(fixture.session));
-    expect(approval).toEqual(fixture.approval_request);
-    expect(artifact).toEqual(compact(fixture.artifact));
-    expect(page).toEqual({ items: [artifact], next_cursor: undefined, has_more: false });
-    expect(fixture.artifact_page.has_more).toBe(page.has_more);
-    expect(usage).toEqual(fixture.usage);
-    expect(event.raw).toEqual({ id: 'resp_fixture' });
-
-    const result = {
-      output: fixture.result.output,
-      text: fixture.result.text,
-      events: [event],
-      items: [item],
-      artifacts: [artifact],
-      payloads: fixture.result.payloads,
-      provider_state: state,
-      metadata: fixture.result.metadata,
-    };
-    expect({
-      output: result.output,
-      text: result.text,
-      event_ids: result.events.map((entry) => entry.id),
-      item_ids: result.items.map((entry) => entry.id),
-      artifact_ids: result.artifacts.map((entry) => entry.id),
-      payloads: result.payloads,
-      provider_state: withNullOptionals(result.provider_state, ['conversation_id']),
-      metadata: result.metadata,
-    }).toEqual(fixture.result);
+describe('canonical TypeScript core expectations', () => {
+  it('matches committed native expectations from fixed inputs and current public contracts', () => {
+    expect(buildTypeScriptFixture()).toEqual(fixture);
+    expect(fixture.authority).toBe('typescript');
+    expect(fixture).not.toHaveProperty('target_parent_commit');
+    expect(fixture.payloads.event).not.toHaveProperty('_kind');
   });
 
-  it('matches Python configuration and structured-output helper defaults', () => {
-    const config = RuntimeConfig.fromMapping(
-      { profile: 'fast_text', overrides: fixture.runtime_config.overrides },
-      { source: 'fixture' },
+  it('replays native values through public constructors and durable serialization', () => {
+    const { payloads, values } = fixture;
+    const state = createProviderState(payloads.run_state.provider_state);
+    const items = payloads.run_state.items.map(createRunItem);
+    expect(createAgentEvent(payloads.event)).toEqual(payloads.event);
+    expect(createRunState({ ...payloads.run_state, provider_state: state, items })).toEqual(
+      payloads.run_state,
     );
-    expect({
-      profile_name: config.profile_name,
-      overrides: config.overrides,
-      source: config.source,
-      kwargs: config.toKwargs('model'),
-      description: withNullOptionals(config.describe(), []),
-    }).toEqual(fixture.runtime_config);
-
-    expect(
-      withNullOptionals(
-        structuredOutput(fixture.output_spec.schema, { name: fixture.output_spec.name }),
-        ['description'],
-      ),
-    ).toEqual(fixture.output_spec);
+    expect(createAgentSession(payloads.session)).toEqual(payloads.session);
+    expect(createArtifact(payloads.artifact)).toEqual(payloads.artifact);
+    expect(createApprovalRequest(values.approval_request.action, values.approval_request)).toEqual(
+      values.approval_request,
+    );
+    expect(modelUsage(values.usage)).toEqual(values.usage);
+    for (const [kind, value] of Object.entries(payloads)) {
+      const serialized = serializeDurable(kind, value);
+      expect(deserializeDurable(serialized, kind)).toEqual(value);
+      expect(() => deserializeDurable(serialized, 'wrong-kind')).toThrow(/does not match/);
+    }
+    expect(unpackWorkspaceAgent(packWorkspaceAgent(fixture.workspace_agent)).agent).toEqual(
+      fixture.workspace_agent,
+    );
   });
 
-  it('keeps the Python error inheritance semantics', () => {
-    const errors = [
-      new AgentRuntimeError('runtime'),
-      new ConfigurationError('config'),
-      new CapabilityError('capability'),
-      new UnsupportedFeatureError('unsupported', 'unsupported'),
-      new ProviderExecutionError('fixture', 500, {}),
-    ];
-    expect(
-      errors.map((error) => ({
-        name: error.name,
-        is_agent_runtime_error: error instanceof AgentRuntimeError,
-        is_configuration_error: error instanceof ConfigurationError,
-        is_capability_error: error instanceof CapabilityError,
-      })),
-    ).toEqual(
-      fixture.error_semantics.map((semantics) => ({
-        name: semantics.name,
-        is_agent_runtime_error: semantics.is_agent_runtime_error,
-        is_configuration_error: semantics.is_configuration_error,
-        is_capability_error: semantics.is_capability_error,
-      })),
-    );
+  it('pins meaningful defaults, error inheritance and independent pricing outcomes', () => {
+    expect(fixture.values.runtime_config.kwargs).toEqual({
+      temperature: 0.1,
+      max_output_tokens: 512,
+    });
+    expect(fixture.values.output_spec).toMatchObject({
+      strategy: 'provider_native',
+      fallback: 'posthoc_parse',
+      strict: true,
+      allow_partial: false,
+      max_validation_retries: 1,
+    });
+    expect(fixture.payloads.event.raw).toEqual({ id: 'msg_ts_fixture' });
+    expect(fixture.error_semantics).toEqual([
+      {
+        name: 'AgentRuntimeError',
+        is_agent_runtime_error: true,
+        is_configuration_error: false,
+        is_capability_error: false,
+      },
+      {
+        name: 'ConfigurationError',
+        is_agent_runtime_error: true,
+        is_configuration_error: true,
+        is_capability_error: false,
+      },
+      {
+        name: 'CapabilityError',
+        is_agent_runtime_error: true,
+        is_configuration_error: false,
+        is_capability_error: true,
+      },
+      {
+        name: 'UnsupportedFeatureError',
+        is_agent_runtime_error: true,
+        is_configuration_error: false,
+        is_capability_error: true,
+      },
+      {
+        name: 'ProviderExecutionError',
+        is_agent_runtime_error: true,
+        is_configuration_error: false,
+        is_capability_error: false,
+      },
+    ]);
+    expect(fixture.pricing).toMatchObject({ source_url: 'https://example.test/pricing' });
+    expect(fixture.pricing_model).toBe('canonical');
+    for (const [component, expected] of Object.entries({
+      input: 0.0007,
+      output: 0.0004,
+      cache_read: 0.00005,
+      cache_creation: 0.000015,
+      reasoning_output: 0.000008,
+    })) {
+      expect(fixture.pricing.components[component]).toBeCloseTo(expected, 12);
+    }
   });
 });
-
-function compact(value: JsonRecord): JsonRecord {
-  return Object.fromEntries(
-    Object.entries(value).filter(([key, child]) => key !== '_kind' && child !== null),
-  );
-}
-
-function withNullOptionals(value: object, optionalKeys: readonly string[]): JsonRecord {
-  return Object.fromEntries(
-    Object.entries(value).flatMap(([key, child]) => {
-      if (child !== undefined) return [[key, child]];
-      return optionalKeys.includes(key) ? [[key, null]] : [];
-    }),
-  );
-}

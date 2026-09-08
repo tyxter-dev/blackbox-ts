@@ -26,6 +26,7 @@ import {
 } from '../../src/index.js';
 
 import pythonPackage from '../fixtures/python/workspace-agent-package.json';
+import parityInventory from '../../docs/parity-inventory.json';
 import { translatePythonPackage } from '../../src/workspace-agents/python-package.js';
 
 const temporaryDirectories: string[] = [];
@@ -457,7 +458,7 @@ describe('explicit Python workspace-agent ingress', () => {
 
   it('imports a pinned Python-written ZIP explicitly and round-trips the native projection', () => {
     const bytes = Buffer.from(pythonPackage.archive_base64, 'base64');
-    expect(pythonPackage.parent_commit).toBe('d5be68e03ca7750920569578710a2ee25d25530c');
+    expect(pythonPackage.parent_commit).toBe(parityInventory.python_reference.commit);
     expect(() => unpackWorkspaceAgent(bytes)).toThrow();
     const imported = importPythonWorkspaceAgentPackage(bytes, options);
     expect(imported.source).toBe('python');

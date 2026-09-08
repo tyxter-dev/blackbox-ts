@@ -1,10 +1,25 @@
 import { execFile } from 'node:child_process';
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { formatGenerated } from './lib/format-generated.mjs';
+
+const NATIVE_TEST_REASONS = {
+  'tests/perf/runtime-budget.test.ts':
+    'TypeScript runtime performance budgets; no matching frozen Python performance suite.',
+  'tests/smoke/providers-smoke.test.ts':
+    'Opt-in live smoke for TypeScript fetch adapters; inventory presence does not mean network-gated cases ran.',
+  'tests/unit/completion-and-fakes.test.ts':
+    'TypeScript completion facade and offline provider helpers; no dedicated frozen Python test mapping.',
+  'tests/unit/parity-maintenance.test.ts':
+    'TypeScript-owned inventory, generator and artifact integrity checks; Python has no equivalent repository workflow.',
+  'tests/unit/refs.test.ts':
+    'TypeScript provider-reference parsing and legacy slash compatibility cases; no dedicated frozen Python test mapping.',
+  'tests/unit/http-streaming.test.ts':
+    'Fetch/SSE transport, retry and cancellation tests for the TypeScript platform implementation.',
+};
 
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -13,6 +28,7 @@ const inventory = JSON.parse(
   await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'),
 );
 const baseline = JSON.parse(await readFile(resolve(repoRoot, 'docs/parent-baseline.json'), 'utf8'));
+const typescriptTests = (await executableTests(resolve(repoRoot, 'tests'))).sort();
 const parentTests = baseline.test_files.map((entry) => entry.path).sort();
 const requirements = inventory.python_requirements;
 const parentDomains = [...new Set(requirements.map((requirement) => requirement.domain))];
@@ -102,7 +118,7 @@ for (const pythonTest of Object.keys(DIVERGENCE_NOTES)) {
   }
 }
 
-const entries = parentTests.map((pythonTest) => {
+const pythonCompatibility = parentTests.map((pythonTest) => {
   const explicit = explicitEvidence.get(pythonTest);
   const domains = explicit?.refs.map(domainForEvidence).filter(unique) ?? [];
   const inferred = inferMapping(pythonTest);
@@ -143,14 +159,14 @@ const entries = parentTests.map((pythonTest) => {
 });
 
 const missingDomains = parentDomains.filter(
-  (domain) => !entries.some((entry) => entry.domains.includes(domain)),
+  (domain) => !pythonCompatibility.some((entry) => entry.domains.includes(domain)),
 );
 if (missingDomains.length > 0) {
   throw new Error(
     `Crosswalk has no Python test coverage for domains: ${missingDomains.join(', ')}.`,
   );
 }
-for (const entry of entries) {
+for (const entry of pythonCompatibility) {
   if (entry.typescript_tests.length === 0 && entry.coverage !== 'declined_adoption')
     throw new Error(`${entry.python_test} has no TS tests.`);
   for (const test of entry.typescript_tests) {
@@ -164,43 +180,78 @@ const classifications = Object.fromEntries(
   ['semantic', 'sdk_protocol_fixture', 'integration_smoke', 'partial_contract_negative'].map(
     (classification) => [
       classification,
-      entries.filter((entry) => entry.classification === classification).length,
+      pythonCompatibility.filter((entry) => entry.classification === classification).length,
     ],
   ),
 );
+const undispositionedTests = typescriptTests.filter(
+  (test) =>
+    !pythonCompatibility.some((entry) => entry.typescript_tests.includes(test)) &&
+    NATIVE_TEST_REASONS[test] === undefined,
+);
+if (undispositionedTests.length > 0)
+  throw new Error(
+    `TypeScript tests need explicit Python N/A reasons: ${undispositionedTests.join(', ')}`,
+  );
+const entries = typescriptTests.map((test) => {
+  const mappings = pythonCompatibility.filter((entry) => entry.typescript_tests.includes(test));
+  const naReason = NATIVE_TEST_REASONS[test];
+  if (mappings.length === 0 && naReason === undefined)
+    throw new Error(`TypeScript test '${test}' needs an explicit Python N/A reason.`);
+  return {
+    id: `typescript-test.${slug(test)}`,
+    typescript_test: test,
+    classification: test.split('/')[1],
+    python_tests: mappings.map((entry) => entry.python_test),
+    ...(mappings.length === 0 ? { na_reason: naReason } : {}),
+  };
+});
+for (const entry of pythonCompatibility) {
+  for (const test of entry.typescript_tests) {
+    if (!typescriptTests.includes(test))
+      throw new Error(`Compatibility mapping references non-executable TypeScript test '${test}'.`);
+  }
+}
 const document = {
-  schema_version: 1,
-  parent_repository: inventory.python_reference.repository,
-  parent_commit: inventory.python_reference.commit,
-  generated_from: 'docs/parent-baseline.json',
+  schema_version: 2,
+  authority: 'typescript',
+  python_reference_repository: inventory.python_reference.repository,
+  python_reference_commit: inventory.python_reference.commit,
+  generated_from: {
+    typescript_tests: 'tests/**/*.test.ts',
+    python_compatibility: 'docs/parent-baseline.json',
+  },
   summary: {
-    python_test_modules: entries.length,
-    direct_evidence: entries.filter((entry) => entry.coverage === 'direct_evidence').length,
-    semantic_projections: entries.filter((entry) => entry.coverage === 'semantic_projection')
+    typescript_test_files: entries.length,
+    typescript_only: entries.filter((entry) => entry.python_tests.length === 0).length,
+    python_test_modules: pythonCompatibility.length,
+    direct_evidence: pythonCompatibility.filter((entry) => entry.coverage === 'direct_evidence')
       .length,
+    semantic_projections: pythonCompatibility.filter(
+      (entry) => entry.coverage === 'semantic_projection',
+    ).length,
     domains_covered: parentDomains.length,
     classifications,
-    entries_with_notes: entries.filter((entry) => entry.notes.length > 0).length,
+    entries_with_notes: pythonCompatibility.filter((entry) => entry.notes.length > 0).length,
   },
   entries,
-  feature_coverage: requirements.map((requirement) => {
-    const evidenceRef = requirement.evidence[0];
-    return {
-      feature_id: requirement.id,
-      ...(requirement.disposition === 'declined'
-        ? { disposition: 'declined', reason: requirement.reason }
-        : {}),
-      domain: requirement.domain,
-      evidence_ref: evidenceRef,
-      typescript_tests: inventory.evidence[evidenceRef].typescript?.tests ?? [],
-    };
-  }),
+  python_compatibility: pythonCompatibility,
+  feature_coverage: inventory.groups
+    .filter((group) => group.classification === 'feature')
+    .flatMap((group) =>
+      group.features.map((feature) => ({
+        feature_id: feature.id,
+        domain: group.domain,
+        evidence_refs: feature.evidence,
+        typescript_tests: [
+          ...new Set(feature.evidence.flatMap((ref) => inventory.evidence[ref].typescript.tests)),
+        ],
+        python_requirements: requirements
+          .filter((requirement) => requirement.feature_id === feature.id)
+          .map((requirement) => requirement.id),
+      })),
+    ),
 };
-if (document.feature_coverage.length !== inventory.python_requirements.length) {
-  throw new Error(
-    'Crosswalk feature coverage does not match the Python compatibility requirements.',
-  );
-}
 
 const rendered = await formatGenerated(`${JSON.stringify(document, null, 2)}\n`, outputPath);
 
@@ -212,12 +263,12 @@ if (process.argv.includes('--check')) {
     );
   }
   console.log(
-    `Parity test crosswalk OK: ${entries.length} Python test modules, ${parentDomains.length} domains, ${document.feature_coverage.length} parent features.`,
+    `Parity test crosswalk OK: ${entries.length} TypeScript test files, ${pythonCompatibility.length} Python compatibility modules, ${parentDomains.length} domains, ${document.feature_coverage.length} TypeScript features.`,
   );
 } else {
   await writeFile(outputPath, rendered, 'utf8');
   console.log(
-    `Wrote parity test crosswalk: ${entries.length} Python test modules, ${parentDomains.length} domains.`,
+    `Wrote parity test crosswalk: ${entries.length} TypeScript test files, ${pythonCompatibility.length} Python compatibility modules, ${parentDomains.length} domains.`,
   );
 }
 
@@ -280,13 +331,13 @@ function inferMapping(path) {
     [
       /golden\/(openai|anthropic|gemini)/,
       ['Native Model Providers'],
-      ['tests/golden/python-provider-differential.test.ts', 'tests/golden/providers.test.ts'],
+      ['tests/compatibility/python-providers.test.ts', 'tests/golden/providers.test.ts'],
     ],
     [
       /model_catalog|bundled_model|pricing|accounting/,
       ['Provider Controls and Catalog', 'Accounting and Cache'],
       [
-        'tests/golden/python-catalog-differential.test.ts',
+        'tests/compatibility/python-catalog.test.ts',
         'tests/unit/registry-catalog.test.ts',
         'tests/unit/planning-accounting-config.test.ts',
       ],
@@ -394,4 +445,18 @@ function requiredArgument(name) {
   const value = index === -1 ? undefined : process.argv[index + 1];
   if (value === undefined || value.startsWith('--')) throw new Error(`${name} <path> is required.`);
   return value;
+}
+
+async function executableTests(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const paths = await Promise.all(
+    entries.map(async (entry) => {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) return executableTests(path);
+      return entry.isFile() && entry.name.endsWith('.test.ts')
+        ? [path.slice(repoRoot.length + 1).replaceAll('\\', '/')]
+        : [];
+    }),
+  );
+  return paths.flat();
 }

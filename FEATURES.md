@@ -33,12 +33,14 @@ historical compatibility evidence; adapter profiles remain authoritative for req
 - Provider-native, finalizer-tool, post-hoc, and repair/retry structured-output strategies.
 - Persisted run state, native resume, in-memory/JSONL/injected-SQLite stores, provider cache,
   and isolated/redacted observability sinks.
+- Local cancellation remains terminal when later diagnostics are recorded and replayed.
 - Local agent sessions plus injected OpenAI Agents and Claude Code adapters; durable replay,
   idempotent follow-ups, artifacts, approvals, cancellation, and conservative Vertex/webhook
   contracts.
 - Codex agent sessions through an injected app-server protocol client (0.147.0 baseline),
   with event normalization, native approvals and file-change artifacts. No bundled SDK/process;
-  resume and package-permission support are disabled.
+  resume and package-permission support are disabled. Private `blackbox/*` wire methods remain
+  diagnostic logs; native approvals and adapter-synthesized lifecycle events retain authority.
 - Invocation-scoped `allowlist_v1` package grants through `runWorkspaceAgent`, with
   exposure/routing/dispatch enforcement and MCP/workspace permission metadata.
 
@@ -50,11 +52,22 @@ historical compatibility evidence; adapter profiles remain authoritative for req
   filtering, output limits, caching, namespaced local tools, and provider-native toolsets.
 - Portable skills and workspace-agent packages with validation, deterministic pack/install,
   archive protection, in-memory/SQLite registries, cron/interval schedules, and Claude staging.
-- Pricing/accounting with parent-pinned provenance, billable policy, cache metrics, prompt
+- Explicit Python workspace-agent ZIP import for model-loop/local-agent runs, with translated
+  grants and workspace refs, explicit connector auth, and rejection of unrepresentable settings.
+- Pricing/accounting with frozen provenance, exact-first aliases, combined cache accounting,
+  independent optional cached/reasoning rates and source URLs, billable policy, cache metrics, prompt
   dry-runs, and ten frozen workflow profiles.
 - Managed realtime sessions and injected OpenAI Realtime/Gemini Live duplex providers.
 - Lease/heartbeat environment workers and partial opt-in Anthropic Managed Agents work source.
 - Trace reconstruction, production metrics, OpenTelemetry export, replay/diff, and evaluators.
+
+## Verification
+
+The TypeScript-owned feature score includes OpenRouter and keeps verification supplements
+separate. Native TypeScript golden expectations are checked offline; frozen Python fixtures
+remain compatibility samples. The test crosswalk enumerates executable TypeScript tests first,
+including explicit reasons where no Python mapping applies. See
+[maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md).
 
 ## Deliberately product-owned
 
