@@ -1,7 +1,8 @@
 # blackbox-ts
 
 `blackbox-ts` is the canonical, zero-runtime-dependency TypeScript Blackbox provider and
-agent runtime. Python [`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) is a
+agent runtime, published on [npm](https://www.npmjs.com/package/blackbox-ts) under the MIT
+license. Python [`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) is a
 pinned historical compatibility reference. [FEATURES.md](FEATURES.md) is the current catalog.
 It keeps model, agent-session, realtime, workspace, MCP, worker, and package protocols separate
 while exposing one provider-neutral runtime.
@@ -10,11 +11,23 @@ Node 20.11 or newer is required. The package is ESM-only; network smoke tests sk
 
 ## Install
 
+The current published release is `0.2.0-alpha.0`, released on September 8, 2026 under the
+`alpha` tag.
+
+```sh
+npm install blackbox-ts@alpha
+```
+
+With pnpm:
+
 ```sh
 pnpm add blackbox-ts@alpha
 ```
 
-This checkout targets `0.2.0-alpha.0`. To install from source, build a local tarball:
+Use `blackbox-ts@0.2.0-alpha.0` to pin this release. The `latest` tag currently points to
+the older `0.1.0-alpha.0` release, so use `@alpha` for the current prerelease.
+
+To install from source, build a local tarball:
 
 ```sh
 pnpm install

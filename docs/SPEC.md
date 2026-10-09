@@ -63,6 +63,9 @@ rejected for restricted runs; model runs enforce the boundary in the runtime. Lo
 runtime boundary. TypeScript and Python package fields differ; see
 [migration](MIGRATION.md#workspace-agent-package-interchange).
 
-The ESM package targets Node 20.11+. The tarball includes compiled JavaScript/declarations,
+The ESM package is published and distributed on
+[npm](https://www.npmjs.com/package/blackbox-ts) and targets Node 20.11+. Install the current
+prerelease with `npm install blackbox-ts@alpha` or `pnpm add blackbox-ts@alpha`.
+The tarball includes compiled JavaScript/declarations,
 README/CHANGELOG/FEATURES/LICENSE and examples, with no sourcemaps or `docs/`. Releases use
 tag-triggered npm trusted publishing; editing the version does not publish a release.

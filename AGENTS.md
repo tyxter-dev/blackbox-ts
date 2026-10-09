@@ -1,11 +1,12 @@
 # AGENTS.md
 
-Guidance for Codex when working in this repo. Keep changes small, dependency-light,
+Guidance for agents when working in this repo. Keep changes small, dependency-light,
 and aligned with the public Blackbox contracts.
 
 ## Project and scope
 
 **blackbox-ts** is the public MIT-licensed, canonical TypeScript Blackbox runtime.
+It is published and distributed on [npm](https://www.npmjs.com/package/blackbox-ts).
 Python Blackbox is a historical compatibility reference pinned in
 `docs/parity-inventory.json`; it is not a runtime or release dependency.
 [FEATURES.md](FEATURES.md) is the current feature catalog.
@@ -103,7 +104,10 @@ checks and do not require a Python checkout.
 - Keep exported types explicit and stable; use errors from `src/core/errors.ts`.
 - Prefer structured core helpers over ad hoc parsing. Comment non-obvious protocol behavior.
 - Before release, run `pnpm check` and `pnpm pack --dry-run`.
-- The current candidate is `blackbox-ts@0.2.0-alpha.0`. Publishing is a separate action:
+- The current published release is `blackbox-ts@0.2.0-alpha.0`, released on npm on
+  2026-09-08 under the `alpha` dist-tag. Install it with `npm install blackbox-ts@alpha`
+  or `pnpm add blackbox-ts@alpha`; use the exact version to pin this release.
+- Future publishing is a separate action and requires a new package version:
   `v*` tag pushes invoke the release workflow, which validates the package version,
   runs `pnpm check` and uses npm trusted publishing (OIDC). Prereleases use `alpha`;
   stable versions use `latest`. A version edit alone does not publish.

@@ -2,6 +2,9 @@
 
 ## 0.2.0-alpha.0
 
+Published on [npm](https://www.npmjs.com/package/blackbox-ts/v/0.2.0-alpha.0) on
+2026-09-08 under the `alpha` dist-tag.
+
 Canonical TypeScript runtime with compatibility refreshed to the pinned Python Blackbox
 0.2.0 baseline.
 
