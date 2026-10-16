@@ -1,8 +1,8 @@
 # blackbox-ts
 
-`blackbox-ts` is the canonical, zero-runtime-dependency TypeScript Blackbox provider and
-agent runtime, published on [npm](https://www.npmjs.com/package/blackbox-ts) under the MIT
-license. Python [`tyxter-dev/blackbox`](https://github.com/tyxter-dev/blackbox) is a
+`@tyxter/blackbox-ts` is the canonical, zero-runtime-dependency TypeScript Blackbox provider and
+agent runtime, published on [npm](https://www.npmjs.com/package/@tyxter/blackbox-ts) under the MIT
+license. Python [`tyxter/blackbox`](https://github.com/tyxter/blackbox) is a
 pinned historical compatibility reference. [FEATURES.md](FEATURES.md) is the current catalog.
 It keeps model, agent-session, realtime, workspace, MCP, worker, and package protocols separate
 while exposing one provider-neutral runtime.
@@ -11,34 +11,37 @@ Node 20.11 or newer is required. The package is ESM-only; network smoke tests sk
 
 ## Install
 
-The current published release is `0.2.0-alpha.1`, released on October 16, 2026 under the
+The current published release is `0.2.0-alpha.2`, released on October 16, 2026 under the
 `alpha` tag.
 
 ```sh
-npm install blackbox-ts@alpha
+npm install @tyxter/blackbox-ts@alpha
 ```
 
 With pnpm:
 
 ```sh
-pnpm add blackbox-ts@alpha
+pnpm add @tyxter/blackbox-ts@alpha
 ```
 
-Use `blackbox-ts@0.2.0-alpha.1` to pin this release. The `latest` tag currently points to
-the older `0.1.0-alpha.0` release, so use `@alpha` for the current prerelease.
+Use `@tyxter/blackbox-ts@0.2.0-alpha.2` to pin this release. Use `@alpha` explicitly
+for prereleases; no stable release is published under `latest`.
+
+The package moved from `blackbox-ts` to `@tyxter/blackbox-ts`. Update existing imports
+and dependency declarations to the scoped name; exported APIs and subpaths are unchanged.
 
 To install from source, build a local tarball:
 
 ```sh
 pnpm install
 pnpm pack
-pnpm add ./blackbox-ts-0.2.0-alpha.1.tgz
+pnpm add ./tyxter-blackbox-ts-0.2.0-alpha.2.tgz
 ```
 
 ## Run a model or full agent loop
 
 ```ts
-import { AgentRuntime, EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
+import { AgentRuntime, EchoModelProvider, ProviderRegistry } from '@tyxter/blackbox-ts';
 
 const registry = new ProviderRegistry();
 registry.registerModelProvider(new EchoModelProvider());
@@ -59,14 +62,14 @@ const result = await runtime.run({
 console.log(turn.output_text, result.output);
 ```
 
-First-party fetch adapters are available at `blackbox-ts/providers/openai`, `/anthropic`,
+First-party fetch adapters are available at `@tyxter/blackbox-ts/providers/openai`, `/anthropic`,
 `/gemini`, `/xai`, and `/openrouter`. Provider SDKs are never runtime dependencies.
 
 The parent-compatible workflow profiles can supply the provider/model and controls while
 explicit call arguments retain highest precedence:
 
 ```ts
-import { RuntimeConfig } from 'blackbox-ts/config';
+import { RuntimeConfig } from '@tyxter/blackbox-ts/config';
 
 const config = RuntimeConfig.profile('fast_text').withOverrides({
   provider: 'openai:gpt-5.6-sol',
@@ -84,13 +87,13 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   app-server client; it does not bundle an SDK or launch a process.
 - `runtime.realtime`: managed low-latency sessions with text/audio/image input, interruption,
   and injected OpenAI Realtime or Gemini Live duplex transports.
-- `blackbox-ts/workspaces`: local/git/sandbox/Docker/cloud workspace protocols and tools.
-- `blackbox-ts/mcp`: MCP client/server, stdio/HTTP/SSE transports, trust, auth refresh,
+- `@tyxter/blackbox-ts/workspaces`: local/git/sandbox/Docker/cloud workspace protocols and tools.
+- `@tyxter/blackbox-ts/mcp`: MCP client/server, stdio/HTTP/SSE transports, trust, auth refresh,
   discovery cache, runtime tools, and provider-native routing.
-- `blackbox-ts/workspace-agents` and `/skills`: portable governed agent packages, registries,
+- `@tyxter/blackbox-ts/workspace-agents` and `/skills`: portable governed agent packages, registries,
   validation, schedules, and Claude Code staging.
-- `blackbox-ts/workers`: lease-based inbound environment workers.
-- `blackbox-ts/observability`: redacted sinks, traces, metrics, replay/diff, OpenTelemetry, and
+- `@tyxter/blackbox-ts/workers`: lease-based inbound environment workers.
+- `@tyxter/blackbox-ts/observability`: redacted sinks, traces, metrics, replay/diff, OpenTelemetry, and
   evaluators.
 
 ## Contract policy
@@ -106,20 +109,20 @@ const result = await runtime.run({ input: 'Summarize this.', config, max_output_
   Managed Agents requires an explicit beta acknowledgement, and cloud/realtime production
   transports are injected.
 
-Use `runWorkspaceAgent` from `blackbox-ts/workspace-agents` to execute `allowlist_v1`
+Use `runWorkspaceAgent` from `@tyxter/blackbox-ts/workspace-agents` to execute `allowlist_v1`
 packages with their grants enforced. `importPythonWorkspaceAgentPackage` explicitly translates
 supported Python ZIP packages; it returns the native spec and separate run options. See
-[0.2 migration notes](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md).
+[0.2 migration notes](https://github.com/tyxter/blackbox-ts/blob/main/docs/MIGRATION.md).
 
 The tarball contains compiled JavaScript/declarations, this README, CHANGELOG, FEATURES,
 LICENSE and examples. Repository docs and sourcemaps are not packed;
-`blackbox-ts/package.json` exposes package metadata.
+`@tyxter/blackbox-ts/package.json` exposes package metadata.
 
 The TypeScript-owned score is 138/145 fully supported features, including OpenRouter in
 the denominator. The 26 verification supplements are reported separately. Scoped evidence is in
-[the parity matrix](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the workflow for native fixture checks, optional frozen Python compatibility, drift, and baseline
-updates is documented in [parity maintenance](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
-[features](FEATURES.md), [capabilities](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/CAPABILITIES.md),
-[migration](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).
-The [documentation index](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/README.md)
+[the parity matrix](https://github.com/tyxter/blackbox-ts/blob/main/docs/PARITY_MATRIX.md), and the workflow for native fixture checks, optional frozen Python compatibility, drift, and baseline
+updates is documented in [parity maintenance](https://github.com/tyxter/blackbox-ts/blob/main/docs/PARITY_MAINTENANCE.md). See
+[features](FEATURES.md), [capabilities](https://github.com/tyxter/blackbox-ts/blob/main/docs/CAPABILITIES.md),
+[migration](https://github.com/tyxter/blackbox-ts/blob/main/docs/MIGRATION.md), and [examples](examples/).
+The [documentation index](https://github.com/tyxter/blackbox-ts/blob/main/docs/README.md)
 collects current guides, generated evidence, and historical plans.

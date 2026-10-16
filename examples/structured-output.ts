@@ -1,4 +1,4 @@
-import { structuredOutput } from 'blackbox-ts/output';
+import { structuredOutput } from '@tyxter/blackbox-ts/output';
 
 export const answerOutput = structuredOutput(
   {

@@ -1,6 +1,6 @@
 {
-  "name": "blackbox-ts",
-  "version": "0.2.0-alpha.1",
+  "name": "@tyxter/blackbox-ts",
+  "version": "0.2.0-alpha.2",
   "description": "Zero-dependency TypeScript runtime for model turns, agent sessions, tools, workspaces and LLM applications.",
   "license": "MIT",
   "type": "module",
@@ -8,11 +8,11 @@
   "author": "Tyxter",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tyxter-dev/blackbox-ts.git"
+    "url": "git+https://github.com/tyxter/blackbox-ts.git"
   },
-  "homepage": "https://github.com/tyxter-dev/blackbox-ts#readme",
+  "homepage": "https://github.com/tyxter/blackbox-ts#readme",
   "bugs": {
-    "url": "https://github.com/tyxter-dev/blackbox-ts/issues"
+    "url": "https://github.com/tyxter/blackbox-ts/issues"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

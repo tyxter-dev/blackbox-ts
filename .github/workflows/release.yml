@@ -1,6 +1,6 @@
 name: Release
 
-# Publishes blackbox-ts through npm Trusted Publishing. The npm package must
+# Publishes @tyxter/blackbox-ts through npm Trusted Publishing. The npm package must
 # be configured with this exact workflow filename and the npm-publish
 # environment. No NPM_TOKEN is required; GitHub issues an OIDC token for
 # `npm publish`.
@@ -40,6 +40,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          package_name="$(node -p "require('./package.json').name")"
           package_version="$(node -p "require('./package.json').version")"
           expected_version="${GITHUB_REF_NAME#v}"
 
@@ -55,17 +56,17 @@ jobs:
           fi
 
           set +e
-          npm_view_output="$(npm view "blackbox-ts@${package_version}" version 2>&1)"
+          npm_view_output="$(npm view "${package_name}@${package_version}" version 2>&1)"
           npm_view_status=$?
           set -e
 
           if [[ "$npm_view_status" -eq 0 ]]; then
-            echo "::error::blackbox-ts@${package_version} is already published. Bump package.json first."
+            echo "::error::${package_name}@${package_version} is already published. Bump package.json first."
             exit 1
           fi
 
           if [[ "$npm_view_output" != *"E404"* ]]; then
-            echo "::error::Could not confirm that blackbox-ts@${package_version} is unpublished."
+            echo "::error::Could not confirm that ${package_name}@${package_version} is unpublished."
             printf '%s\n' "$npm_view_output"
             exit 1
           fi
@@ -76,4 +77,6 @@ jobs:
       - name: Publish
         env:
           NPM_TAG: ${{ steps.release.outputs.npm_tag }}
+          # Temporary credential for the first scoped-package publish.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
         run: npm publish --access public --tag "$NPM_TAG"

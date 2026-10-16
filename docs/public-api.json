@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "package": "blackbox-ts",
+  "package": "@tyxter/blackbox-ts",
   "exports": [
     ".",
     "./cache",

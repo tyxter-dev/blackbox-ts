@@ -1,5 +1,12 @@
 # Migration
 
+## Scoped npm package (0.2.0-alpha.2)
+
+The npm package is now `@tyxter/blackbox-ts`. Replace the old `blackbox-ts` dependency
+with `@tyxter/blackbox-ts@alpha`, and change root and subpath imports, for example
+`blackbox-ts/mcp` becomes `@tyxter/blackbox-ts/mcp`. Exported APIs are unchanged.
+The old unscoped package was unpublished; its previous versions are unavailable.
+
 ## From the provider-only alpha
 
 The runtime retains the model-provider family while adding separate execution surfaces.
@@ -16,7 +23,7 @@ The runtime retains the model-provider family while adding separate execution su
 6. Tool handlers return model-facing content and optional app-facing payloads separately.
 7. Explicit unsupported controls now throw typed capability errors instead of being ignored.
 8. Raw payload persistence and telemetry require the appropriate redaction/storage wrapper.
-9. Import specialized surfaces from stable subpaths such as `blackbox-ts/mcp`, `/workspaces`,
+9. Import specialized surfaces from stable subpaths such as `@tyxter/blackbox-ts/mcp`, `/workspaces`,
    `/realtime`, `/workers`, and `/workspace-agents`.
 
 Pricing is a replaceable snapshot pinned to the Python baseline. Do not treat an estimate as
@@ -27,8 +34,8 @@ an invoice or omit its `source` and `version` metadata.
 TypeScript is now the canonical implementation. The Python pin records the historical
 state used for compatibility checks. CI/releases keep offline fixture checks but require
 no Python checkout; optional frozen-reference compatibility checks remain available. Install the published
-prerelease through `blackbox-ts@alpha`, or build this checkout's tarball to install from source.
-The tarball drops repository docs and sourcemaps and adds `blackbox-ts/package.json`.
+prerelease through `@tyxter/blackbox-ts@alpha`, or build this checkout's tarball to install from source.
+The tarball drops repository docs and sourcemaps and adds `@tyxter/blackbox-ts/package.json`.
 Documentation links in README/CHANGELOG point to GitHub.
 
 Accounting now treats Anthropic input/total tokens as inclusive of cache read/creation;
@@ -68,7 +75,7 @@ snapshots of the recorded baseline, not live pricing lookups.
 ## Workspace-agent package interchange
 
 Run restricted packages through `runWorkspaceAgent(runtime, spec, options)` from
-`blackbox-ts/workspace-agents`. `permission_mode: 'allowlist_v1'` compiles `spec.grants`
+`@tyxter/blackbox-ts/workspace-agents`. `permission_mode: 'allowlist_v1'` compiles `spec.grants`
 and composes their boundary with any active boundary. Missing grants produce an empty allowlist; internal discovery tools and the loop's
 finalizer retain their exemptions. An omitted mode or `inherit` adds no new package boundary; the host's existing
 boundary and policy still apply. Grant scopes default to `read`, while tools without scope
@@ -78,7 +85,10 @@ Native readers remain TypeScript-only. For a Python-written format-version-1 ZIP
 explicit, one-way importer:
 
 ```ts
-import { importPythonWorkspaceAgentPackage, runWorkspaceAgent } from 'blackbox-ts/workspace-agents';
+import {
+  importPythonWorkspaceAgentPackage,
+  runWorkspaceAgent,
+} from '@tyxter/blackbox-ts/workspace-agents';
 
 const imported = importPythonWorkspaceAgentPackage(bytes, {
   connector_auth: { files: 'host-managed' }, // Match declared connector names and actual host auth.

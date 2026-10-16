@@ -3,7 +3,7 @@ import {
   ProviderRegistry,
   ToolRegistry,
   type AgentRuntimeOptions,
-} from 'blackbox-ts';
+} from '@tyxter/blackbox-ts';
 
 export interface RequestRuntimeDependencies {
   createRegistry(): ProviderRegistry;

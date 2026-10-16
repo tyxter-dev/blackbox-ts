@@ -6,7 +6,7 @@ and aligned with the public Blackbox contracts.
 ## Project and scope
 
 **blackbox-ts** is the public MIT-licensed, canonical TypeScript Blackbox runtime.
-It is published and distributed on [npm](https://www.npmjs.com/package/blackbox-ts).
+It is published and distributed on [npm](https://www.npmjs.com/package/@tyxter/blackbox-ts).
 Python Blackbox is a historical compatibility reference pinned in
 `docs/parity-inventory.json`; it is not a runtime or release dependency.
 [FEATURES.md](FEATURES.md) is the current feature catalog.
@@ -67,7 +67,7 @@ docs/                          current specs, parity evidence and historical pla
 examples/                      runnable TypeScript integration examples
 ```
 
-The package exposes the root, specialized subpaths and `blackbox-ts/package.json`.
+The package exposes the root, specialized subpaths and `@tyxter/blackbox-ts/package.json`.
 The tarball contains JavaScript/declarations, README/CHANGELOG/FEATURES/LICENSE and examples;
 repository `docs/`, source files and sourcemaps are excluded. Package verification requires
 Git and checks generated paths against tracked source/examples; stage new files before it.
@@ -104,9 +104,9 @@ checks and do not require a Python checkout.
 - Keep exported types explicit and stable; use errors from `src/core/errors.ts`.
 - Prefer structured core helpers over ad hoc parsing. Comment non-obvious protocol behavior.
 - Before release, run `pnpm check` and `pnpm pack --dry-run`.
-- The current published release is `blackbox-ts@0.2.0-alpha.1`, released on npm on
-  2026-10-16 under the `alpha` dist-tag. Install it with `npm install blackbox-ts@alpha`
-  or `pnpm add blackbox-ts@alpha`; use the exact version to pin this release.
+- The current published release is `@tyxter/blackbox-ts@0.2.0-alpha.2`, released on npm on
+  2026-10-16 under the `alpha` dist-tag. Install it with `npm install @tyxter/blackbox-ts@alpha`
+  or `pnpm add @tyxter/blackbox-ts@alpha`; use the exact version to pin this release.
 - Future publishing is a separate action and requires a new package version:
   `v*` tag pushes invoke the release workflow, which validates the package version,
   runs `pnpm check` and uses npm trusted publishing (OIDC). Prereleases use `alpha`;

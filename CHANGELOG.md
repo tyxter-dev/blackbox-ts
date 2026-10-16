@@ -1,8 +1,13 @@
 # Changelog
 
-## 0.2.0-alpha.1
+## 0.2.0-alpha.2
 
-Release date: 2026-10-16. Published under the `alpha` dist-tag.
+Release date: 2026-10-16. Published as `@tyxter/blackbox-ts` under the `alpha` dist-tag.
+
+- Moved npm distribution to the `@tyxter` organization. Update dependencies and imports
+  from `blackbox-ts` to `@tyxter/blackbox-ts`; exported APIs and subpaths are unchanged.
+  Updated GitHub links to `tyxter/blackbox-ts`. The unscoped package was unpublished;
+  version `0.2.0-alpha.1` was tagged but never published.
 
 - Canonical TypeScript fixtures now use native contracts and are checked against current source
   offline. The crosswalk lists all executable TypeScript tests first; frozen Python samples
@@ -114,4 +119,4 @@ Canonical TypeScript runtime with compatibility refreshed to the pinned Python B
 - Added Windows/Linux Node 20.11/22 CI, package-consumer checks, and network-gated smoke tests.
 
 The alpha API was substantially expanded during parity work; see
-[docs/MIGRATION.md](https://github.com/tyxter-dev/blackbox-ts/blob/main/docs/MIGRATION.md).
+[docs/MIGRATION.md](https://github.com/tyxter/blackbox-ts/blob/main/docs/MIGRATION.md).

@@ -57,8 +57,8 @@ function selectPackageReport(report, packageName) {
 // Captured report shapes, so the npm versions this host does not run stay covered.
 function verifyPackReportParsing() {
   const entry = {
-    name: 'blackbox-ts',
-    filename: 'blackbox-ts-0.0.0.tgz',
+    name: '@tyxter/blackbox-ts',
+    filename: 'tyxter-blackbox-ts-0.0.0.tgz',
     files: [{ path: 'dist/index.js' }],
   };
   const banner = 'npm notice Tarball Contents';
@@ -168,17 +168,18 @@ try {
     { cwd: directory, windowsHide: true, maxBuffer: 10 * 1024 * 1024 },
   );
   const installedPackage = JSON.parse(
-    await readFile(join(directory, 'node_modules', 'blackbox-ts', 'package.json'), 'utf8'),
+    await readFile(join(directory, 'node_modules', '@tyxter/blackbox-ts', 'package.json'), 'utf8'),
   );
-  if (installedPackage.name !== 'blackbox-ts') throw new Error('clean consumer install failed');
+  if (installedPackage.name !== '@tyxter/blackbox-ts')
+    throw new Error('clean consumer install failed');
 
   await writeFile(
     join(directory, 'smoke.mjs'),
     `import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { AgentRuntime, EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
-import { MCPServer } from 'blackbox-ts/mcp';
-import { InMemoryWorkSource } from 'blackbox-ts/workers';
+import { AgentRuntime, EchoModelProvider, ProviderRegistry } from '@tyxter/blackbox-ts';
+import { MCPServer } from '@tyxter/blackbox-ts/mcp';
+import { InMemoryWorkSource } from '@tyxter/blackbox-ts/workers';
 const registry = new ProviderRegistry();
 registry.registerModelProvider(new EchoModelProvider());
 const runtime = new AgentRuntime({ registry });
@@ -187,8 +188,8 @@ assert.equal(turn.output_text, 'package smoke');
 assert.equal(turn.provider, 'echo');
 assert.equal(turn.model, 'echo');
 assert.deepEqual(turn.raw_response, { echo: 'package smoke' });
-const metadata = JSON.parse(await readFile(new URL(import.meta.resolve('blackbox-ts/package.json')), 'utf8'));
-assert.equal(metadata.name, 'blackbox-ts');
+const metadata = JSON.parse(await readFile(new URL(import.meta.resolve('@tyxter/blackbox-ts/package.json')), 'utf8'));
+assert.equal(metadata.name, '@tyxter/blackbox-ts');
 assert.equal(metadata.sideEffects, false);
 assert.equal(metadata.publishConfig.provenance, true);
 if (!(new MCPServer('smoke')) || !(new InMemoryWorkSource())) throw new Error('subpath smoke failed');

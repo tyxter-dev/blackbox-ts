@@ -1,4 +1,4 @@
-import { packWorkspaceAgent } from 'blackbox-ts/workspace-agents';
+import { packWorkspaceAgent } from '@tyxter/blackbox-ts/workspace-agents';
 
 const archive = packWorkspaceAgent({
   id: 'example',

@@ -1,4 +1,9 @@
-import { MCPClient, MCPServer, inProcessMCPTransport, mcpToolDefinitions } from 'blackbox-ts/mcp';
+import {
+  MCPClient,
+  MCPServer,
+  inProcessMCPTransport,
+  mcpToolDefinitions,
+} from '@tyxter/blackbox-ts/mcp';
 
 const server = new MCPServer('example', [{ name: 'ping', handler: () => 'pong' }]);
 const client = new MCPClient(

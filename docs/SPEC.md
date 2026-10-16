@@ -2,7 +2,7 @@
 
 ## Scope
 
-`blackbox-ts` is the canonical TypeScript Blackbox runtime. It provides model execution,
+`@tyxter/blackbox-ts` is the canonical TypeScript Blackbox runtime. It provides model execution,
 the agent loop, agent sessions, tools, structured output, policy/approvals, persistence,
 workspaces, MCP, realtime protocols, workers, skills/workspace-agent packages, schedules,
 pricing/cache, prompt planning, configuration and observability. [FEATURES.md](../FEATURES.md)
@@ -74,8 +74,8 @@ runtime boundary. TypeScript and Python package fields differ; see
 [migration](MIGRATION.md#workspace-agent-package-interchange).
 
 The ESM package is published and distributed on
-[npm](https://www.npmjs.com/package/blackbox-ts) and targets Node 20.11+. Install the current
-prerelease with `npm install blackbox-ts@alpha` or `pnpm add blackbox-ts@alpha`.
+[npm](https://www.npmjs.com/package/@tyxter/blackbox-ts) and targets Node 20.11+. Install the current
+prerelease with `npm install @tyxter/blackbox-ts@alpha` or `pnpm add @tyxter/blackbox-ts@alpha`.
 The tarball includes compiled JavaScript/declarations,
 README/CHANGELOG/FEATURES/LICENSE and examples, with no sourcemaps or `docs/`. Releases use
 tag-triggered npm trusted publishing; editing the version does not publish a release.

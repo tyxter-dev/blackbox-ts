@@ -4,8 +4,8 @@
     "noEmit": true,
     "rootDir": ".",
     "paths": {
-      "blackbox-ts": ["./src/index.ts"],
-      "blackbox-ts/*": ["./src/*/index.ts"]
+      "@tyxter/blackbox-ts": ["./src/index.ts"],
+      "@tyxter/blackbox-ts/*": ["./src/*/index.ts"]
     }
   },
   "include": ["examples/**/*.ts", "src/**/*.ts"]

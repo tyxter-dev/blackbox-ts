@@ -1,4 +1,4 @@
-import { AgentRuntime, EchoModelProvider, ProviderRegistry } from 'blackbox-ts';
+import { AgentRuntime, EchoModelProvider, ProviderRegistry } from '@tyxter/blackbox-ts';
 
 const registry = new ProviderRegistry();
 registry.registerModelProvider(new EchoModelProvider());

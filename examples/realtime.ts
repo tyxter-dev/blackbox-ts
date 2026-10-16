@@ -1,5 +1,5 @@
-import { AgentRuntime, ProviderRegistry } from 'blackbox-ts';
-import { DeterministicDuplexTransport, OpenAIRealtimeProvider } from 'blackbox-ts/realtime';
+import { AgentRuntime, ProviderRegistry } from '@tyxter/blackbox-ts';
+import { DeterministicDuplexTransport, OpenAIRealtimeProvider } from '@tyxter/blackbox-ts/realtime';
 
 const registry = new ProviderRegistry();
 registry.registerRealtimeProvider(
