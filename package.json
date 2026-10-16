@@ -1,6 +1,6 @@
 {
   "name": "blackbox-ts",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0-alpha.1",
   "description": "Zero-dependency TypeScript runtime for model turns, agent sessions, tools, workspaces and LLM applications.",
   "license": "MIT",
   "type": "module",

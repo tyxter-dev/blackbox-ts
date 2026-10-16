@@ -104,8 +104,8 @@ checks and do not require a Python checkout.
 - Keep exported types explicit and stable; use errors from `src/core/errors.ts`.
 - Prefer structured core helpers over ad hoc parsing. Comment non-obvious protocol behavior.
 - Before release, run `pnpm check` and `pnpm pack --dry-run`.
-- The current published release is `blackbox-ts@0.2.0-alpha.0`, released on npm on
-  2026-09-08 under the `alpha` dist-tag. Install it with `npm install blackbox-ts@alpha`
+- The current published release is `blackbox-ts@0.2.0-alpha.1`, released on npm on
+  2026-10-16 under the `alpha` dist-tag. Install it with `npm install blackbox-ts@alpha`
   or `pnpm add blackbox-ts@alpha`; use the exact version to pin this release.
 - Future publishing is a separate action and requires a new package version:
   `v*` tag pushes invoke the release workflow, which validates the package version,

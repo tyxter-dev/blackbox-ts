@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0-alpha.1
+
+Release date: 2026-10-16. Published under the `alpha` dist-tag.
 
 - Canonical TypeScript fixtures now use native contracts and are checked against current source
   offline. The crosswalk lists all executable TypeScript tests first; frozen Python samples

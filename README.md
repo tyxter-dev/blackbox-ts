@@ -11,7 +11,7 @@ Node 20.11 or newer is required. The package is ESM-only; network smoke tests sk
 
 ## Install
 
-The current published release is `0.2.0-alpha.0`, released on September 8, 2026 under the
+The current published release is `0.2.0-alpha.1`, released on October 16, 2026 under the
 `alpha` tag.
 
 ```sh
@@ -24,7 +24,7 @@ With pnpm:
 pnpm add blackbox-ts@alpha
 ```
 
-Use `blackbox-ts@0.2.0-alpha.0` to pin this release. The `latest` tag currently points to
+Use `blackbox-ts@0.2.0-alpha.1` to pin this release. The `latest` tag currently points to
 the older `0.1.0-alpha.0` release, so use `@alpha` for the current prerelease.
 
 To install from source, build a local tarball:
@@ -32,7 +32,7 @@ To install from source, build a local tarball:
 ```sh
 pnpm install
 pnpm pack
-pnpm add ./blackbox-ts-0.2.0-alpha.0.tgz
+pnpm add ./blackbox-ts-0.2.0-alpha.1.tgz
 ```
 
 ## Run a model or full agent loop
