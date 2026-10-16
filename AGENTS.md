@@ -111,3 +111,7 @@ checks and do not require a Python checkout.
   `v*` tag pushes invoke the release workflow, which validates the package version,
   runs `pnpm check` and uses npm trusted publishing (OIDC). Prereleases use `alpha`;
   stable versions use `latest`. A version edit alone does not publish.
+
+The scoped package's npm trusted publisher must target GitHub owner `tyxter`, repository
+`blackbox-ts`, workflow `release.yml`, and environment `npm-publish`, with direct publishing
+allowed. First publication used a temporary bootstrap credential; regular releases use OIDC.

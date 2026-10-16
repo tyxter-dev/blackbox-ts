@@ -77,6 +77,4 @@ jobs:
       - name: Publish
         env:
           NPM_TAG: ${{ steps.release.outputs.npm_tag }}
-          # Temporary credential for the first scoped-package publish.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
         run: npm publish --access public --tag "$NPM_TAG"
