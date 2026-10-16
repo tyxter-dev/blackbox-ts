@@ -1,21 +1,42 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  readdirSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+interface EvidenceSide {
+  sources: string[];
+  tests: string[];
+  symbols: string[];
+}
 interface Inventory {
-  readonly parent: { readonly commit: string; readonly feature_catalog: string };
-  readonly groups: readonly {
-    readonly classification: 'parent' | 'supplement';
-    readonly features: readonly { readonly id: string }[];
+  python_reference: { commit: string; feature_catalog: string };
+  groups: {
+    id: string;
+    domain: string;
+    classification: 'feature' | 'supplement';
+    features: { id: string; name: string; status: string; evidence: string[] }[];
   }[];
-  readonly extensions: readonly {
-    readonly id: string;
-    readonly classification: string;
-    readonly included_in_python_parity_score: boolean;
+  python_requirements: {
+    id: string;
+    name: string;
+    status: string;
+    disposition?: string;
+    feature_id?: string;
+    reason?: string;
+    evidence: string[];
   }[];
+  evidence: Record<string, { parent?: EvidenceSide; typescript?: EvidenceSide }>;
 }
 
 interface Baseline {
@@ -26,8 +47,13 @@ interface Baseline {
 }
 
 interface Crosswalk {
-  readonly parent_commit: string;
-  readonly entries: readonly { readonly python_test: string }[];
+  readonly python_reference_commit: string;
+  readonly entries: readonly {
+    readonly typescript_test: string;
+    readonly python_tests: readonly string[];
+    readonly na_reason?: string;
+  }[];
+  readonly python_compatibility: readonly { readonly python_test: string }[];
   readonly feature_coverage: readonly unknown[];
 }
 
@@ -47,7 +73,7 @@ interface CatalogFixture extends PythonFixture {
 
 interface TypeScriptFixture {
   readonly generated_by: string;
-  readonly target_parent_commit: string;
+  readonly authority: string;
 }
 
 const inventory = readJson<Inventory>('../../docs/parity-inventory.json');
@@ -56,42 +82,69 @@ const crosswalk = readJson<Crosswalk>('../../docs/parity-test-crosswalk.json');
 const pythonCore = readJson<PythonFixture>('../fixtures/python/core-contracts.json');
 const pythonCatalogs = readJson<CatalogFixture>('../fixtures/python/catalogs.json');
 const pythonProviders = readJson<ProviderFixture>('../fixtures/python/provider-differential.json');
+const pythonPackage = readJson<PythonFixture>('../fixtures/python/workspace-agent-package.json');
 const typescriptCore = readJson<TypeScriptFixture>('../fixtures/typescript/core-contracts.json');
 
 describe('Python parity maintenance artifacts', () => {
-  it('separates parent features, verification supplements, and TypeScript extensions', () => {
-    const parentGroups = inventory.groups.filter((group) => group.classification === 'parent');
-    const supplements = inventory.groups.filter((group) => group.classification === 'supplement');
-    const parentFeatures = parentGroups.flatMap((group) => group.features);
-    const supplementFeatures = supplements.flatMap((group) => group.features);
-
-    expect(parentFeatures).toHaveLength(144);
-    expect(new Set(parentFeatures.map((feature) => feature.id)).size).toBe(144);
-    expect(supplementFeatures).toHaveLength(26);
-    expect(inventory.extensions).toHaveLength(1);
-    expect(inventory.extensions[0]).toMatchObject({
-      id: 'extension.openrouter',
-      classification: 'extension',
-      included_in_python_parity_score: false,
-    });
+  it('scores TypeScript-native features and retains unsupported scoped features without supplements', () => {
+    const features = inventory.groups
+      .filter((group) => group.classification === 'feature')
+      .flatMap((group) => group.features);
+    const supplements = inventory.groups
+      .filter((group) => group.classification === 'supplement')
+      .flatMap((group) => group.features);
+    expect(features).toHaveLength(145);
+    expect(features.filter((feature) => feature.status === 'supported')).toHaveLength(138);
+    expect(supplements).toHaveLength(26);
+    expect(features.find((feature) => feature.id === 'extension.openrouter')?.status).toBe(
+      'supported',
+    );
+    expect(features.filter((feature) => feature.status === 'unsupported')).toHaveLength(1);
+    expect(inventory.python_requirements).toHaveLength(144);
+    expect(
+      inventory.python_requirements.filter(
+        (requirement) => requirement.disposition === 'unsupported',
+      ),
+    ).toHaveLength(1);
   });
 
   it('pins the evidence baseline and crosswalk to the same parent commit', () => {
-    expect(baseline.parent_commit).toBe(inventory.parent.commit);
-    expect(baseline.feature_catalog.path).toBe(inventory.parent.feature_catalog);
+    expect(baseline.parent_commit).toBe(inventory.python_reference.commit);
+    expect(baseline.feature_catalog.path).toBe(inventory.python_reference.feature_catalog);
     expect(baseline.evidence_files).toHaveLength(129);
     expect(baseline.test_files).toHaveLength(118);
-    expect(crosswalk.parent_commit).toBe(inventory.parent.commit);
-    expect(crosswalk.entries.map((entry) => entry.python_test).sort()).toEqual(
+    expect(crosswalk.python_reference_commit).toBe(inventory.python_reference.commit);
+    expect(crosswalk.python_compatibility.map((entry) => entry.python_test).sort()).toEqual(
       baseline.test_files.map((entry) => entry.path).sort(),
     );
-    expect(crosswalk.feature_coverage).toHaveLength(144);
+    expect(crosswalk.feature_coverage).toHaveLength(145);
   });
 
-  it('keeps both fixture directions and provider/catalog differentials synchronized', () => {
-    for (const fixture of [pythonCore, pythonCatalogs, pythonProviders]) {
+  it('enumerates every executable TypeScript test before compatibility mappings', () => {
+    function enumerate(directory: string): string[] {
+      return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(directory, entry.name);
+        return entry.isDirectory()
+          ? enumerate(path)
+          : entry.name.endsWith('.test.ts')
+            ? [path]
+            : [];
+      });
+    }
+    const root = fileURLToPath(new URL('../../', import.meta.url));
+    const actual = enumerate(join(root, 'tests'))
+      .map((path) => path.slice(root.length).replaceAll('\\', '/'))
+      .sort();
+    expect(crosswalk.entries.map((entry) => entry.typescript_test)).toEqual(actual);
+    for (const entry of crosswalk.entries)
+      if (entry.python_tests.length === 0) expect(entry.na_reason?.length).toBeGreaterThan(0);
+    expect(typescriptCore).not.toHaveProperty('target_parent_commit');
+  });
+
+  it('keeps native fixture authority separate from frozen compatibility pins', () => {
+    for (const fixture of [pythonCore, pythonCatalogs, pythonProviders, pythonPackage]) {
       expect(fixture.generated_by).toBe('python-parent');
-      expect(fixture.parent_commit).toBe(inventory.parent.commit);
+      expect(fixture.parent_commit).toBe(inventory.python_reference.commit);
     }
     expect(pythonProviders.scenarios.map((scenario) => scenario.provider).sort()).toEqual([
       'anthropic',
@@ -103,7 +156,7 @@ describe('Python parity maintenance artifacts', () => {
     expect(pythonCatalogs.pricing).toHaveLength(36);
     expect(typescriptCore).toMatchObject({
       generated_by: 'blackbox-ts',
-      target_parent_commit: inventory.parent.commit,
+      authority: 'typescript',
     });
   });
 });
@@ -117,12 +170,12 @@ describe('offline parity pin guard', () => {
   const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
   const carriers = [
     ['docs/parent-baseline.json', 'parent_commit'],
-    ['docs/parity-test-crosswalk.json', 'parent_commit'],
+    ['docs/parity-test-crosswalk.json', 'python_reference_commit'],
     ['docs/catalog-snapshot.json', 'parent_commit'],
     ['tests/fixtures/python/core-contracts.json', 'parent_commit'],
     ['tests/fixtures/python/catalogs.json', 'parent_commit'],
     ['tests/fixtures/python/provider-differential.json', 'parent_commit'],
-    ['tests/fixtures/typescript/core-contracts.json', 'target_parent_commit'],
+    ['tests/fixtures/python/workspace-agent-package.json', 'parent_commit'],
   ] as const;
 
   beforeAll(() => {
@@ -131,6 +184,16 @@ describe('offline parity pin guard', () => {
       cpSync(join(repoRoot, directory), join(scratch, directory), { recursive: true });
     }
     mkdirSync(join(scratch, 'scripts'));
+    cpSync(
+      join(repoRoot, 'scripts/generate-typescript-fixtures.mjs'),
+      join(scratch, 'scripts/generate-typescript-fixtures.mjs'),
+    );
+    cpSync(
+      join(repoRoot, 'scripts/generate-test-crosswalk.mjs'),
+      join(scratch, 'scripts/generate-test-crosswalk.mjs'),
+    );
+    cpSync(join(repoRoot, 'scripts/lib'), join(scratch, 'scripts/lib'), { recursive: true });
+    symlinkSync(join(repoRoot, 'node_modules'), join(scratch, 'node_modules'), 'junction');
     cpSync(
       join(repoRoot, 'scripts/check-parity-inventory.mjs'),
       join(scratch, 'scripts/check-parity-inventory.mjs'),
@@ -157,6 +220,41 @@ describe('offline parity pin guard', () => {
     }
   }
 
+  it('checks canonical TypeScript expectations without rewriting drifted committed values', () => {
+    const path = 'tests/fixtures/typescript/core-contracts.json';
+    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
+      values: { usage: { total_tokens: number } };
+    };
+    value.values.usage.total_tokens += 1;
+    const changed = JSON.stringify(value);
+    withCarrier(path, changed, () => {
+      const result = spawnSync(
+        process.execPath,
+        [join(scratch, 'scripts/generate-typescript-fixtures.mjs'), '--check'],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('core-contracts.json is stale');
+      expect(readFileSync(join(scratch, path), 'utf8')).toBe(changed);
+    });
+  });
+
+  it('rejects a new executable TypeScript test without a mapping or explicit N/A reason', () => {
+    const path = join(scratch, 'tests/unit/undispositioned.test.ts');
+    writeFileSync(path, "import { it } from 'vitest'; it('new', () => {});\n");
+    try {
+      const result = spawnSync(
+        process.execPath,
+        [join(scratch, 'scripts/generate-test-crosswalk.mjs')],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('tests/unit/undispositioned.test.ts');
+    } finally {
+      rmSync(path);
+    }
+  });
+
   it('accepts synchronized artifacts without any workflow or Python checkout', () => {
     const result = check();
     expect(result.stderr).toBe('');
@@ -178,16 +276,208 @@ describe('offline parity pin guard', () => {
     });
   });
 
-  it('rejects inherited object keys as statuses', () => {
-    const path = 'docs/parity-inventory.json';
-    const value = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
-      groups: { target_status: string }[];
-    };
-    value.groups[0]!.target_status = 'constructor';
-    withCarrier(path, JSON.stringify(value), () => {
-      const result = check();
+  function withInventory(
+    mutate: (value: Inventory) => void,
+    assertion: (result: ReturnType<typeof check>) => void,
+  ) {
+    const value = readJson<Inventory>('../../docs/parity-inventory.json');
+    mutate(value);
+    withCarrier('docs/parity-inventory.json', JSON.stringify(value), () => assertion(check()));
+  }
+
+  it('accepts an honest per-feature TypeScript status below frozen Python status', () => {
+    withInventory(
+      (value) => {
+        value.groups[0]!.features[0]!.status = 'partial';
+      },
+      (result) => {
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+        expect(result.stdout).toContain('137/145 fully supported');
+      },
+    );
+  });
+
+  it('accepts another native feature with TypeScript-only evidence and no Python counterpart', () => {
+    withInventory(
+      (value) => {
+        value.groups[0]!.features.push({
+          id: 'native.fixture',
+          name: 'Native fixture',
+          status: 'supported',
+          evidence: ['native-fixture'],
+        });
+        value.evidence['native-fixture'] = { typescript: value.evidence.openrouter!.typescript! };
+      },
+      (result) => {
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+        expect(result.stdout).toContain('139/146 fully supported');
+      },
+    );
+  });
+
+  it('requires explicit scope reasons for declined Python adoption', () => {
+    withInventory(
+      (value) => {
+        const requirement = value.python_requirements[0]!;
+        value.groups[0]!.features = value.groups[0]!.features.filter(
+          (feature) => feature.id !== requirement.feature_id,
+        );
+        delete requirement.feature_id;
+        requirement.disposition = 'declined';
+        requirement.reason = 'Disposable test scope explicitly excludes this behavior.';
+      },
+      (result) => {
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+      },
+    );
+  });
+
+  it('renders declined Python-only evidence honestly without inventing TypeScript tests', () => {
+    withInventory(
+      (value) => {
+        const ref = 'workspace-agent-registry';
+        const requirement = value.python_requirements.find((entry) =>
+          entry.evidence.includes(ref),
+        )!;
+        for (const group of value.groups)
+          group.features = group.features.filter(
+            (feature) => feature.id !== requirement.feature_id,
+          );
+        delete requirement.feature_id;
+        requirement.disposition = 'declined';
+        requirement.reason = 'Disposable scope excludes registry execution.';
+        delete value.evidence[ref]!.typescript;
+      },
+      (result) => {
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+        const path = 'docs/parity-test-crosswalk.json';
+        withCarrier(path, readFileSync(join(scratch, path), 'utf8'), () => {
+          const generated = spawnSync(
+            process.execPath,
+            [join(scratch, 'scripts/generate-test-crosswalk.mjs')],
+            { encoding: 'utf8' },
+          );
+          expect(generated.stderr).toBe('');
+          expect(generated.status).toBe(0);
+          const document = JSON.parse(readFileSync(join(scratch, path), 'utf8')) as {
+            python_compatibility: {
+              python_test: string;
+              coverage: string;
+              typescript_tests: string[];
+              notes: string[];
+            }[];
+          };
+          expect(
+            document.python_compatibility.find(
+              (entry) =>
+                entry.python_test === 'tests/unit/workspace_agents/test_sqlite_registry.py',
+            ),
+          ).toMatchObject({
+            coverage: 'declined_adoption',
+            typescript_tests: [],
+            notes: ['Declined adoption: Disposable scope excludes registry execution.'],
+          });
+        });
+      },
+    );
+  });
+
+  it.each([
+    [
+      'rewritten legacy ID',
+      (value: Inventory) => {
+        value.python_requirements[0]!.id = 'parent.traceability.rewritten';
+      },
+      'does not match its frozen legacy ID',
+    ],
+    [
+      'redirected adopted mapping',
+      (value: Inventory) => {
+        value.python_requirements[0]!.feature_id = 'extension.openrouter';
+      },
+      'does not match its canonical TypeScript feature',
+    ],
+    [
+      'unknown status',
+      (value: Inventory) => {
+        value.groups[0]!.features[0]!.status = 'constructor';
+      },
+      'Unknown TypeScript status',
+    ],
+    [
+      'missing feature evidence',
+      (value: Inventory) => {
+        value.groups[0]!.features[0]!.evidence = [];
+      },
+      'has no evidence references',
+    ],
+    [
+      'missing supplement evidence',
+      (value: Inventory) => {
+        value.groups.find((group) => group.classification === 'supplement')!.features[0]!.evidence =
+          [];
+      },
+      'has no evidence references',
+    ],
+    [
+      'missing record',
+      (value: Inventory) => {
+        value.groups[0]!.features[0]!.evidence = ['missing'];
+      },
+      'Missing evidence record',
+    ],
+    [
+      'missing TS path',
+      (value: Inventory) => {
+        value.evidence.openrouter!.typescript!.sources = ['src/absent.ts'];
+      },
+      'references missing path',
+    ],
+    [
+      'missing TS symbol',
+      (value: Inventory) => {
+        value.evidence.openrouter!.typescript!.symbols = ['absentFixtureSymbol'];
+      },
+      'cannot resolve symbol',
+    ],
+    [
+      'missing disposition',
+      (value: Inventory) => {
+        delete value.python_requirements[0]!.disposition;
+      },
+      'has no valid disposition',
+    ],
+    [
+      'omitted Python requirement',
+      (value: Inventory) => {
+        value.python_requirements.shift();
+      },
+      'has no disposition',
+    ],
+    [
+      'changed frozen status',
+      (value: Inventory) => {
+        value.python_requirements[0]!.status = 'Partial';
+      },
+      'does not match its frozen baseline',
+    ],
+    [
+      'unsupported without reason',
+      (value: Inventory) => {
+        delete value.python_requirements.find(
+          (requirement) => requirement.disposition === 'unsupported',
+        )!.reason;
+      },
+      'needs a disposition reason',
+    ],
+  ] as const)('rejects %s', (_label, mutate, message) => {
+    withInventory(mutate, (result) => {
       expect(result.status).toBe(1);
-      expect(result.stderr).toContain("Unknown target_status 'constructor'");
+      expect(result.stderr).toContain(message);
     });
   });
 

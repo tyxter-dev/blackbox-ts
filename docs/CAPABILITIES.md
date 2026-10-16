@@ -32,6 +32,13 @@ contracts. Partial integrations remain explicit:
 `CodexAgentProvider` is a contract port over an injected `CodexAppServerClient`:
 `connect()` yields a connection with `send()`, `messages` and `close()`. The provider owns
 thread/turn requests, event normalization, approval pauses and file-change artifacts.
+Private `blackbox/*` lifecycle and approval events carry authority only when synthesized by
+this adapter. Matching wire notifications become `cloud_agent.log` diagnostics with their
+raw payloads preserved; fields claiming trusted or synthetic origin do not grant authority.
+Log payloads do not create durable approval records or replace provider state. Native
+`item/commandExecution/requestApproval` and `item/fileChange/requestApproval` server requests
+still create approval pauses and receive JSON-RPC responses.
+
 There is no bundled Codex SDK, process launcher or SDK version check. The default
 `metadata.codex_sdk_version: '0.147.0'` records the protocol baseline used for this port,
 not an installed dependency.

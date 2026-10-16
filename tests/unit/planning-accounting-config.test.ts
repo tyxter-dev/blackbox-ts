@@ -7,6 +7,8 @@ import {
   AgentEventTypes,
   AgentRuntime,
   BUNDLED_PRICING,
+  PricingCatalog,
+  type PricingRates,
   InMemoryProviderCacheStore,
   ProviderCacheRuntime,
   ProviderRegistry,
@@ -70,6 +72,165 @@ describe('planning, accounting, cache, and config', () => {
     expect(estimate.provider_cost).toBeCloseTo(3.55);
     expect(estimate.user_billable).toBeCloseTo(3.906);
     expect(estimate).toMatchObject({ source: 'blackbox-bundled', version: '2026-09-05' });
+  });
+
+  it.each([
+    { combined: 200, read: 0, creation: 0, inputCost: 0.008, readCost: 0.0004, creationCost: 0 },
+    {
+      combined: 500,
+      read: 100,
+      creation: 200,
+      inputCost: 0.005,
+      readCost: 0.0006,
+      creationCost: 0.0008,
+    },
+    {
+      combined: 300,
+      read: 100,
+      creation: 200,
+      inputCost: 0.007,
+      readCost: 0.0002,
+      creationCost: 0.0008,
+    },
+    {
+      combined: 50,
+      read: 100,
+      creation: 200,
+      inputCost: 0.0095,
+      readCost: 0.0002,
+      creationCost: 0.0008,
+    },
+    { combined: 1200, read: 0, creation: 0, inputCost: 0, readCost: 0.0024, creationCost: 0 },
+  ])(
+    'prices combined $combined, read $read and creation $creation counters independently',
+    (row) => {
+      const catalog = customPricing({
+        input_per_million: 10,
+        output_per_million: 20,
+        cache_read_per_million: 2,
+        cache_creation_per_million: 4,
+      });
+      const estimate = catalog.estimate(
+        'custom',
+        'model',
+        modelUsage({
+          input_tokens: 1000,
+          cached_input_tokens: row.combined,
+          cache_read_input_tokens: row.read,
+          cache_creation_input_tokens: row.creation,
+        }),
+      );
+      expect(estimate.components.input).toBeCloseTo(row.inputCost, 10);
+      expect(estimate.components.cache_read).toBeCloseTo(row.readCost, 10);
+      expect(estimate.components.cache_creation).toBeCloseTo(row.creationCost, 10);
+      expect(estimate.provider_cost).toBeCloseTo(
+        row.inputCost + row.readCost + row.creationCost,
+        10,
+      );
+    },
+  );
+
+  it('keeps cached/read/creation/reasoning rates and provenance independent', () => {
+    const rates = {
+      input_per_million: 10,
+      output_per_million: 20,
+      cached_input_per_million: 3,
+      cache_read_per_million: 2,
+      cache_creation_per_million: 4,
+      reasoning_output_per_million: 5,
+    };
+    const catalog = customPricing(rates);
+    const estimate = catalog.estimate(
+      'custom',
+      'model',
+      modelUsage({
+        input_tokens: 1000,
+        output_tokens: 100,
+        cached_input_tokens: 500,
+        cache_read_input_tokens: 100,
+        cache_creation_input_tokens: 200,
+        reasoning_tokens: 40,
+      }),
+    );
+    expect(catalog.get('custom', 'model')?.rates).toEqual(rates);
+    const serialized = JSON.parse(JSON.stringify(catalog.list())) as readonly unknown[];
+    expect(serialized[0]).toMatchObject({ rates, source_url: 'https://example.test/pricing' });
+    expect(estimate.components).toEqual({
+      input: 0.005,
+      output: 0.002,
+      cache_read: 0.0006,
+      cache_creation: 0.0008,
+      reasoning_output: 0.0002,
+    });
+    expect(estimate.provider_cost).toBeCloseTo(0.0086, 10);
+    expect(estimate.source_url).toBe('https://example.test/pricing');
+  });
+
+  it.each([
+    { rates: {}, read: 0.002, creation: 0.001 },
+    { rates: { cached_input_per_million: 3 }, read: 0.0006, creation: 0.0003 },
+    {
+      rates: {
+        cached_input_per_million: 3,
+        cache_read_per_million: 0,
+        cache_creation_per_million: 0,
+      },
+      read: 0,
+      creation: 0,
+    },
+  ])(
+    'uses optional cache rate fallbacks without adding an implicit reasoning charge ($rates)',
+    ({ rates, read, creation }) => {
+      const catalog = customPricing({ input_per_million: 10, output_per_million: 20, ...rates });
+      const estimate = catalog.estimate(
+        'custom',
+        'model',
+        modelUsage({
+          input_tokens: 1000,
+          output_tokens: 100,
+          cache_read_input_tokens: 200,
+          cache_creation_input_tokens: 100,
+          reasoning_tokens: 40,
+        }),
+      );
+      expect(estimate.components.cache_read).toBeCloseTo(read, 10);
+      expect(estimate.components.cache_creation).toBeCloseTo(creation, 10);
+      expect(estimate.components.output).toBe(0.002);
+      expect(estimate.components).not.toHaveProperty('reasoning_output');
+    },
+  );
+
+  it('resolves pricing aliases one hop with exact-row precedence and no extra rows', () => {
+    const catalog = customPricing({ input_per_million: 10, output_per_million: 20 });
+    catalog.registerModelAlias('custom', 'alias', 'model');
+    catalog.registerModelAlias('custom', 'chain', 'alias');
+    catalog.registerModelAlias('other', 'alias', 'model');
+    expect(catalog.get('custom', 'alias')).toBe(catalog.get('custom', 'model'));
+    expect(
+      catalog.estimate('custom', 'alias', modelUsage({ input_tokens: 1000 })).provider_cost,
+    ).toBe(0.01);
+    expect(catalog.get('custom', 'chain')).toBeUndefined();
+    expect(catalog.get('other', 'alias')).toBeUndefined();
+    expect(catalog.list()).toHaveLength(1);
+    const exact = {
+      ...catalog.get('custom', 'model')!,
+      model: 'alias',
+      rates: { input_per_million: 7, output_per_million: 9 },
+    };
+    catalog.set(exact);
+    expect(catalog.get('custom', 'alias')).toBe(exact);
+    expect(catalog.list()).toHaveLength(2);
+    expect(BUNDLED_PRICING.get('openai', 'gpt-5.6')).toBe(
+      BUNDLED_PRICING.get('openai', 'gpt-5.6-sol'),
+    );
+    expect(BUNDLED_PRICING.get('openai', 'gpt-5.4-mini-2026-03-17')).toBe(
+      BUNDLED_PRICING.get('openai', 'gpt-5.4-mini'),
+    );
+    expect(BUNDLED_PRICING.get('xai', 'grok-4.20-non-reasoning')).toBeUndefined();
+    expect(() =>
+      BUNDLED_PRICING.estimate('xai', 'grok-4.20-non-reasoning', modelUsage()),
+    ).toThrowError(expect.objectContaining({ code: 'pricing_not_found' }));
+    expect(BUNDLED_PRICING.list()).toHaveLength(36);
   });
 
   it('ships the refreshed standard rates, cache semantics, and per-row provenance', () => {
@@ -404,3 +565,19 @@ describe('planning, accounting, cache, and config', () => {
     expect(provider.turns).toHaveLength(0);
   });
 });
+
+function customPricing(rates: PricingRates): PricingCatalog {
+  return new PricingCatalog([
+    {
+      provider: 'custom',
+      model: 'model',
+      currency: 'USD',
+      rates,
+      source: 'test',
+      source_url: 'https://example.test/pricing',
+      version: '1',
+      effective_at: '2026-09-08T00:00:00.000Z',
+      metadata: {},
+    },
+  ]);
+}

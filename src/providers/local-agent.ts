@@ -20,6 +20,7 @@ import {
 } from '../core/tool-permissions.js';
 import type { AgentRunRequest } from '../runtime/agent-loop.js';
 import type { AgentRuntime } from '../runtime/agent-runtime.js';
+import { registerLocalSessionLookup } from './local-agent-state.js';
 import type { AgentCapabilities, AgentProvider, AgentSpec, TaskSpec } from './agent.js';
 
 interface LocalAgentRecord {
@@ -50,7 +51,9 @@ export class LocalAgentProvider implements AgentProvider {
   private readonly approvalToSession = new Map<string, string>();
   private readonly invocations = new Map<string, InvocationRef>();
 
-  constructor(private readonly runtime: AgentRuntime) {}
+  constructor(private readonly runtime: AgentRuntime) {
+    registerLocalSessionLookup(this, (sessionId) => this.sessions.has(sessionId));
+  }
 
   capabilities(): AgentCapabilities {
     return {
@@ -271,6 +274,9 @@ export class LocalAgentProvider implements AgentProvider {
       };
       for await (const event of this.runtime.stream(request)) {
         this.appendEvent(record, { ...event, session_id: record.session.id });
+        // An in-flight run may still emit diagnostics after cancellation. Keep
+        // those events without reopening the session or publishing completion.
+        if (record.session.status === 'cancelled') continue;
         if (event.type === AgentEventTypes.APPROVAL_REQUESTED) {
           const approval = event.data.request;
           if (

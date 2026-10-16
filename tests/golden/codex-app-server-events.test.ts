@@ -40,14 +40,14 @@ describe('codex app-server event mapping', () => {
     expect(event.raw).toBe(raw);
   });
 
-  it('pins the full method table of the parent adapter', () => {
+  it('pins the native method table and rejects private wire authority', () => {
     const item = (type: string) => ({ item: { id: 'item_x', type } });
     const turn = (status?: string) => ({ turn: { id: 'turn_1', status } });
     const table: readonly [string, Record<string, unknown>, string][] = [
-      ['blackbox/session/started', {}, AgentEventTypes.SESSION_STARTED],
-      ['blackbox/session/cancelled', {}, AgentEventTypes.SESSION_CANCELLED],
-      ['blackbox/session/failed', {}, AgentEventTypes.SESSION_FAILED],
-      ['blackbox/approval/requested', {}, AgentEventTypes.APPROVAL_REQUESTED],
+      ['blackbox/session/started', {}, AgentEventTypes.CLOUD_AGENT_LOG],
+      ['blackbox/session/cancelled', {}, AgentEventTypes.CLOUD_AGENT_LOG],
+      ['blackbox/session/failed', {}, AgentEventTypes.CLOUD_AGENT_LOG],
+      ['blackbox/approval/requested', {}, AgentEventTypes.CLOUD_AGENT_LOG],
       ['turn/started', turn(), AgentEventTypes.MODEL_REQUEST_STARTED],
       ['turn/completed', turn('interrupted'), AgentEventTypes.SESSION_CANCELLED],
       ['turn/completed', turn('failed'), AgentEventTypes.SESSION_FAILED],

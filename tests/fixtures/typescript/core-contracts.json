@@ -1,23 +1,15 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "generated_by": "blackbox-ts",
-  "target_parent_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
+  "authority": "typescript",
   "payloads": {
     "event": {
-      "_kind": "AgentEvent",
-      "id": "evt_ts_fixture",
       "type": "model.completed",
       "run_id": "run_ts_fixture",
       "sequence": 4,
       "trace_id": "trace_ts_fixture",
       "span_id": "span_ts_fixture",
-      "parent_span_id": null,
-      "span_kind": null,
-      "session_id": null,
       "provider": "anthropic",
-      "item_id": null,
-      "provider_trace_id": null,
-      "provider_span_id": null,
       "provider_request_id": "req_ts_fixture",
       "data": {
         "output_text": "hello from TypeScript"
@@ -25,18 +17,15 @@
       "raw": {
         "id": "msg_ts_fixture"
       },
+      "id": "evt_ts_fixture",
       "timestamp": "2026-01-02T03:04:05+00:00"
     },
     "run_state": {
-      "_kind": "RunState",
       "session_id": "sess_ts_fixture",
       "provider": "anthropic",
       "model": "claude-sonnet-4-6",
       "provider_state": {
-        "_kind": "ProviderState",
         "provider": "anthropic",
-        "conversation_id": null,
-        "previous_response_id": null,
         "native_history": [
           {
             "role": "assistant",
@@ -55,7 +44,6 @@
       },
       "items": [
         {
-          "_kind": "RunItem",
           "type": "function_call",
           "provider": "anthropic",
           "data": {
@@ -66,8 +54,7 @@
             }
           },
           "status": "completed",
-          "id": "item_ts_fixture",
-          "parent_id": null
+          "id": "item_ts_fixture"
         }
       ],
       "metadata": {
@@ -75,7 +62,6 @@
       }
     },
     "agent_ref": {
-      "_kind": "AgentRef",
       "provider": "local",
       "id": "agent_ts_fixture",
       "metadata": {
@@ -83,7 +69,6 @@
       }
     },
     "session_ref": {
-      "_kind": "SessionRef",
       "provider": "local",
       "id": "sess_ts_fixture",
       "agent_id": "agent_ts_fixture",
@@ -92,7 +77,6 @@
       }
     },
     "invocation_ref": {
-      "_kind": "InvocationRef",
       "provider": "local",
       "session_id": "sess_ts_fixture",
       "id": "invoke_ts_fixture",
@@ -101,7 +85,6 @@
       }
     },
     "session": {
-      "_kind": "AgentSession",
       "provider": "local",
       "task": "typescript fixture",
       "agent_id": "agent_ts_fixture",
@@ -113,13 +96,11 @@
       "id": "sess_ts_fixture"
     },
     "artifact_ref": {
-      "_kind": "ArtifactRef",
       "id": "art_ts_fixture",
       "provider": "local",
       "uri": "artifact://art_ts_fixture"
     },
     "artifact": {
-      "_kind": "Artifact",
       "type": "report",
       "name": "typescript-result.json",
       "data": {
@@ -128,10 +109,86 @@
       "metadata": {
         "source": "typescript"
       },
-      "id": "art_ts_fixture",
-      "uri": null
+      "id": "art_ts_fixture"
     }
   },
+  "pricing_model": "canonical",
+  "pricing": {
+    "provider_cost": 0.0011729999999999998,
+    "cost": 0.0011729999999999998,
+    "user_billable": 0.001173,
+    "currency": "USD",
+    "source": "fixture",
+    "source_url": "https://example.test/pricing",
+    "version": "1",
+    "components": {
+      "input": 0.0006999999999999999,
+      "output": 0.0004,
+      "cache_read": 0.00005,
+      "cache_creation": 0.000015000000000000002,
+      "reasoning_output": 0.000008
+    },
+    "metadata": {
+      "pricing_effective_at": "2026-01-01",
+      "policy": {}
+    }
+  },
+  "workspace_agent": {
+    "id": "native-fixture",
+    "name": "Native fixture",
+    "version": "1.0.0",
+    "model": "fixture:canonical",
+    "tools": ["read"],
+    "connectors": [],
+    "mcp_servers": [],
+    "permissions": {},
+    "permission_mode": "allowlist_v1",
+    "grants": [
+      {
+        "ref": "read",
+        "scopes": ["read"]
+      }
+    ],
+    "schedules": [],
+    "visibility": "private",
+    "metadata": {
+      "fixture": true
+    },
+    "instructions": "Read carefully.",
+    "skills": []
+  },
+  "error_semantics": [
+    {
+      "name": "AgentRuntimeError",
+      "is_agent_runtime_error": true,
+      "is_configuration_error": false,
+      "is_capability_error": false
+    },
+    {
+      "name": "ConfigurationError",
+      "is_agent_runtime_error": true,
+      "is_configuration_error": true,
+      "is_capability_error": false
+    },
+    {
+      "name": "CapabilityError",
+      "is_agent_runtime_error": true,
+      "is_configuration_error": false,
+      "is_capability_error": true
+    },
+    {
+      "name": "UnsupportedFeatureError",
+      "is_agent_runtime_error": true,
+      "is_configuration_error": false,
+      "is_capability_error": true
+    },
+    {
+      "name": "ProviderExecutionError",
+      "is_agent_runtime_error": true,
+      "is_configuration_error": false,
+      "is_capability_error": false
+    }
+  ],
   "values": {
     "approval_request": {
       "action": "workspace.write",

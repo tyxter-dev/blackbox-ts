@@ -26,7 +26,7 @@ an invoice or omit its `source` and `version` metadata.
 
 TypeScript is now the canonical implementation. The Python pin records the historical
 state used for compatibility checks. CI/releases keep offline fixture checks but require
-no Python checkout; manual bidirectional checks remain available. Install the published
+no Python checkout; optional frozen-reference compatibility checks remain available. Install the published
 prerelease through `blackbox-ts@alpha`, or build this checkout's tarball to install from source.
 The tarball drops repository docs and sourcemaps and adds `blackbox-ts/package.json`.
 Documentation links in README/CHANGELOG point to GitHub.
@@ -34,8 +34,36 @@ Documentation links in README/CHANGELOG point to GitHub.
 Accounting now treats Anthropic input/total tokens as inclusive of cache read/creation;
 cache hit ratios count reads only. Current OpenAI/xAI/Anthropic model controls and catalogs
 were refreshed. `extra.model` remains rejected rather than overriding the selected model.
-Pricing aliases are still not resolved by `PricingCatalog.get`; use a price row's exact model
-ID. The bundled catalog contains 29 models and 36 pricing rows.
+The bundled catalog contains 29 models and 36 pricing rows.
+
+## Pricing compatibility
+
+`PricingCatalog.get` and `estimate` resolve registered model aliases after checking exact
+price rows. Use `registerModelAlias(provider, alias, model)` for custom catalogs; bundled
+pricing registers the bundled model aliases without adding rows. Resolution is one hop:
+an alias pointing to an unpriced model still has no price and `estimate` throws
+`pricing_not_found`. An explicit price row for an alias takes precedence.
+
+For usage with combined and split cache counters, ordinary input is
+`max(input_tokens - cached_input_tokens, 0)`. Any positive remainder of the combined cache
+counter after subtracting reads and creation is charged as additional cache reads. Supplying
+contradictory counters does not normalize them: explicit reads and creation retain their
+quantities, while the combined counter controls the ordinary-input subtraction.
+
+Rates now support independent optional `cached_input_per_million` and
+`reasoning_output_per_million`. Read pricing falls back from `cache_read_per_million` to
+`cached_input_per_million` to ordinary input; creation falls back from
+`cache_creation_per_million` to cached input to ordinary input. An explicit reasoning rate
+adds a supplemental `reasoning_output` component: all output tokens still incur their
+ordinary output charge. Without that optional rate, reasoning adds no separate charge.
+`PricingEntry.source_url` is preserved on estimates when supplied.
+
+Bundled rows and normalized Python fixtures retain the earlier effective read and creation
+fields for compatibility while also carrying the distinct cached-input rate and source URL.
+Where Python omits a creation rate, those bundled rows still explicitly use ordinary input;
+this preserves the historical TypeScript default rather than Python's cached-input fallback.
+Optional-field absence is therefore not a round-trip guarantee. Rates and source URLs remain
+snapshots of the recorded baseline, not live pricing lookups.
 
 ## Workspace-agent package interchange
 
@@ -46,28 +74,62 @@ finalizer retain their exemptions. An omitted mode or `inherit` adds no new pack
 boundary and policy still apply. Grant scopes default to `read`, while tools without scope
 metadata request `execute`, so declare scopes explicitly when needed.
 
-Python and TypeScript packages are not interchangeable without translation:
+Native readers remain TypeScript-only. For a Python-written format-version-1 ZIP, use the
+explicit, one-way importer:
 
-- Python stores its grant array under `permissions`. TypeScript uses `grants`; its
-  `permissions` field is an existing membership/settings record. A Python-written
-  `allowlist_v1` manifest with an array in `permissions` fails closed.
-- The TypeScript workspace-agent spec has no `agent_provider` or `agent_id`. Select an
-  agent provider through the `runWorkspaceAgent` options; existing-agent selection through
-  the package's `agent_id` is not supported. Parent `model_provider`, `hosted_tools` and
-  `extra` fields have no matching package-field behavior either; do not rely on ignored
-  imported fields to configure a run.
-- Workspace grant refs are `workspace:read`, `workspace:list`, `workspace:write` and
-  `workspace:command`; Python's `read_file`, `list_files`, `write_file` and `run_command`
-  suffixes do not match them.
-- Package `mcp_servers` contains names, not resolved connections. The caller provides
-  `mcp_connections` or MCP-backed tools and the actual `workspace` through run options.
-  For a local agent-provider package run, tools/workspace/policy travel on
-  `AgentSpec.metadata.run_request`, a TypeScript local-adapter convention. The effective
-  model and instructions are also placed on the agent spec.
+```ts
+import { importPythonWorkspaceAgentPackage, runWorkspaceAgent } from 'blackbox-ts/workspace-agents';
 
-Interchange work and other recorded compatibility gaps are tracked in
-[blackbox-ts#2](https://github.com/tyxter-dev/blackbox-ts/issues/2). Detailed divergences are
-in the generated [test crosswalk](parity-test-crosswalk.json).
+const imported = importPythonWorkspaceAgentPackage(bytes, {
+  connector_auth: { files: 'host-managed' }, // Match declared connector names and actual host auth.
+});
+const result = await runWorkspaceAgent(runtime, imported.spec, {
+  ...imported.run_options,
+  input: 'Read the report',
+});
+```
+
+Importing validates and translates data; it does not start a run or configure credentials.
+Each declared connector requires an explicit `connector_auth` value because Python's
+`kind` does not identify an authentication mechanism. The importer preserves `kind` as
+`type`, auth mode, scopes, metadata and translated tool refs. It maps Python `permissions`
+to `grants`, leaving the native `permissions` record separate. Default workspace tool names
+and grant/connector refs translate `read_file/list_files/write_file/run_command` to
+`read/list/write/command`; other Python workspace operations are rejected.
+
+Supported execution routes are the model loop (no `agent_provider`) and `agent_provider:
+'local'`. A concrete model is required. `model_provider` qualifies the model as `provider:model`; conflicting selectors
+are rejected. Pass the returned `run_options` to preserve the selected route, explicit
+hosted tools and nonempty `extra`. Hosted tools require the native explicit
+`{ type, name?, config? }` shape: Python's serialized hosted dataclasses can lack a type
+discriminator and are rejected rather than inferred. `extra` becomes TypeScript model-request
+options on both supported routes; this is an explicit translation, since Python's direct
+model-package path does not forward `spec.extra`. Model capability checks and package
+permission preflight still apply, including refusal of opaque `extra` under `allowlist_v1`.
+Caller overrides use the existing `runWorkspaceAgent` permission boundary.
+
+The importer rejects other agent providers, `agent_id`, MCP declarations/toolsets, skills,
+schedules (including disabled ones), active memory/retention settings, publication directory
+or approval actions and channels, and unknown fields or extra archive files. These settings
+need host-side conversion; Python schedule matching/interval semantics and skill execution
+are not equivalent to the native package fields. Private/public visibility and descriptive
+version, ownership, memory and publication metadata are preserved; workspace/unlisted
+visibility is rejected. Descriptive source records live under `spec.metadata.python_package`.
+There is no reverse exporter. Repacking the translated spec writes a native TypeScript
+package; retain `run_options` separately because native packages do not store those options.
+The caller still provides resolved workspace/tools and credentials.
+
+The pinned Python ZIP sample participates in `pnpm generate:parity:python -- --parent <checkout>`
+and its optional `--check` path, alongside the other frozen compatibility fixtures.
+Use Python 3.11 to reproduce the recorded samples. CI consumes them offline.
+
+TypeScript-generated expectations in `tests/fixtures/typescript/core-contracts.json` are
+canonical and have no Python pin or Python serialization tags. `pnpm check:parity` checks
+them against current TypeScript source; `tests/golden/core-contracts.test.ts` replays public
+contracts and pins defaults/error semantics. Python samples live under `tests/fixtures/python`
+and their compatibility suites under `tests/compatibility`. The generated
+[test crosswalk](parity-test-crosswalk.json) lists executable TypeScript tests first and
+retains the frozen Python module mappings separately.
 
 ## Injected agent providers and skills
 

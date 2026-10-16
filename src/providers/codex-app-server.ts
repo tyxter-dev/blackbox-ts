@@ -112,6 +112,9 @@ export interface CodexRawEvent {
   readonly raw_server_request?: CodexAppServerRequest;
 }
 
+// Authority belongs to objects created by this adapter, never to a wire field.
+const synthesizedEvents = new WeakSet<object>();
+
 export const CODEX_DEFAULT_CAPABILITIES: AgentCapabilities = {
   supports_streaming_events: true,
   supports_resume: false,
@@ -217,7 +220,7 @@ export class CodexAppServerSessions {
         closed: false,
       };
       connection.bind(record);
-      connection.appendEvent({ method: 'blackbox/session/started', params: { threadId } });
+      connection.appendSyntheticEvent({ method: 'blackbox/session/started', params: { threadId } });
       await this.startTurn(record, task.input, task);
       this.sessions.set(threadId, record);
       return {
@@ -360,7 +363,7 @@ export class CodexAppServerSessions {
     session.closed = true;
     notifySession(session);
     if (!settled && !turnIsComplete(session.events, turnId)) {
-      session.connection.appendEvent({
+      session.connection.appendSyntheticEvent({
         method: 'blackbox/session/cancelled',
         params: { threadId: session.thread_id, turnId },
       });
@@ -467,15 +470,23 @@ class CodexConnection {
     return this.transport.send(response);
   }
 
-  appendEvent(event: {
-    readonly id?: string;
-    readonly method: string;
-    readonly params: Readonly<Record<string, unknown>>;
-    readonly raw_server_request?: CodexAppServerRequest;
-  }): void {
+  appendSyntheticEvent(event: Omit<CodexRawEvent, 'id'>): void {
+    this.appendEvent(event, true);
+  }
+
+  private appendEvent(
+    event: {
+      readonly id?: string;
+      readonly method: string;
+      readonly params: Readonly<Record<string, unknown>>;
+      readonly raw_server_request?: CodexAppServerRequest;
+    },
+    synthesized = false,
+  ): void {
     const session = this.session;
     if (session === undefined) return;
     const stored: CodexRawEvent = { id: createRuntimeId('evt'), ...event };
+    if (synthesized) synthesizedEvents.add(stored);
     session.events.push(stored);
     recordCodexArtifact(session.artifacts, stored, session.thread_id);
     notifySession(session);
@@ -560,7 +571,7 @@ class CodexConnection {
     const action = method.includes('commandExecution') ? 'command' : 'file_change';
     session.approvals.set(approvalId, { method, params, request_id: requestId });
     const request: ApprovalRequest = { id: approvalId, action, data: params };
-    this.appendEvent({
+    this.appendSyntheticEvent({
       method: 'blackbox/approval/requested',
       params: { action, approvalId, request, threadId: session.thread_id },
       raw_server_request: { ...raw, id: requestId, method, params },
@@ -579,7 +590,7 @@ class CodexConnection {
       if (isRecord(turn) && turn.id === session.current_turn_id)
         session.current_turn_id = undefined;
     }
-    this.appendEvent({ method, params });
+    this.appendEvent({ ...raw, method, params });
   }
 
   private handleResponse(raw: Record<string, unknown>): void {
@@ -628,7 +639,7 @@ class CodexConnection {
     if (session === undefined) return;
     session.closed = true;
     session.approvals.clear();
-    this.appendEvent({
+    this.appendSyntheticEvent({
       method: 'blackbox/session/failed',
       params: { error: failure.message, threadId: session.thread_id },
     });
@@ -753,7 +764,9 @@ export function coerceCodexEvent(
     (isRecord(item) ? firstString(item, 'id') : undefined);
   return createAgentEvent({
     id: firstString(data, 'id') ?? createRuntimeId('evt'),
-    type: codexEventType(method, params),
+    type: synthesizedEvents.has(data)
+      ? (synthesizedEventType(method) ?? codexEventType(method, params))
+      : codexEventType(method, params),
     provider: options.provider,
     session_id: options.session_id,
     item_id: itemId,
@@ -762,12 +775,7 @@ export function coerceCodexEvent(
   });
 }
 
-/**
- * The app-server method → event type table ((parent) `_event_type` L1044-1097).
- * Unknown methods project to `CLOUD_AGENT_LOG`, which carries no authority
- * over session state.
- */
-export function codexEventType(method: string, params: Readonly<Record<string, unknown>>): string {
+function synthesizedEventType(method: string): string | undefined {
   switch (method) {
     case 'blackbox/session/started':
       return AgentEventTypes.SESSION_STARTED;
@@ -777,6 +785,19 @@ export function codexEventType(method: string, params: Readonly<Record<string, u
       return AgentEventTypes.SESSION_FAILED;
     case 'blackbox/approval/requested':
       return AgentEventTypes.APPROVAL_REQUESTED;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * The app-server method → event type table ((parent) `_event_type` L1044-1097).
+ * Unknown and private `blackbox/*` wire methods project to `CLOUD_AGENT_LOG`.
+ * Private lifecycle/approval authority is assigned separately to adapter-created
+ * objects; a caller-supplied field cannot establish that provenance.
+ */
+export function codexEventType(method: string, params: Readonly<Record<string, unknown>>): string {
+  switch (method) {
     case 'turn/started':
       return AgentEventTypes.MODEL_REQUEST_STARTED;
     case 'turn/completed': {

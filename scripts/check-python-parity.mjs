@@ -10,7 +10,7 @@ await run('scripts/generate-python-fixtures.mjs', '--parent', parent, '--check')
 await run('scripts/generate-test-crosswalk.mjs', '--parent', parent, '--check');
 await run('scripts/generate-typescript-fixtures.mjs', '--check');
 await run('scripts/validate-typescript-fixtures.mjs', '--parent', parent);
-console.log('Bidirectional Python parity suite passed.');
+console.log('Optional frozen Python compatibility suite passed.');
 
 function run(script, ...args) {
   return new Promise((resolvePromise, reject) => {

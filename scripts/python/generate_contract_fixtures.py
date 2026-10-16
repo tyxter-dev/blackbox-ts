@@ -241,6 +241,8 @@ def catalogs(parent_commit: str) -> dict[str, Any]:
                 {
                     "input_per_million": price["input_per_million"],
                     "output_per_million": price["output_per_million"],
+                    "cached_input_per_million": price.get("cached_input_per_million"),
+                    "reasoning_output_per_million": price.get("reasoning_output_per_million"),
                     "cache_read_per_million": price.get("cache_read_input_per_million")
                     if price.get("cache_read_input_per_million") is not None
                     else price.get("cached_input_per_million"),
@@ -250,6 +252,7 @@ def catalogs(parent_commit: str) -> dict[str, Any]:
                 }
             ),
             "source": price["source"],
+            "source_url": price.get("source_url"),
             "version": price["catalog_version"],
             "effective_at": f'{price["retrieved_at"]}T00:00:00.000Z',
             "metadata": {"replaceable": True},

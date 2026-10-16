@@ -7,7 +7,730 @@
   "committed_at": "2026-09-05T18:45:39Z",
   "feature_catalog": {
     "path": "FEATURES.md",
-    "sha256": "3fd62dc7c326f5089a59009c23eba4089399493e9304a490ee53c8ecce8fdaee"
+    "sha256": "3fd62dc7c326f5089a59009c23eba4089399493e9304a490ee53c8ecce8fdaee",
+    "typescript_id_provenance": "TypeScript-owned legacy IDs; existing bindings are retained by frozen Python requirement name, not parsed from Python.",
+    "requirements": [
+      {
+        "name": "Complete blackbox agent loop",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.complete-blackbox-agent-loop"
+      },
+      {
+        "name": "Streaming blackbox loop",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.streaming-blackbox-loop"
+      },
+      {
+        "name": "Typed agent result",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.typed-agent-result"
+      },
+      {
+        "name": "Text-only runs",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.text-only-runs"
+      },
+      {
+        "name": "Max-iteration guard",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.max-iteration-guard"
+      },
+      {
+        "name": "Provider fallback routing",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.provider-fallback-routing"
+      },
+      {
+        "name": "Mock tool execution",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.high-level-runtime.mock-tool-execution"
+      },
+      {
+        "name": "Portable skill packs",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.portable-skill-packs"
+      },
+      {
+        "name": "Workspace agent package contracts",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.workspace-agent-package-contracts"
+      },
+      {
+        "name": "Workspace agent runtime grants",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.workspace-agent-runtime-grants"
+      },
+      {
+        "name": "Workspace agent validation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.workspace-agent-validation"
+      },
+      {
+        "name": "SQLite workspace agent registry",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.sqlite-workspace-agent-registry"
+      },
+      {
+        "name": "Workspace agent package on disk",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.workspace-agent-package-on-disk"
+      },
+      {
+        "name": "Schedule execution (reference executor)",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.skills-and-workspace-agents.schedule-execution-reference-executor"
+      },
+      {
+        "name": "Pydantic structured output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.pydantic-structured-output"
+      },
+      {
+        "name": "Dataclass structured output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.dataclass-structured-output"
+      },
+      {
+        "name": "String output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.string-output"
+      },
+      {
+        "name": "Fail-fast validation errors",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.fail-fast-validation-errors"
+      },
+      {
+        "name": "Provider-native structured output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.provider-native-structured-output"
+      },
+      {
+        "name": "Finalizer tool structured output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.finalizer-tool-structured-output"
+      },
+      {
+        "name": "Raw JSON Schema post-hoc output",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.raw-json-schema-post-hoc-output"
+      },
+      {
+        "name": "Structured output retry/repair",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.structured-output.structured-output-retry-repair"
+      },
+      {
+        "name": "Local tool registration",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.local-tool-registration"
+      },
+      {
+        "name": "Dynamic tool sessions",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.dynamic-tool-sessions"
+      },
+      {
+        "name": "Tool lookup/listing",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-lookup-listing"
+      },
+      {
+        "name": "Provider-neutral tool schema export",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.provider-neutral-tool-schema-export"
+      },
+      {
+        "name": "Manual JSON schema override",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.manual-json-schema-override"
+      },
+      {
+        "name": "Tool metadata",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-metadata"
+      },
+      {
+        "name": "Blocking tool offload",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.blocking-tool-offload"
+      },
+      {
+        "name": "Async tool execution",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.async-tool-execution"
+      },
+      {
+        "name": "Tool timeouts",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-timeouts"
+      },
+      {
+        "name": "Tool concurrency cap",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-concurrency-cap"
+      },
+      {
+        "name": "High-level tool controls",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.high-level-tool-controls"
+      },
+      {
+        "name": "Multiple tool calls in one turn",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.multiple-tool-calls-in-one-turn"
+      },
+      {
+        "name": "Tool result coercion",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-result-coercion"
+      },
+      {
+        "name": "Tool payload separation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-payload-separation"
+      },
+      {
+        "name": "Context injection",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.context-injection"
+      },
+      {
+        "name": "Context schema privacy",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.context-schema-privacy"
+      },
+      {
+        "name": "Tool catalog search",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.tool-catalog-search"
+      },
+      {
+        "name": "Runtime toolsets and dynamic loading",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.runtime-toolsets-and-dynamic-loading"
+      },
+      {
+        "name": "Dynamic tool surface persistence",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.dynamic-tool-surface-persistence"
+      },
+      {
+        "name": "Workspace tool backend",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.local-tools.workspace-tool-backend"
+      },
+      {
+        "name": "Namespaced `ToolRef` IDs",
+        "status": "Not supported yet",
+        "typescript_legacy_id": "parent.local-tools.namespaced-toolref-ids"
+      },
+      {
+        "name": "Typed hosted tool specs",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.typed-hosted-tool-specs"
+      },
+      {
+        "name": "OpenAI hosted tool mapping",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.openai-hosted-tool-mapping"
+      },
+      {
+        "name": "OpenAI hosted tool events",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.openai-hosted-tool-events"
+      },
+      {
+        "name": "Hosted tool result metadata",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.hosted-tool-result-metadata"
+      },
+      {
+        "name": "Provider-native remote MCP",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.provider-native-remote-mcp"
+      },
+      {
+        "name": "MCP result metadata",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.mcp-result-metadata"
+      },
+      {
+        "name": "Gemini hosted web search",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.gemini-hosted-web-search"
+      },
+      {
+        "name": "Raw hosted tool passthrough",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.hosted-tools.raw-hosted-tool-passthrough"
+      },
+      {
+        "name": "Allow-all default policy",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.allow-all-default-policy"
+      },
+      {
+        "name": "Policy allow/deny gate",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.policy-allow-deny-gate"
+      },
+      {
+        "name": "Approval-required gate",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.approval-required-gate"
+      },
+      {
+        "name": "Approval resume",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.approval-resume"
+      },
+      {
+        "name": "Approval denial",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.approval-denial"
+      },
+      {
+        "name": "Typed approval errors",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.policy-approvals-and-safety.typed-approval-errors"
+      },
+      {
+        "name": "Canonical event taxonomy",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.core-events-and-state.canonical-event-taxonomy"
+      },
+      {
+        "name": "Run IDs",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.core-events-and-state.run-ids"
+      },
+      {
+        "name": "Monotonic event sequence",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.core-events-and-state.monotonic-event-sequence"
+      },
+      {
+        "name": "Event store protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.event-store-protocol"
+      },
+      {
+        "name": "In-memory event store",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.in-memory-event-store"
+      },
+      {
+        "name": "Run store protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.run-store-protocol"
+      },
+      {
+        "name": "In-memory run store",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.in-memory-run-store"
+      },
+      {
+        "name": "Session store protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.session-store-protocol"
+      },
+      {
+        "name": "In-memory session store",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.in-memory-session-store"
+      },
+      {
+        "name": "Provider-native continuation state",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.core-events-and-state.provider-native-continuation-state"
+      },
+      {
+        "name": "OpenAI previous response continuation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-state-mapping.openai-previous-response-continuation"
+      },
+      {
+        "name": "Provider tool/source state preservation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-state-mapping.provider-tool-source-state-preservation"
+      },
+      {
+        "name": "Provider-native request controls",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-controls-and-catalog.provider-native-request-controls"
+      },
+      {
+        "name": "Provider model catalog",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-controls-and-catalog.provider-model-catalog"
+      },
+      {
+        "name": "Model usage and cost accounting",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.accounting-and-cache.model-usage-and-cost-accounting"
+      },
+      {
+        "name": "Native provider cache controls",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.accounting-and-cache.native-provider-cache-controls"
+      },
+      {
+        "name": "Provider cache registry",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.accounting-and-cache.provider-cache-registry"
+      },
+      {
+        "name": "Provider-side cache lifecycle",
+        "status": "Partial",
+        "typescript_legacy_id": "parent.accounting-and-cache.provider-side-cache-lifecycle"
+      },
+      {
+        "name": "Raw provider payload preservation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.core-events-and-state.raw-provider-payload-preservation"
+      },
+      {
+        "name": "Resume run from persisted state",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.resume-run-from-persisted-state"
+      },
+      {
+        "name": "JSONL/SQLite stores",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.persistence.jsonl-sqlite-stores"
+      },
+      {
+        "name": "Model capability profile",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.model-capability-profile"
+      },
+      {
+        "name": "Hosted-tool capability validation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.hosted-tool-capability-validation"
+      },
+      {
+        "name": "Output strategy fallback resolution",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.output-strategy-fallback-resolution"
+      },
+      {
+        "name": "Control capability validation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.control-capability-validation"
+      },
+      {
+        "name": "State mode validation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.state-mode-validation"
+      },
+      {
+        "name": "Compatibility profile derivation",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.compatibility-profile-derivation"
+      },
+      {
+        "name": "OpenAI tool-search control",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.openai-tool-search-control"
+      },
+      {
+        "name": "Provider-native compaction control",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.provider-native-compaction-control"
+      },
+      {
+        "name": "Modalities control",
+        "status": "Contract only",
+        "typescript_legacy_id": "parent.granular-model-capabilities.modalities-control"
+      },
+      {
+        "name": "Multimodal model input (content parts)",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.granular-model-capabilities.multimodal-model-input-content-parts"
+      },
+      {
+        "name": "Provider registry",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.provider-registry"
+      },
+      {
+        "name": "Provider reference parsing",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.provider-reference-parsing"
+      },
+      {
+        "name": "Model provider protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.model-provider-protocol"
+      },
+      {
+        "name": "Agent provider protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.agent-provider-protocol"
+      },
+      {
+        "name": "Chat compatibility facade",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.chat-compatibility-facade"
+      },
+      {
+        "name": "Capability flags",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.capability-flags"
+      },
+      {
+        "name": "Granular model capability profile",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.granular-model-capability-profile"
+      },
+      {
+        "name": "Direct model run",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.direct-model-run"
+      },
+      {
+        "name": "Direct model stream",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.direct-model-stream"
+      },
+      {
+        "name": "Echo model provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.provider-runtime.echo-model-provider"
+      },
+      {
+        "name": "OpenAI Responses model provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.native-model-providers.openai-responses-model-provider"
+      },
+      {
+        "name": "xAI Responses model provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.native-model-providers.xai-responses-model-provider"
+      },
+      {
+        "name": "Anthropic Messages model provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.native-model-providers.anthropic-messages-model-provider"
+      },
+      {
+        "name": "Gemini GenerateContent model provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.native-model-providers.gemini-generatecontent-model-provider"
+      },
+      {
+        "name": "Local agent provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.local-agent-provider"
+      },
+      {
+        "name": "Create agent",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.create-agent"
+      },
+      {
+        "name": "Create/start session",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.create-start-session"
+      },
+      {
+        "name": "Stream session events",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.stream-session-events"
+      },
+      {
+        "name": "Durable session persistence",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.durable-session-persistence"
+      },
+      {
+        "name": "Durable session replay",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.durable-session-replay"
+      },
+      {
+        "name": "Provider-native live resume",
+        "status": "Supported where advertised",
+        "typescript_legacy_id": "parent.agent-sessions.provider-native-live-resume"
+      },
+      {
+        "name": "Send message to session",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.send-message-to-session"
+      },
+      {
+        "name": "Cancel session",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.cancel-session"
+      },
+      {
+        "name": "List session artifacts",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.list-session-artifacts"
+      },
+      {
+        "name": "Session approval pause/resume/deny",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.session-approval-pause-resume-deny"
+      },
+      {
+        "name": "OpenAI Agents SDK provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.openai-agents-sdk-provider"
+      },
+      {
+        "name": "Claude Code Agent SDK provider",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.claude-code-agent-sdk-provider"
+      },
+      {
+        "name": "Claude Code subscription auth",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.agent-sessions.claude-code-subscription-auth"
+      },
+      {
+        "name": "Cloud agent providers",
+        "status": "Partial",
+        "typescript_legacy_id": "parent.agent-sessions.cloud-agent-providers"
+      },
+      {
+        "name": "Cloud agent webhook ingress",
+        "status": "Contract only",
+        "typescript_legacy_id": "parent.agent-sessions.cloud-agent-webhook-ingress"
+      },
+      {
+        "name": "Lab-neutral work-queue contract",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.environment-workers.lab-neutral-work-queue-contract"
+      },
+      {
+        "name": "In-memory reference work source",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.environment-workers.in-memory-reference-work-source"
+      },
+      {
+        "name": "Environment worker daemon",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.environment-workers.environment-worker-daemon"
+      },
+      {
+        "name": "Inbound work policy gate",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.environment-workers.inbound-work-policy-gate"
+      },
+      {
+        "name": "Scoped worker credentials",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.environment-workers.scoped-worker-credentials"
+      },
+      {
+        "name": "Anthropic Managed Agents work source",
+        "status": "Partial",
+        "typescript_legacy_id": "parent.environment-workers.anthropic-managed-agents-work-source"
+      },
+      {
+        "name": "Artifact data contracts",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.artifacts.artifact-data-contracts"
+      },
+      {
+        "name": "Workspace runtime facade",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.workspaces.workspace-runtime-facade"
+      },
+      {
+        "name": "Local workspace runtime",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.workspaces.local-workspace-runtime"
+      },
+      {
+        "name": "Workspace data contracts",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.workspaces.workspace-data-contracts"
+      },
+      {
+        "name": "MCP server spec",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-server-spec"
+      },
+      {
+        "name": "MCP server authoring",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-server-authoring"
+      },
+      {
+        "name": "MCP protocol compatibility matrix",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-protocol-compatibility-matrix"
+      },
+      {
+        "name": "Remote MCP auth refresh",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.remote-mcp-auth-refresh"
+      },
+      {
+        "name": "MCP trust policy presets",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-trust-policy-presets"
+      },
+      {
+        "name": "Local MCP dispatch connector",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.local-mcp-dispatch-connector"
+      },
+      {
+        "name": "MCP runtime tool bridge",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-runtime-tool-bridge"
+      },
+      {
+        "name": "MCP toolset routing",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.mcp.mcp-toolset-routing"
+      },
+      {
+        "name": "Observability sink protocol",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.observability-sink-protocol"
+      },
+      {
+        "name": "Production observability presets",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.production-observability-presets"
+      },
+      {
+        "name": "Event trace context",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.event-trace-context"
+      },
+      {
+        "name": "Workflow trace spans",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.workflow-trace-spans"
+      },
+      {
+        "name": "OpenTelemetry trace export",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.opentelemetry-trace-export"
+      },
+      {
+        "name": "Standard production metrics",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.standard-production-metrics"
+      },
+      {
+        "name": "Replay and run diffing",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.replay-and-run-diffing"
+      },
+      {
+        "name": "Evaluator hooks",
+        "status": "Supported",
+        "typescript_legacy_id": "parent.observability.evaluator-hooks"
+      }
+    ]
   },
   "evidence_files": [
     {

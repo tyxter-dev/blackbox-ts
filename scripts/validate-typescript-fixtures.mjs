@@ -7,12 +7,16 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const parentDir = resolve(requiredArgument('--parent'));
-const inventory = JSON.parse(await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'));
+const inventory = JSON.parse(
+  await readFile(resolve(repoRoot, 'docs/parity-inventory.json'), 'utf8'),
+);
 const head = (
   await execFileAsync('git', ['-C', parentDir, 'rev-parse', 'HEAD'], { windowsHide: true })
 ).stdout.trim();
-if (head !== inventory.parent.commit) {
-  throw new Error(`Parent checkout is ${head}; expected pinned commit ${inventory.parent.commit}.`);
+if (head !== inventory.python_reference.commit) {
+  throw new Error(
+    `Parent checkout is ${head}; expected pinned commit ${inventory.python_reference.commit}.`,
+  );
 }
 const python = process.env.PYTHON ?? (process.platform === 'win32' ? 'python' : 'python3');
 const result = await execFileAsync(

@@ -6,6 +6,16 @@ import { parseSkillMarkdown, skillToMarkdown } from '../skills/index.js';
 import type { WorkspaceAgentPackage, WorkspaceAgentSpec } from './types.js';
 import { assertValidWorkspaceAgent } from './validation.js';
 
+import {
+  translatePythonPackage,
+  type ImportedPythonWorkspaceAgentPackage,
+  type PythonWorkspaceAgentImportOptions,
+} from './python-package.js';
+export type {
+  ImportedPythonWorkspaceAgentPackage,
+  PythonWorkspaceAgentImportOptions,
+} from './python-package.js';
+
 export const WORKSPACE_AGENT_PACKAGE_FORMAT = 'blackbox/workspace-agent';
 export const WORKSPACE_AGENT_PACKAGE_VERSION = 1;
 
@@ -92,6 +102,15 @@ export function unpackWorkspaceAgent(archive: Uint8Array): WorkspaceAgentPackage
       entries.map((entry) => [entry.name, Buffer.from(entry.data).toString('base64')]),
     ),
   };
+}
+
+/** Explicitly translate a supported Python ZIP; native readers never infer its source. */
+export function importPythonWorkspaceAgentPackage(
+  archive: Uint8Array,
+  options: PythonWorkspaceAgentImportOptions = {},
+): ImportedPythonWorkspaceAgentPackage {
+  const entries = decodeZip(archive);
+  return translatePythonPackage(new Map(entries.map((entry) => [entry.name, entry.data])), options);
 }
 
 export async function installWorkspaceAgentPackage(

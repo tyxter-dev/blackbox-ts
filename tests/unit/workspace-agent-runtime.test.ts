@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AgentEventTypes,
+  importPythonWorkspaceAgentPackage,
   AgentRuntime,
   ApprovalManager,
   ClaudeCodeAgentProvider,
@@ -39,6 +40,8 @@ import {
   type WorkspaceAgentToolPermission,
 } from '../../src/index.js';
 import { activePermissions, permissionBoundary } from '../../src/core/tool-permissions.js';
+
+import pythonPackage from '../fixtures/python/workspace-agent-package.json';
 
 const temporaryDirectories: string[] = [];
 
@@ -916,4 +919,104 @@ describe('workspace agent package provider surfaces', () => {
       false,
     );
   });
+});
+
+describe('imported Python packages through native runtime consumers', () => {
+  const options = { connector_auth: { files: 'host-managed' } };
+  it.each(['local', 'model'] as const)(
+    'enforces imported grants and caller overrides through %s',
+    async (route) => {
+      const imported = importPythonWorkspaceAgentPackage(
+        Buffer.from(pythonPackage.archive_base64, 'base64'),
+        options,
+      );
+      const root = await mkdtemp(join(tmpdir(), 'blackbox-python-package-'));
+      temporaryDirectories.push(root);
+      const workspace = await new LocalWorkspaceProvider().open({ kind: 'local', ref: root });
+      await workspace.write('note.txt', 'original');
+      const fixture = setup(
+        [
+          callTurn('workspace_read', 'read', { path: 'note.txt' }),
+          callTurn('workspace_write', 'write', { path: 'note.txt', content: 'bad' }),
+          { output_text: 'done' },
+        ],
+        workspaceToolDefinitions(workspace),
+      );
+      fixture.registry.registerAgentProvider(new LocalAgentProvider(fixture.runtime));
+      const result = await runWorkspaceAgent(fixture.runtime, imported.spec, {
+        ...imported.run_options,
+        agent_provider: route === 'local' ? 'local' : undefined,
+        input: 'go',
+        model: 'script:override',
+        instructions: 'Override instructions.',
+        tools: ['workspace_read', 'workspace_write'],
+      });
+      expect(result.output).toBe('done');
+      expect(fixture.provider.turns[0]).toMatchObject({
+        model: 'override',
+        instructions: 'Override instructions.',
+      });
+      const outcomes = fixture.events.filter((event) =>
+        [AgentEventTypes.TOOL_CALL_COMPLETED, AgentEventTypes.TOOL_CALL_FAILED].includes(
+          event.type,
+        ),
+      );
+      expect(outcomes.map((event) => event.type)).toEqual([
+        AgentEventTypes.TOOL_CALL_COMPLETED,
+        AgentEventTypes.TOOL_CALL_FAILED,
+      ]);
+      expect(outcomes.map((event) => event.data.name)).toEqual([
+        'workspace_read',
+        'workspace_write',
+      ]);
+      expect(await readFile(join(root, 'note.txt'), 'utf8')).toBe('original');
+      expect(toolNames(fixture.provider.turns[0]!)).toContain('workspace_read');
+      expect(toolNames(fixture.provider.turns[0]!)).not.toContain('workspace_write');
+
+      const rejected = runWorkspaceAgent(fixture.runtime, imported.spec, {
+        ...imported.run_options,
+        agent_provider: route === 'local' ? 'local' : undefined,
+        input: 'go',
+        extra: { opaque_option: true },
+      });
+      if (route === 'local') expect(await rejected).toMatchObject({ status: 'failed' });
+      else await expect(rejected).rejects.toThrow(/allowlist_v1/);
+      expect(fixture.provider.turns).toHaveLength(3);
+    },
+  );
+
+  it.each(['local', 'model'] as const)(
+    'delivers explicit hosted/extra options to the %s model consumer',
+    async (route) => {
+      const bytes =
+        route === 'local'
+          ? pythonPackage.local_options_archive
+          : pythonPackage.model_options_archive;
+      const imported = importPythonWorkspaceAgentPackage(Buffer.from(bytes, 'base64'), options);
+      const base = toolProfile();
+      const provider = new ScriptedModelProvider([{ output_text: 'configured' }], {
+        id: 'script',
+        capabilities: () => ({
+          ...base,
+          hosted_tools: { web_search: capability('supported') },
+          controls: { ...base.controls, extra: capability('supported') },
+        }),
+      });
+      const registry = new ProviderRegistry();
+      registry.registerModelProvider(provider);
+      const runtime = new AgentRuntime({ registry });
+      registry.registerAgentProvider(new LocalAgentProvider(runtime));
+      const result = await runWorkspaceAgent(runtime, imported.spec, {
+        ...imported.run_options,
+        input: 'go',
+        tools: [],
+      });
+      expect(result.output).toBe('configured');
+      expect(provider.turns[0]).toMatchObject({
+        model: 'model',
+        hosted_tools: [{ type: 'web_search', config: { depth: 'short' } }],
+        extra: { fixture_option: 'present' },
+      });
+    },
+  );
 });

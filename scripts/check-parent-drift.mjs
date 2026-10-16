@@ -13,28 +13,30 @@ const headers = {
     ? {}
     : { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }),
 };
-const apiRoot = `https://api.github.com/repos/${inventory.parent.repository}`;
-const head = await githubJson(`${apiRoot}/commits/${inventory.parent.default_branch}`);
+const apiRoot = `https://api.github.com/repos/${inventory.python_reference.repository}`;
+const head = await githubJson(`${apiRoot}/commits/${inventory.python_reference.default_branch}`);
 const currentCommit = head.sha;
-const drifted = currentCommit !== inventory.parent.commit;
+const drifted = currentCommit !== inventory.python_reference.commit;
 let comparison;
 if (drifted) {
   comparison = await githubJson(
-    `${apiRoot}/compare/${inventory.parent.commit}...${encodeURIComponent(inventory.parent.default_branch)}`,
+    `${apiRoot}/compare/${inventory.python_reference.commit}...${encodeURIComponent(inventory.python_reference.default_branch)}`,
   );
 }
 const report = {
   schema_version: 1,
-  parent_repository: inventory.parent.repository,
-  parent_default_branch: inventory.parent.default_branch,
-  pinned_commit: inventory.parent.commit,
+  parent_repository: inventory.python_reference.repository,
+  parent_default_branch: inventory.python_reference.default_branch,
+  pinned_commit: inventory.python_reference.commit,
   current_commit: currentCommit,
   drifted,
   ahead_by: comparison?.ahead_by ?? 0,
   behind_by: comparison?.behind_by ?? 0,
   total_commits: comparison?.total_commits ?? 0,
   feature_catalog_changed:
-    comparison?.files?.some((file) => file.filename === inventory.parent.feature_catalog) ?? false,
+    comparison?.files?.some(
+      (file) => file.filename === inventory.python_reference.feature_catalog,
+    ) ?? false,
   commits:
     comparison?.commits?.map((commit) => ({
       sha: commit.sha,

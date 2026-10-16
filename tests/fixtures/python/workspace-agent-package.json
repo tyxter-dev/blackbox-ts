@@ -1,0 +1,85 @@
+{
+  "generated_by": "python-parent",
+  "parent_commit": "d5be68e03ca7750920569578710a2ee25d25530c",
+  "archive_base64": "UEsDBBQAAAAIAAAAISiOvO/KEQIAALIGAAAKAAAAYWdlbnQuanNvbpVUTW/jIBC951dEPm+7Snvrr+h9tUJjmCQomEGAnVpR/vsCdgg4TtU92X5vDG/efFw2222zJ9uBbz62TauAn1r6+n0me3IGOL7AAbVvft3j2IDWSdIhfpdgZ5CHj0t4D18aOoxHfY7+SHprEQTa9H8gpYiUSdRLTXUkUDFjaZARDWGOW2l8xUd4epnRpK76SxGHBZ1u1b1SM+qJlAvQn/QZgJwti5rYXiqcT6hIJZ1PpFtjz1Z6fPqv7TXj1HWgRZPYv7OYIzmPgmVNN7zjhjm00ewlnGLRVzgnrZF7smVil/lZlKWWH4iT1CITY9DSlSz0/sii4zEEtWC9yyVLAY6TwVJJdjh4uS/F1IZ8PDq9CFhxexGx4vjykqXrhfOTnehBgIfYv9cZvlb1MWg76WLDP3E2pBnN+T6zwqdSaQxdF5brWbXuVBMT+x1UnrlbLnOZDCnJx9qScJFLI1uf9cSB4MF/eeT4EUWvqj5o3EmqRUtjR3YsZGfJmnQxNRZ9GNvgOBMwuoXoFTnXW6n6NmQOflpO+ZJBOtlKJf2Y3LFyAF/cJqRNRo8MNbQK4zTsIQxYjpgMXyH4EUKVVN3+3wi8b867uAw1u9e31/emOvyAig5LA4zFQVLvikX8Q4NK5hZNZ43LJmsETst35XQF7UPGPLRXXGLt+HMt+OXtBD8MWl44oBSd0x4YdnFMrpvr5h9QSwMEFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAABpbnN0cnVjdGlvbnMubWQLSk1MUShOTEvNqdQDAFBLAQIUAxQAAAAIAAAAISiOvO/KEQIAALIGAAAKAAAAAAAAAAAAAACkgQAAAABhZ2VudC5qc29uUEsBAhQDFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAAAAAAAAAAAAAKSBOQIAAGluc3RydWN0aW9ucy5tZFBLBQYAAAAAAgACAHUAAAB0AgAAAAA=",
+  "manifest": {
+    "format": "blackbox/workspace-agent",
+    "format_version": 1,
+    "spec": {
+      "name": "Python reader",
+      "id": "python-reader",
+      "model_provider": "script",
+      "model": "model",
+      "agent_provider": "local",
+      "agent_id": null,
+      "tools": [
+        "workspace_read_file",
+        "workspace_list_files",
+        "workspace_write_file",
+        "workspace_run_command"
+      ],
+      "hosted_tools": [],
+      "mcp_servers": [],
+      "mcp_toolsets": [],
+      "connectors": [
+        {
+          "name": "files",
+          "kind": "filesystem",
+          "auth_mode": "end_user",
+          "scopes": [],
+          "tool_refs": [
+            "workspace:read_file",
+            "workspace:list_files",
+            "workspace:write_file",
+            "workspace:run_command"
+          ],
+          "metadata": {}
+        }
+      ],
+      "permissions": [
+        {
+          "ref": "workspace:read_file",
+          "scopes": ["read"],
+          "connector": null,
+          "approval": {
+            "mode": "policy",
+            "reason": null,
+            "metadata": {}
+          },
+          "metadata": {}
+        }
+      ],
+      "schedules": [],
+      "skills": [],
+      "memory": {
+        "mode": "none",
+        "retention_days": null,
+        "metadata": {}
+      },
+      "publication": {
+        "visibility": "private",
+        "directory_enabled": false,
+        "approved": false,
+        "channels": [],
+        "metadata": {}
+      },
+      "version": {
+        "version": "1.2.3",
+        "changelog": null,
+        "previous_version": null,
+        "metadata": {}
+      },
+      "metadata": {
+        "owner": null,
+        "description": null,
+        "labels": [],
+        "created_by": null,
+        "metadata": {}
+      },
+      "extra": {},
+      "permission_mode": "allowlist_v1"
+    }
+  },
+  "local_options_archive": "UEsDBBQAAAAIAAAAISiqfE5vQQIAAEAHAAAKAAAAYWdlbnQuanNvbpVVwY7jIAy99yuqnHdmNbO3+Yq9r1aIgNOgEoyAtI2q/vsaklLIpKPZUxM/Bz+/Z9zrbr9vOnQDD83Hvmk1F8cWLz/P6I7ecgEv/AAmND8eeewEzis0lP+Wwt6CoJcrPdOb4QPEo35PoUezd8AluPQ9gUpGyCbopYYGlKCZdXhSMUppXjhlQ4XH8PywRBO76iuNgq/gVNWMWi/RgKg9hf6kVwrkblnkxDqlYTmhArXyIYF+Cz07FeDpt240TOAwcCObhP5dyPToA0i25nRdfiPdySZFz9AyD9yJPhcgVKDp1CHrv0Ql2NAnEXt0ocnQbVf+3jkMwtLJLhobKZThxAtCFaeSBkRA94TwfQRqqQg4KiMzMFHfQ4nyMfQsuhtTwEg2+jweKcELtFAyyW6Sb11Jphb/47Orq4QNZ1cZG+6ui6wdLhSe5YTAJQ88erXtgwU3KB8v1xNlqc00CV92VuhUMo2p28Syn9U1mT2x8W5xvZ6vu00WtRJTLQkV8mk91Gc9UYA0+C+NvOhBjrqag8Yfldb17MKAbipoZ8oGTXFDHQRaEaQ4k3zyK9IbdG53q8aWOudhXoS5yEl51SqtwpTUcerEQ1FNKpeEnhgY3mqIt6HjdMFyxiz4BiB6Ti7pevy/IPjY0g9yOdS8vb6//mqqww+g8bAWwDo4KRx9sfS/KVCJ3LPxbGA9ZLSq5kW/cbrm7aeOBY1XXJjt9H0ucAmuItKpSxgdMLyXjY36+EdXm5zvY95LyvRAqyDm3Xa33T9QSwMEFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAABpbnN0cnVjdGlvbnMubWQLSk1MUShOTEvNqdQDAFBLAQIUAxQAAAAIAAAAISiqfE5vQQIAAEAHAAAKAAAAAAAAAAAAAACkgQAAAABhZ2VudC5qc29uUEsBAhQDFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAAAAAAAAAAAAAKSBaQIAAGluc3RydWN0aW9ucy5tZFBLBQYAAAAAAgACAHUAAACkAgAAAAA=",
+  "model_options_archive": "UEsDBBQAAAAIAAAAIShDu8FsPgIAAD0HAAAKAAAAYWdlbnQuanNvbpVVwY7jIAy99yuqnHdmNbO3+Yq9r1aIgNOgEoyAtI2q/vsa0lDIpKPZUxM/Bz+/Z9zrbr9vOnQDD83Hvmk1F8cWLz/P6I7ecgEv/AAmND8eeewEzis0lP+Wwt6CoJcrPdOb4QPEo35PoUezd8AluPQ9gUpGyCbopYYGlKCZdXhSMUppXjhlQ4XH8PxwjyZ25Vdm1LrCUskiGhC1p9Cf9EqB3CqLhFinNNxPr0CtfEig30LPTgV4+q0bDRM4DNzIJqF/72R69AEkW3O63n8j3ckmOc/QMg/ciT4XIFSg6dQhi3+PSrChTwr26EKToduu/F04DMLSyS66GimU4cQLQhWnkgZEQPeE8OJ/LRUBR2VkBibqeyhRPoaeRWtjChjJRp9nIyV4gRZKJtlN8q0rydTif3x2dZWw4ewqY8PddZG1w4XCs5wQuOSBR6+2fbDgBuXjzXqiLLWZJuHLzgqdSqYxdZtY9rO6JrMnNl4srtfztdhkUSsx1ZJQIZ92Q33WEwVIg//SyIse5KirOWj8UWldzy4M6KaCdqZs0BQ31EGgFUGKM8knvyK9Qee2WDW21DkP8xbMRU7Kq1ZpFaakjlMnHopqUrkk9MTA8FZDvA0dpwuWM2bBNwDRc3JJ1+P/BcHHin6Qy6Hm7fX99VdTHX4AjYe1ANbBSeHoi43/TYFKZMnGs4H1kNGqmrf8xumat586FjRecWG20/e5wCW4ikinLmF0wHApGxv18V+uNjnfx7yXlOmBVkHMu+1uu39QSwMEFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAABpbnN0cnVjdGlvbnMubWQLSk1MUShOTEvNqdQDAFBLAQIUAxQAAAAIAAAAIShDu8FsPgIAAD0HAAAKAAAAAAAAAAAAAACkgQAAAABhZ2VudC5qc29uUEsBAhQDFAAAAAgAAAAhKJeLjisOAAAADAAAAA8AAAAAAAAAAAAAAKSBZgIAAGluc3RydWN0aW9ucy5tZFBLBQYAAAAAAgACAHUAAAChAgAAAAA="
+}
